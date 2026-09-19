@@ -8,7 +8,8 @@ async function expectNoHorizontalOverflow(page: Page): Promise<void> {
 }
 
 test.beforeEach(async ({ page }) => {
-  await page.addInitScript(() => window.localStorage.clear());
+  await page.goto("/");
+  await page.evaluate(() => window.localStorage.clear());
 });
 
 test("landing and shell routes render without Hawya console errors or horizontal overflow", async ({
@@ -68,7 +69,7 @@ test("theme choices affect chrome and survive a reload as non-critical UI prefer
 test("command menu is keyboard reachable and Escape restores focus", async ({ page }) => {
   await page.goto("/studio");
 
-  await page.keyboard.press("Control+K");
+  await page.keyboard.press("/");
   const search = page.getByRole("textbox", { name: "Search commands…" });
   await expect(search).toBeFocused();
   await search.fill("settings");
@@ -84,9 +85,10 @@ test("shortcut dialog traps interaction and can be exited from the keyboard", as
   const trigger = page.getByRole("button", { name: "View shortcuts" });
   await trigger.click();
 
-  await expect(page.getByRole("heading", { name: "Keyboard shortcuts" })).toBeVisible();
+  const dialog = page.getByRole("dialog");
+  await expect(dialog.getByRole("heading", { name: "Keyboard shortcuts" })).toBeVisible();
   await page.keyboard.press("Escape");
-  await expect(page.getByRole("heading", { name: "Keyboard shortcuts" })).toBeHidden();
+  await expect(dialog).toBeHidden();
   await expect(trigger).toBeFocused();
 });
 
