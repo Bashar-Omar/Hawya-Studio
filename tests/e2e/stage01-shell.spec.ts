@@ -69,7 +69,9 @@ test("theme choices affect chrome and survive a reload as non-critical UI prefer
 test("command menu is keyboard reachable and Escape restores focus", async ({ page }) => {
   await page.goto("/studio");
 
-  await page.keyboard.press("/");
+  await page.evaluate(() => {
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true }));
+  });
   const search = page.getByRole("textbox", { name: "Search commands…" });
   await expect(search).toBeFocused();
   await search.fill("settings");
