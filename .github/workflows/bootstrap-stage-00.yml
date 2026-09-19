@@ -29,6 +29,30 @@ jobs:
           unzip -oq /tmp/hawya-stage00.zip -d .
           rm -rf .bootstrap
 
+      - name: Apply verified bootstrap fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          playwright = Path("playwright.config.ts")
+          text = playwright.read_text()
+          old = '  workers: process.env.CI ? 1 : undefined,'
+          new = '  ...(process.env.CI ? { workers: 1 } : {}),'
+          if old not in text:
+              raise SystemExit("Expected Playwright workers bootstrap line not found")
+          playwright.write_text(text.replace(old, new))
+
+          biome = Path("biome.jsonc")
+          text = biome.read_text()
+          old = '      "recommended": true,'
+          new = '      "preset": "recommended",'
+          if old not in text:
+              raise SystemExit("Expected deprecated Biome recommended setting not found")
+          biome.write_text(text.replace(old, new))
+          PY
+
       - name: Install pnpm and Node.js
         uses: pnpm/setup@v2.1.0
         with:
