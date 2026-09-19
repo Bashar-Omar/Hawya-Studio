@@ -1,0 +1,68 @@
+name: Materialize Stage 01
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".stage01/**"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: stage-01-materialize-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  materialize:
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout Stage 01 branch
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Reassemble verified Stage 01 delta
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .stage01/chunk-*.b64 | tr -d '\n' | base64 --decode > /tmp/stage01-changes.zip
+          echo "f334f5bd45819fbea27402c7cd6845759e56aa70e93585b1c432977e149f0320  /tmp/stage01-changes.zip" | sha256sum --check
+          unzip -t /tmp/stage01-changes.zip
+          unzip -oq /tmp/stage01-changes.zip -d .
+          rm -rf .stage01
+
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@v2.1.0
+        with:
+          version: 12.4.2
+          runtime: node@24.21.0
+          cache: false
+          install: false
+
+      - name: Generate deterministic lockfile
+        run: pnpm install --lockfile-only
+
+      - name: Verify frozen install
+        run: pnpm install --frozen-lockfile
+
+      - name: Canonicalize source
+        run: pnpm format
+
+      - name: Stage 01 compile and unit gate
+        run: |
+          pnpm check
+          pnpm build
+
+      - name: Commit materialized Stage 01
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git status --short
+          git commit -m "feat: materialize Stage 01 app shell and RTL foundation"
+          git push origin HEAD:${{ github.head_ref }}
