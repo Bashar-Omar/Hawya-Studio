@@ -38,6 +38,42 @@ jobs:
           test -f src/infrastructure/archive/fflate-project-archive-codec.ts
           test -f src/infrastructure/db/stage02-roundtrip.test.ts
 
+      - name: Apply Stage 02 lint and type hygiene fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              file = Path(path)
+              text = file.read_text()
+              if old not in text:
+                  raise SystemExit(f"Expected Stage 02 patch target not found: {path}")
+              file.write_text(text.replace(old, new, 1))
+
+          replace_once(
+              "src/application/use-cases/delete-project.ts",
+              'import { GarbageCollectBinariesUseCase } from "@/application/use-cases/garbage-collect-binaries";',
+              'import type { GarbageCollectBinariesUseCase } from "@/application/use-cases/garbage-collect-binaries";',
+          )
+          replace_once(
+              "src/infrastructure/db/dexie-project-repository.ts",
+              'import { type GuidePage, type PageId } from "@/domain/guide/guide-document";',
+              'import type { GuidePage, PageId } from "@/domain/guide/guide-document";',
+          )
+          replace_once(
+              "src/infrastructure/archive/fflate-project-archive-codec.ts",
+              'import { projectSnapshotSchema } from "@/domain/project/hawya-project";',
+              'import { projectSnapshotSchema, type ProjectSnapshot } from "@/domain/project/hawya-project";',
+          )
+          replace_once(
+              "src/infrastructure/archive/fflate-project-archive-codec.ts",
+              "      let snapshot;",
+              "      let snapshot: ProjectSnapshot;",
+          )
+          PY
+
       - name: Set up pnpm and Node.js
         uses: pnpm/setup@v2.1.0
         with:
