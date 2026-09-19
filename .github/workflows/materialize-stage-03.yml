@@ -39,6 +39,73 @@ jobs:
           test -f src/infrastructure/db/stage03-project-lifecycle.test.ts
           test -f tests/e2e/stage03-project-library.spec.ts
 
+      - name: Apply Stage 03 accessibility and CSS hygiene fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              file = Path(path)
+              text = file.read_text()
+              if old not in text:
+                  raise SystemExit(f"Expected Stage 03 patch target not found: {path}")
+              file.write_text(text.replace(old, new, 1))
+
+          replace_once(
+              "src/features/new-project/NewProjectPage.tsx",
+              "            autoFocus\n",
+              "",
+          )
+          replace_once(
+              "src/features/new-project/NewProjectPage.tsx",
+              '        <div className="setup-summary" aria-label={t("wizard.summary")}> \n          {SETUP_STEPS.filter((step) => step !== "basic" && step !== "guide").map((step) => (\n            <div key={step} className="setup-summary__row"><span>{t(stepLabelKeys[step])}</span><strong>{draft.steps[step] === "skipped" ? t("wizard.status.missing") : t("wizard.status.ready")}</strong></div>\n          ))}\n        </div>',
+              '        <section className="setup-summary" aria-labelledby="setup-summary-title">\n          <h2 className="sr-only" id="setup-summary-title">{t("wizard.summary")}</h2>\n          {SETUP_STEPS.filter((step) => step !== "basic" && step !== "guide").map((step) => (\n            <div key={step} className="setup-summary__row"><span>{t(stepLabelKeys[step])}</span><strong>{draft.steps[step] === "skipped" ? t("wizard.status.missing") : t("wizard.status.ready")}</strong></div>\n          ))}\n        </section>',
+          )
+          replace_once(
+              "src/features/project-library/StudioHomePage.tsx",
+              '      <div className="project-card__actions" aria-label={t("studio.project.actions", { name: item.metadata.name })}>',
+              '      <fieldset className="project-card__actions">\n        <legend className="sr-only">{t("studio.project.actions", { name: item.metadata.name })}</legend>',
+          )
+          replace_once(
+              "src/features/project-library/StudioHomePage.tsx",
+              '      </div>\n\n      {error ? <p className="inline-error" role="alert">{error}</p> : null}',
+              '      </fieldset>\n\n      {error ? <p className="inline-error" role="alert">{error}</p> : null}',
+          )
+
+          css = Path("src/styles/globals.css")
+          text = css.read_text()
+          text = text.replace(
+              'html[dir="rtl"] .page-heading h1,\nhtml[dir="rtl"] .not-found-page h1 {',
+              ':where(html[dir="rtl"]) .page-heading h1,\n:where(html[dir="rtl"]) .not-found-page h1 {',
+              1,
+          )
+          icon_block = '''.wizard-progress__icon {
+            display: grid;
+            width: 28px;
+            height: 28px;
+            flex: 0 0 auto;
+            place-items: center;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            background: var(--surface-1);
+          }
+
+          '''
+          completed_marker = '.wizard-progress__item.is-completed .wizard-progress__icon {'
+          if icon_block not in text or completed_marker not in text:
+              raise SystemExit("Expected wizard progress CSS blocks not found")
+          text = text.replace(icon_block, "", 1)
+          text = text.replace(completed_marker, icon_block + completed_marker, 1)
+          text = text.replace(
+              '.project-card__actions {\n  border-block-start: 1px solid var(--border);\n  padding: 8px 10px;\n}',
+              '.project-card__actions {\n  min-inline-size: 0;\n  margin: 0;\n  border: 0;\n  border-block-start: 1px solid var(--border);\n  padding: 8px 10px;\n}',
+              1,
+          )
+          css.write_text(text)
+          PY
+
       - name: Set up pnpm and Node.js
         uses: pnpm/setup@v2.1.0
         with:
