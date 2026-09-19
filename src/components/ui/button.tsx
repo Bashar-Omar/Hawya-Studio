@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes } from "react";
+import type { ButtonHTMLAttributes, Ref } from "react";
 
 import { joinClassNames } from "@/shared/ui/utils";
 
@@ -6,6 +6,7 @@ export type ButtonVariant = "primary" | "secondary" | "ghost" | "danger";
 export type ButtonSize = "sm" | "md" | "lg" | "icon";
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  ref?: Ref<HTMLButtonElement>;
   variant?: ButtonVariant;
   size?: ButtonSize;
 }
@@ -26,6 +27,7 @@ const sizeClasses: Record<ButtonSize, string> = {
 
 export function Button({
   className,
+  ref,
   size = "md",
   type = "button",
   variant = "primary",
