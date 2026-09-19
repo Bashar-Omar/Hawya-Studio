@@ -83,7 +83,9 @@ test("command menu is keyboard reachable from the global shortcut and exits clea
   await expect(search).toBeHidden();
 });
 
-test("command trigger restores focus when the dialog is opened from that trigger", async ({ page }) => {
+test("command trigger restores focus when the dialog is opened from that trigger", async ({
+  page,
+}) => {
   await page.goto("/studio");
 
   const trigger = page.getByRole("button", { name: /Commands/ });
