@@ -7,7 +7,13 @@ import { appRoutes } from "@/app/routes/route-config";
 import { useRouter } from "@/app/routes/RouterProvider";
 import { useAnnounce } from "@/components/app/LiveRegion";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { ThemePreference } from "@/infrastructure/preferences/browser-preference-store";
 
@@ -132,40 +138,40 @@ export function CommandMenu() {
         className="command-dialog"
         initialFocus={inputRef}
       >
-          <DialogTitle className="sr-only">{t("command.menu.title")}</DialogTitle>
-          <DialogDescription className="sr-only">{t("command.menu.description")}</DialogDescription>
-          <div className="command-search">
-            <Search aria-hidden="true" size={18} strokeWidth={1.8} />
-            <input
-              ref={inputRef}
-              value={query}
-              onChange={(event) => setQuery(event.currentTarget.value)}
-              placeholder={t("command.search")}
-              aria-label={t("command.search")}
-            />
-          </div>
-          <fieldset className="command-list">
-            <legend className="sr-only">{t("command.menu.title")}</legend>
-            {commands.length ? (
-              commands.map((command) => (
-                <button
-                  className="command-item"
-                  key={command.id}
-                  onClick={() => executeCommand(command.id)}
-                  type="button"
-                >
-                  <span>{t(command.labelKey)}</span>
-                  <span className="command-item__meta">
-                    {command.shortcut ? <kbd>{command.shortcut}</kbd> : null}
-                    <CornerDownLeft aria-hidden="true" size={14} />
-                  </span>
-                </button>
-              ))
-            ) : (
-              <p className="command-empty">{t("command.empty")}</p>
-            )}
-          </fieldset>
-        </DialogContent>
+        <DialogTitle className="sr-only">{t("command.menu.title")}</DialogTitle>
+        <DialogDescription className="sr-only">{t("command.menu.description")}</DialogDescription>
+        <div className="command-search">
+          <Search aria-hidden="true" size={18} strokeWidth={1.8} />
+          <input
+            ref={inputRef}
+            value={query}
+            onChange={(event) => setQuery(event.currentTarget.value)}
+            placeholder={t("command.search")}
+            aria-label={t("command.search")}
+          />
+        </div>
+        <fieldset className="command-list">
+          <legend className="sr-only">{t("command.menu.title")}</legend>
+          {commands.length ? (
+            commands.map((command) => (
+              <button
+                className="command-item"
+                key={command.id}
+                onClick={() => executeCommand(command.id)}
+                type="button"
+              >
+                <span>{t(command.labelKey)}</span>
+                <span className="command-item__meta">
+                  {command.shortcut ? <kbd>{command.shortcut}</kbd> : null}
+                  <CornerDownLeft aria-hidden="true" size={14} />
+                </span>
+              </button>
+            ))
+          ) : (
+            <p className="command-empty">{t("command.empty")}</p>
+          )}
+        </fieldset>
+      </DialogContent>
     </Dialog>
   );
 }
