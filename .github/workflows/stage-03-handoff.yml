@@ -1,0 +1,54 @@
+name: Stage 03 Handoff
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/stage-03-handoff.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact merged Stage 03 snapshot
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Prepare clean full-project snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/Hawya-Studio
+          rsync -a --delete \
+            --exclude ".git/" \
+            --exclude ".github/workflows/stage-03-handoff.yml" \
+            --exclude "node_modules/" \
+            --exclude "dist/" \
+            --exclude "coverage/" \
+            --exclude "playwright-report/" \
+            --exclude "test-results/" \
+            --exclude ".vercel/" \
+            --exclude "*.tsbuildinfo" \
+            --exclude ".stage03/" \
+            ./ /tmp/Hawya-Studio/
+          test -f /tmp/Hawya-Studio/package.json
+          test -f /tmp/Hawya-Studio/pnpm-lock.yaml
+          test -f /tmp/Hawya-Studio/docs/stages/STAGE-03-COMPLETION.md
+          test -f /tmp/Hawya-Studio/src/features/new-project/NewProjectPage.tsx
+          test -f /tmp/Hawya-Studio/src/features/project-library/StudioHomePage.tsx
+          test -f /tmp/Hawya-Studio/tests/e2e/stage03-project-library.spec.ts
+          ! find /tmp/Hawya-Studio -path "*/.stage03/*" -print -quit | grep -q .
+
+      - name: Upload Stage 03 full-project snapshot
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: Hawya-Studio-Stage-03-Complete
+          path: /tmp/Hawya-Studio
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
