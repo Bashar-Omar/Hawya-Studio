@@ -51,6 +51,11 @@ jobs:
           if old not in text:
               raise SystemExit("Expected deprecated Biome recommended setting not found")
           biome.write_text(text.replace(old, new))
+
+          gitignore = Path(".gitignore")
+          ignore_text = gitignore.read_text()
+          if "*.tsbuildinfo" not in ignore_text:
+              gitignore.write_text(ignore_text + "\n# TypeScript build metadata\n*.tsbuildinfo\n")
           PY
 
       - name: Install pnpm and Node.js
@@ -81,6 +86,9 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # The GitHub Actions token intentionally cannot create/update workflow files.
+          # Final CI is installed through the authenticated GitHub connector after materialization.
+          rm -f .github/workflows/ci.yml
           git add -A
           git status --short
           git commit -m "chore: materialize Stage 00 foundation"
