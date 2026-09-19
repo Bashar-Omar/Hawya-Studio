@@ -128,6 +128,7 @@ export function CommandMenu() {
           setOpen(nextOpen);
           if (!nextOpen) {
             setQuery("");
+            window.requestAnimationFrame(() => triggerRef.current?.focus());
           }
         }}
       >
