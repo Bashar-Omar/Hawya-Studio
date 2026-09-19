@@ -103,6 +103,21 @@ jobs:
               '.project-card__actions {\n  min-inline-size: 0;\n  margin: 0;\n  border: 0;\n  border-block-start: 1px solid var(--border);\n  padding: 8px 10px;\n}',
               1,
           )
+          replace_once(
+              "src/app/commands/command-registry.ts",
+              'export type AppCommandId =\n  | "navigate.landing"',
+              'export type AppCommandId =\n  | "project.create"\n  | "navigate.landing"',
+          )
+          replace_once(
+              "src/features/new-project/NewProjectPage.tsx",
+              "function WizardProgress({ draft }: { draft?: ProjectSetupDraft }) {",
+              "function WizardProgress({ draft }: { draft: ProjectSetupDraft | undefined }) {",
+          )
+          replace_once(
+              "src/features/new-project/NewProjectPage.tsx",
+              "  draft?: ProjectSetupDraft;\n  title: string;",
+              "  draft: ProjectSetupDraft | undefined;\n  title: string;",
+          )
           css.write_text(text)
           PY
 
