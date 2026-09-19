@@ -35,6 +35,7 @@ export function Button({
 }: ButtonProps) {
   return (
     <button
+      ref={ref}
       className={joinClassNames(
         "button-base",
         variantClasses[variant],
