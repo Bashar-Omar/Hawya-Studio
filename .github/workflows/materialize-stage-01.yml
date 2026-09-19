@@ -48,143 +48,24 @@ jobs:
                   raise SystemExit(f"Expected Stage 01 patch target not found: {path}")
               file.write_text(text.replace(old, new, 1))
 
-          replace_once(
-              "src/components/app/CommandMenu.tsx",
-              '<div className="command-list" role="group" aria-label={t("command.menu.title")}>',
-              '<fieldset className="command-list">\n            <legend className="sr-only">{t("command.menu.title")}</legend>',
-          )
-          replace_once(
-              "src/components/app/CommandMenu.tsx",
-              '          </div>\n        </DialogContent>',
-              '          </fieldset>\n        </DialogContent>',
-          )
-
-          replace_once(
-              "src/components/app/ShortcutDialog.tsx",
-              '''              <span className="shortcut-keys" aria-label={shortcut.keys.join(" + ")}>
-                {shortcut.keys.map((key) => (
-                  <kbd key={key}>{key}</kbd>
-                ))}
-              </span>''',
-              '''              <span className="shortcut-keys">
-                <span className="sr-only">{shortcut.keys.join(" + ")}</span>
-                <span aria-hidden="true">
-                  {shortcut.keys.map((key) => (
-                    <kbd key={key}>{key}</kbd>
-                  ))}
-                </span>
-              </span>''',
-          )
-
-          replace_once(
-              "src/components/ui/segmented-control.tsx",
-              '''    <div className={joinClassNames("segmented-control", className)} role="group" aria-label={ariaLabel}>
-      {options.map((option) => (''',
-              '''    <fieldset className={joinClassNames("segmented-control", className)}>
-      <legend className="sr-only">{ariaLabel}</legend>
-      {options.map((option) => (''',
-          )
-          replace_once(
-              "src/components/ui/segmented-control.tsx",
-              '''      ))}
-    </div>
-  );''',
-              '''      ))}
-    </fieldset>
-  );''',
-          )
-
-          replace_once(
-              "src/features/landing/LandingPage.tsx",
-              '''          <div className="landing-system-card" aria-label={t("landing.system.aria")}>
-            <div className="system-card__label">''',
-              '''          <figure className="landing-system-card" aria-labelledby="landing-system-caption">
-            <figcaption className="sr-only" id="landing-system-caption">
-              {t("landing.system.aria")}
-            </figcaption>
-            <div className="system-card__label">''',
-          )
-          replace_once(
-              "src/features/landing/LandingPage.tsx",
-              '''            </div>
-          </div>
-        </section>''',
-              '''            </div>
-          </figure>
-        </section>''',
-          )
-
-          replace_once(
-              "src/features/project-library/StudioHomePage.tsx",
-              '''          <div className="empty-project-state__actions" aria-label={t("studio.projects.title")}>
-            <Button''',
-              '''          <fieldset className="empty-project-state__actions">
-            <legend className="sr-only">{t("studio.projects.title")}</legend>
-            <Button''',
-          )
-          replace_once(
-              "src/features/project-library/StudioHomePage.tsx",
-              '''            </Button>
-          </div>
-        </section>''',
-              '''            </Button>
-          </fieldset>
-        </section>''',
-          )
+          replace_once("src/components/app/CommandMenu.tsx", '<div className="command-list" role="group" aria-label={t("command.menu.title")}>', '<fieldset className="command-list">\n            <legend className="sr-only">{t("command.menu.title")}</legend>')
+          replace_once("src/components/app/CommandMenu.tsx", '          </div>\n        </DialogContent>', '          </fieldset>\n        </DialogContent>')
+          replace_once("src/components/app/ShortcutDialog.tsx", '              <span className="shortcut-keys" aria-label={shortcut.keys.join(" + ")}>\n                {shortcut.keys.map((key) => (\n                  <kbd key={key}>{key}</kbd>\n                ))}\n              </span>', '              <span className="shortcut-keys">\n                <span className="sr-only">{shortcut.keys.join(" + ")}</span>\n                <span aria-hidden="true">\n                  {shortcut.keys.map((key) => (\n                    <kbd key={key}>{key}</kbd>\n                  ))}\n                </span>\n              </span>')
+          replace_once("src/components/ui/segmented-control.tsx", '    <div className={joinClassNames("segmented-control", className)} role="group" aria-label={ariaLabel}>\n      {options.map((option) => (', '    <fieldset className={joinClassNames("segmented-control", className)}>\n      <legend className="sr-only">{ariaLabel}</legend>\n      {options.map((option) => (')
+          replace_once("src/components/ui/segmented-control.tsx", '      ))}\n    </div>\n  );', '      ))}\n    </fieldset>\n  );')
+          replace_once("src/features/landing/LandingPage.tsx", '          <div className="landing-system-card" aria-label={t("landing.system.aria")}>\n            <div className="system-card__label">', '          <figure className="landing-system-card" aria-labelledby="landing-system-caption">\n            <figcaption className="sr-only" id="landing-system-caption">\n              {t("landing.system.aria")}\n            </figcaption>\n            <div className="system-card__label">')
+          replace_once("src/features/landing/LandingPage.tsx", '            </div>\n          </div>\n        </section>', '            </div>\n          </figure>\n        </section>')
+          replace_once("src/features/project-library/StudioHomePage.tsx", '          <div className="empty-project-state__actions" aria-label={t("studio.projects.title")}>\n            <Button', '          <fieldset className="empty-project-state__actions">\n            <legend className="sr-only">{t("studio.projects.title")}</legend>\n            <Button')
+          replace_once("src/features/project-library/StudioHomePage.tsx", '            </Button>\n          </div>\n        </section>', '            </Button>\n          </fieldset>\n        </section>')
 
           css = Path("src/styles/globals.css")
           text = css.read_text()
-          text = text.replace(
-              'html[dir="rtl"] .landing-hero__copy h1 {',
-              ':where(html[dir="rtl"]) .landing-hero__copy h1 {',
-              1,
-          )
-          text = text.replace(
-              ".segmented-control {\n",
-              ".segmented-control {\n  min-inline-size: 0;\n  margin: 0;\n",
-              1,
-          )
-          text = text.replace(
-              ".command-list {\n",
-              ".command-list {\n  min-inline-size: 0;\n  margin: 0;\n  border: 0;\n",
-              1,
-          )
-          text = text.replace(
-              ".empty-project-state__actions {\n",
-              ".empty-project-state__actions {\n  min-inline-size: 0;\n  margin: 0;\n  border: 0;\n  padding: 0;\n",
-              1,
-          )
-          old_motion = '''@media (prefers-reduced-motion: reduce) {
-            *,
-            *::before,
-            *::after {
-              scroll-behavior: auto !important;
-              animation-duration: 0.01ms !important;
-              animation-iteration-count: 1 !important;
-              transition-duration: 0.01ms !important;
-            }
-          }'''
-          new_motion = '''@media (prefers-reduced-motion: reduce) {
-            html {
-              scroll-behavior: auto;
-            }
-
-            .skip-link,
-            .button-base,
-            .link-button,
-            .toolbar-action,
-            .navigation-rail__item,
-            .segmented-control__item,
-            .command-item,
-            .repository-link {
-              transition: none;
-            }
-
-            .dialog-backdrop,
-            .dialog-popup {
-              animation: none;
-            }
-          }'''
+          text = text.replace('html[dir="rtl"] .landing-hero__copy h1 {', ':where(html[dir="rtl"]) .landing-hero__copy h1 {', 1)
+          text = text.replace(".segmented-control {\n", ".segmented-control {\n  min-inline-size: 0;\n  margin: 0;\n", 1)
+          text = text.replace(".command-list {\n", ".command-list {\n  min-inline-size: 0;\n  margin: 0;\n  border: 0;\n", 1)
+          text = text.replace(".empty-project-state__actions {\n", ".empty-project-state__actions {\n  min-inline-size: 0;\n  margin: 0;\n  border: 0;\n  padding: 0;\n", 1)
+          old_motion = "@media (prefers-reduced-motion: reduce) {\n  *,\n  *::before,\n  *::after {\n    scroll-behavior: auto !important;\n    animation-duration: 0.01ms !important;\n    animation-iteration-count: 1 !important;\n    transition-duration: 0.01ms !important;\n  }\n}"
+          new_motion = "@media (prefers-reduced-motion: reduce) {\n  html {\n    scroll-behavior: auto;\n  }\n\n  .skip-link,\n  .button-base,\n  .link-button,\n  .toolbar-action,\n  .navigation-rail__item,\n  .segmented-control__item,\n  .command-item,\n  .repository-link {\n    transition: none;\n  }\n\n  .dialog-backdrop,\n  .dialog-popup {\n    animation: none;\n  }\n}"
           if old_motion not in text:
               raise SystemExit("Expected reduced-motion block not found")
           css.write_text(text.replace(old_motion, new_motion, 1))
