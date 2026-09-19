@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+coverage/
+
+# Vite / test output
+.vite/
+playwright-report/
+test-results/
+
+# Local Vercel state
+.vercel/
+
+# Logs
+*.log
+pnpm-debug.log*
+
+# Environment files (Hawya core requires none)
+.env
+.env.*
+!.env.example
+
+# Editors / OS
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# TypeScript build metadata
+*.tsbuildinfo

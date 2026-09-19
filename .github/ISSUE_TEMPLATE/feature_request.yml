@@ -1,0 +1,30 @@
+name: Feature request
+description: Propose a feature that fits Hawya Studio's product contract.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: job
+    attributes:
+      label: Designer job / problem
+      description: What repetitive or error-prone brand-design work should this solve?
+    validations:
+      required: true
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: Describe the outcome rather than prescribing an implementation.
+    validations:
+      required: true
+  - type: checkboxes
+    id: contracts
+    attributes:
+      label: Product contract
+      options:
+        - label: This can work without requiring a paid service from users or maintainers.
+          required: true
+        - label: This does not require accounts/cloud storage for the core workflow.
+          required: true
+        - label: I considered Arabic/RTL behavior where relevant.
+          required: true
