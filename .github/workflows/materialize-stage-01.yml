@@ -58,6 +58,15 @@ jobs:
           replace_once("src/features/project-library/StudioHomePage.tsx", '          <div className="empty-project-state__actions" aria-label={t("studio.projects.title")}>\n            <Button', '          <fieldset className="empty-project-state__actions">\n            <legend className="sr-only">{t("studio.projects.title")}</legend>\n            <Button')
           replace_once("src/features/project-library/StudioHomePage.tsx", '            </Button>\n          </div>\n        </section>', '            </Button>\n          </fieldset>\n        </section>')
 
+          replace_once("src/components/app/AppShell.tsx", 'railPanel && "app-shell--with-panel", inspector && "app-shell--with-inspector"', 'Boolean(railPanel) && "app-shell--with-panel", Boolean(inspector) && "app-shell--with-inspector"')
+          replace_once("src/components/ui/dialog.tsx", '}: DialogContentProps) {\n  return (', '}: DialogContentProps) {\n  const popupClassName: ComponentProps<typeof DialogPrimitive.Popup>["className"] =\n    typeof className === "function"\n      ? (state) => joinClassNames("dialog-popup", className(state))\n      : joinClassNames("dialog-popup", className);\n\n  return (')
+          replace_once("src/components/ui/dialog.tsx", '<DialogPrimitive.Popup className={joinClassNames("dialog-popup", className)} {...props}>', '<DialogPrimitive.Popup className={popupClassName} {...props}>')
+          replace_once("src/features/about/AboutPage.tsx", 'import { Github, LockKeyhole, Scale } from "lucide-react";', 'import { Code, LockKeyhole, Scale } from "lucide-react";')
+          replace_once("src/features/about/AboutPage.tsx", '<Github aria-hidden="true" size={18} strokeWidth={1.8} />', '<Code aria-hidden="true" size={18} strokeWidth={1.8} />')
+          replace_once("src/features/landing/LandingPage.tsx", 'import { ArrowUpRight, Github, Languages, LockKeyhole, PackageOpen } from "lucide-react";', 'import { ArrowUpRight, Code, Languages, LockKeyhole, PackageOpen } from "lucide-react";')
+          replace_once("src/features/landing/LandingPage.tsx", '<Github aria-hidden="true" size={17} strokeWidth={1.8} />', '<Code aria-hidden="true" size={17} strokeWidth={1.8} />')
+          replace_once("src/features/landing/LandingPage.tsx", '<Github aria-hidden="true" size={17} strokeWidth={1.8} />', '<Code aria-hidden="true" size={17} strokeWidth={1.8} />')
+
           css = Path("src/styles/globals.css")
           text = css.read_text()
           text = text.replace('html[dir="rtl"] .landing-hero__copy h1 {', ':where(html[dir="rtl"]) .landing-hero__copy h1 {', 1)
