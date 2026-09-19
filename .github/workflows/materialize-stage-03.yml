@@ -1,0 +1,70 @@
+name: Materialize Stage 03
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".stage03/**"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: stage-03-materialize-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  materialize:
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout Stage 03 branch
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Reassemble verified Stage 03 delta
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .stage03/chunk-*.b64 | tr -d '\n' | base64 --decode > /tmp/stage03-delta.tar.xz
+          echo "c9c86d0fdeda3afcb0b5abf96cb65c3a2c18902ba6e6a98a9d295cf931943eab  /tmp/stage03-delta.tar.xz" | sha256sum --check
+          xz --test /tmp/stage03-delta.tar.xz
+          tar -tJf /tmp/stage03-delta.tar.xz
+          tar -xJf /tmp/stage03-delta.tar.xz -C .
+          rm -rf .stage03
+          test -f src/features/project-library/StudioHomePage.tsx
+          test -f src/features/new-project/NewProjectPage.tsx
+          test -f src/infrastructure/db/stage03-project-lifecycle.test.ts
+          test -f tests/e2e/stage03-project-library.spec.ts
+
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@v2.1.0
+        with:
+          version: 12.4.2
+          runtime: node@24.21.0
+          cache: false
+          install: false
+
+      - name: Verify frozen install
+        run: pnpm install --frozen-lockfile
+
+      - name: Canonicalize source
+        run: pnpm format
+
+      - name: Stage 03 strict gate
+        run: |
+          pnpm check
+          pnpm build
+
+      - name: Commit materialized Stage 03
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git status --short
+          git commit -m "feat: materialize Stage 03 project library and setup wizard"
+          git push origin HEAD:${{ github.head_ref }}
