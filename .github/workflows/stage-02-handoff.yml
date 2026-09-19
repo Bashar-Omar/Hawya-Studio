@@ -1,0 +1,52 @@
+name: Stage 02 Handoff
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/stage-02-handoff.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact merged Stage 02 snapshot
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Prepare clean full-project snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/Hawya-Studio
+          rsync -a --delete \
+            --exclude ".git/" \
+            --exclude ".github/workflows/stage-02-handoff.yml" \
+            --exclude "node_modules/" \
+            --exclude "dist/" \
+            --exclude "coverage/" \
+            --exclude "playwright-report/" \
+            --exclude "test-results/" \
+            --exclude ".vercel/" \
+            --exclude "*.tsbuildinfo" \
+            ./ /tmp/Hawya-Studio/
+          test -f /tmp/Hawya-Studio/package.json
+          test -f /tmp/Hawya-Studio/pnpm-lock.yaml
+          test -f /tmp/Hawya-Studio/docs/stages/STAGE-02-COMPLETION.md
+          test -f /tmp/Hawya-Studio/src/domain/project/hawya-project.ts
+          test -f /tmp/Hawya-Studio/src/infrastructure/db/stage02-roundtrip.test.ts
+          test -f /tmp/Hawya-Studio/src/infrastructure/archive/fflate-project-archive-codec.ts
+
+      - name: Upload Stage 02 full-project snapshot
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: Hawya-Studio-Stage-02-Complete
+          path: /tmp/Hawya-Studio
+          include-hidden-files: true
+          if-no-files-found: error
+          retention-days: 7
