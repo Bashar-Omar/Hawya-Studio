@@ -91,7 +91,7 @@ test("project library supports rename, duplicate, backup export, delete and .haw
   await expect(page.getByRole("heading", { name: "Portable Identity Renamed" })).toBeVisible();
 
   const downloadPromise = page.waitForEvent("download");
-  await page.getByRole("button", { name: "Backup" }).click();
+  await page.getByRole("button", { name: "Backup", exact: true }).click();
   const download = await downloadPromise;
   expect(download.suggestedFilename()).toBe("Portable-Identity-Renamed.hawya");
   const downloadPath = await download.path();
