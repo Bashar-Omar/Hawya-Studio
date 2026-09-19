@@ -1,0 +1,40 @@
+name: Stage 00 Handoff Artifact
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/stage-00-handoff.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout handoff branch
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Create clean source snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/workflows/stage-00-handoff.yml
+          zip -qr /tmp/Hawya-Studio-Stage-00-Complete.zip . \
+            -x ".git/*" "node_modules/*" "dist/*" "coverage/*" \
+               "playwright-report/*" "test-results/*" ".vercel/*" \
+               "*.tsbuildinfo" ".env" ".env.*"
+          unzip -t /tmp/Hawya-Studio-Stage-00-Complete.zip
+          sha256sum /tmp/Hawya-Studio-Stage-00-Complete.zip
+
+      - name: Upload Stage 00 source ZIP
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: Hawya-Studio-Stage-00-Complete
+          path: /tmp/Hawya-Studio-Stage-00-Complete.zip
+          if-no-files-found: error
+          retention-days: 1
