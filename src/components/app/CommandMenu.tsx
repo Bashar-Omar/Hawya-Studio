@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { appCommandDefinitions, type AppCommandId } from "@/app/commands/command-registry";
 import { useUiPreferences } from "@/app/providers/ui-preferences";
-import { appRoutes } from "@/app/routes/route-config";
+import { appRoutes, newProjectPath } from "@/app/routes/route-config";
 import { useRouter } from "@/app/routes/RouterProvider";
 import { useAnnounce } from "@/components/app/LiveRegion";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,9 @@ export function CommandMenu() {
   const executeCommand = useCallback(
     (commandId: AppCommandId) => {
       switch (commandId) {
+        case "project.create":
+          navigate(newProjectPath());
+          break;
         case "navigate.landing":
           navigate(appRoutes.landing);
           break;

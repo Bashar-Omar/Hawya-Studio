@@ -4,6 +4,6 @@ export const appMetadata = {
   tagline: "Encode the brand once. Publish it everywhere.",
   architecture: "local-first",
   version: "0.1.0",
-  stage: "Stage 01 — App Shell, UI & RTL Foundation",
+  stage: "Stage 03 — Project Library & Setup Wizard",
   repositoryUrl: "https://github.com/Bashar-Omar/Hawya-Studio",
 } as const;

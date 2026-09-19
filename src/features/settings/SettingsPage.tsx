@@ -1,7 +1,10 @@
 import { Accessibility, FlaskConical, HardDrive, Keyboard, Languages, Palette } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
+import type { StorageDiagnostics } from "@/application/ports/storage-manager";
+import { useStudioRuntime } from "@/app/providers/studio-runtime";
 import { AppShell } from "@/components/app/AppShell";
+import { useAnnounce } from "@/components/app/LiveRegion";
 import { LanguageSwitcher } from "@/components/app/LanguageSwitcher";
 import { ShortcutDialog } from "@/components/app/ShortcutDialog";
 import { ThemeSwitcher } from "@/components/app/ThemeSwitcher";
@@ -10,7 +13,20 @@ import { useI18n } from "@/i18n/I18nProvider";
 
 export function SettingsPage() {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [storage, setStorage] = useState<StorageDiagnostics | null>(null);
+  const runtime = useStudioRuntime();
+  const announce = useAnnounce();
   const { t } = useI18n();
+
+  useEffect(() => {
+    void runtime.storageManager.diagnostics().then(setStorage);
+  }, [runtime]);
+
+  const requestPersistence = async () => {
+    const result = await runtime.storageManager.requestPersistence();
+    announce(result ? t("studio.storage.requestGranted") : t("studio.storage.requestNotGranted"));
+    setStorage(await runtime.storageManager.diagnostics());
+  };
 
   return (
     <AppShell title={t("settings.title")} subtitle={t("settings.subtitle")}>
@@ -59,14 +75,26 @@ export function SettingsPage() {
             </Button>
           </section>
 
-          <section className="settings-row settings-row--informational">
+          <section className="settings-row">
             <div className="settings-row__heading">
               <HardDrive aria-hidden="true" size={20} strokeWidth={1.7} />
               <div>
                 <h2>{t("settings.storage.title")}</h2>
                 <p>{t("settings.storage.body")}</p>
+                <p className="settings-row__detail">
+                  {storage?.persisted === true
+                    ? t("studio.storage.persisted")
+                    : storage?.supported
+                      ? t("studio.storage.bestEffort")
+                      : t("studio.storage.unavailable")}
+                </p>
               </div>
             </div>
+            {storage?.supported && storage.persisted !== true ? (
+              <Button variant="secondary" onClick={() => void requestPersistence()}>
+                {t("studio.storage.request")}
+              </Button>
+            ) : null}
           </section>
 
           <section className="settings-row settings-row--informational">

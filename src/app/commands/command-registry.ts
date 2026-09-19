@@ -1,6 +1,7 @@
 import type { MessageKey } from "@/i18n/types";
 
 export type AppCommandId =
+  | "project.create"
   | "navigate.landing"
   | "navigate.studio"
   | "navigate.settings"
@@ -16,6 +17,11 @@ export interface AppCommandDefinition {
 }
 
 export const appCommandDefinitions: readonly AppCommandDefinition[] = [
+  {
+    id: "project.create",
+    labelKey: "command.createProject",
+    searchTerms: ["new project", "create project", "brand", "مشروع جديد", "إنشاء مشروع"],
+  },
   {
     id: "navigate.studio",
     labelKey: "command.navigateStudio",
