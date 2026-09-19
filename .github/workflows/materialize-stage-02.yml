@@ -72,6 +72,36 @@ jobs:
               "      let snapshot;",
               "      let snapshot: ProjectSnapshot;",
           )
+          replace_once(
+              "src/application/use-cases/delete-project.test.ts",
+              'import { createSyntheticProjectFixture } from "../../../tests/fixtures/stage02/synthetic-project";',
+              'import { SYNTHETIC_IMPORT_ID, createSyntheticProjectFixture } from "../../../tests/fixtures/stage02/synthetic-project";',
+          )
+          replace_once(
+              "src/application/use-cases/delete-project.test.ts",
+              "        id: fixture.importProjectId,",
+              "        id: SYNTHETIC_IMPORT_ID,",
+          )
+          replace_once(
+              "src/application/use-cases/delete-project.test.ts",
+              "        projectId: fixture.importProjectId,",
+              "        projectId: SYNTHETIC_IMPORT_ID,",
+          )
+          replace_once(
+              "src/domain/project/errors.ts",
+              "  readonly cause?: unknown;",
+              "  override readonly cause?: unknown;",
+          )
+          replace_once(
+              "src/domain/project/errors.ts",
+              "  readonly cause?: unknown;",
+              "  override readonly cause?: unknown;",
+          )
+          replace_once(
+              "src/infrastructure/runtime/web-crypto-sha256-hasher.ts",
+              "    const input = bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength);",
+              "    const input = Uint8Array.from(bytes);",
+          )
           PY
 
       - name: Set up pnpm and Node.js
