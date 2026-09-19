@@ -17,6 +17,7 @@ export function CommandMenu() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const { navigate } = useRouter();
   const { locale, setLocale, setTheme, theme } = useUiPreferences();
   const { t } = useI18n();
@@ -109,7 +110,13 @@ export function CommandMenu() {
 
   return (
     <>
-      <Button className="command-trigger" variant="ghost" size="sm" onClick={() => setOpen(true)}>
+      <Button
+        ref={triggerRef}
+        className="command-trigger"
+        variant="ghost"
+        size="sm"
+        onClick={() => setOpen(true)}
+      >
         <Command aria-hidden="true" size={16} strokeWidth={1.8} />
         <span>{t("command.open")}</span>
         <kbd className="command-trigger__shortcut">⌘K</kbd>
@@ -124,13 +131,17 @@ export function CommandMenu() {
           }
         }}
       >
-        <DialogContent closeLabel={t("dialog.close")} className="command-dialog">
+        <DialogContent
+          closeLabel={t("dialog.close")}
+          className="command-dialog"
+          initialFocus={inputRef}
+          finalFocus={triggerRef}
+        >
           <DialogTitle className="sr-only">{t("command.menu.title")}</DialogTitle>
           <DialogDescription className="sr-only">{t("command.menu.description")}</DialogDescription>
           <div className="command-search">
             <Search aria-hidden="true" size={18} strokeWidth={1.8} />
             <input
-              autoFocus
               ref={inputRef}
               value={query}
               onChange={(event) => setQuery(event.currentTarget.value)}
