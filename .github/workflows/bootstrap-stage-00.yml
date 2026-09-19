@@ -1,0 +1,60 @@
+name: Bootstrap Stage 00
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - ".bootstrap/**"
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    if: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout Stage 00 branch
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Reassemble verified Stage 00 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .bootstrap/part-*.b64 | tr -d '\n' | base64 --decode > /tmp/hawya-stage00.zip
+          echo "39b82c36bf10650cbe3b9243b1ffc4aa7625f860ad01e21d88231ee85aa0ceed  /tmp/hawya-stage00.zip" | sha256sum --check
+          unzip -oq /tmp/hawya-stage00.zip -d .
+          rm -rf .bootstrap
+
+      - name: Install pnpm and Node.js
+        uses: pnpm/setup@v2.1.0
+        with:
+          version: 12.4.2
+          runtime: node@24.21.0
+          cache: false
+          install: false
+
+      - name: Generate deterministic lockfile
+        run: pnpm install --lockfile-only
+
+      - name: Verify frozen install
+        run: pnpm install --frozen-lockfile
+
+      - name: Run Stage 00 quality gate
+        run: |
+          pnpm check
+          pnpm build
+
+      - name: Commit materialized Stage 00 foundation
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git status --short
+          git commit -m "chore: materialize Stage 00 foundation"
+          git push origin HEAD:${{ github.head_ref }}
