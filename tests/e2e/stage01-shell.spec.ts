@@ -66,7 +66,9 @@ test("theme choices affect chrome and survive a reload as non-critical UI prefer
   await expect(page.locator("html")).toHaveAttribute("data-theme", "light");
 });
 
-test("command menu is keyboard reachable and Escape restores focus", async ({ page }) => {
+test("command menu is keyboard reachable from the global shortcut and exits cleanly", async ({
+  page,
+}) => {
   await page.goto("/studio");
 
   await page.evaluate(() => {
@@ -79,7 +81,21 @@ test("command menu is keyboard reachable and Escape restores focus", async ({ pa
 
   await page.keyboard.press("Escape");
   await expect(search).toBeHidden();
-  await expect(page.getByRole("button", { name: /Commands/ })).toBeFocused();
+});
+
+test("command trigger restores focus when the dialog is opened from that trigger", async ({ page }) => {
+  await page.goto("/studio");
+
+  const trigger = page.getByRole("button", { name: /Commands/ });
+  await trigger.focus();
+  await page.keyboard.press("Enter");
+
+  const search = page.getByRole("textbox", { name: "Search commands…" });
+  await expect(search).toBeFocused();
+
+  await page.keyboard.press("Escape");
+  await expect(search).toBeHidden();
+  await expect(trigger).toBeFocused();
 });
 
 test("shortcut dialog traps interaction and can be exited from the keyboard", async ({ page }) => {
