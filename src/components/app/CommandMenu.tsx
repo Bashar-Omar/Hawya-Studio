@@ -7,7 +7,7 @@ import { appRoutes } from "@/app/routes/route-config";
 import { useRouter } from "@/app/routes/RouterProvider";
 import { useAnnounce } from "@/components/app/LiveRegion";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useI18n } from "@/i18n/I18nProvider";
 import type { ThemePreference } from "@/infrastructure/preferences/browser-preference-store";
 
@@ -17,7 +17,6 @@ export function CommandMenu() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
   const { navigate } = useRouter();
   const { locale, setLocale, setTheme, theme } = useUiPreferences();
   const { t } = useI18n();
@@ -109,35 +108,30 @@ export function CommandMenu() {
   }, [locale, query, t]);
 
   return (
-    <>
-      <Button
-        ref={triggerRef}
-        className="command-trigger"
-        variant="ghost"
-        size="sm"
-        onClick={() => setOpen(true)}
-      >
-        <Command aria-hidden="true" size={16} strokeWidth={1.8} />
-        <span>{t("command.open")}</span>
-        <kbd className="command-trigger__shortcut">⌘K</kbd>
-      </Button>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (!nextOpen) {
+          setQuery("");
+        }
+      }}
+    >
+      <DialogTrigger
+        render={
+          <Button className="command-trigger" variant="ghost" size="sm">
+            <Command aria-hidden="true" size={16} strokeWidth={1.8} />
+            <span>{t("command.open")}</span>
+            <kbd className="command-trigger__shortcut">⌘K</kbd>
+          </Button>
+        }
+      />
 
-      <Dialog
-        open={open}
-        onOpenChange={(nextOpen) => {
-          setOpen(nextOpen);
-          if (!nextOpen) {
-            setQuery("");
-            window.requestAnimationFrame(() => triggerRef.current?.focus());
-          }
-        }}
+      <DialogContent
+        closeLabel={t("dialog.close")}
+        className="command-dialog"
+        initialFocus={inputRef}
       >
-        <DialogContent
-          closeLabel={t("dialog.close")}
-          className="command-dialog"
-          initialFocus={inputRef}
-          finalFocus={triggerRef}
-        >
           <DialogTitle className="sr-only">{t("command.menu.title")}</DialogTitle>
           <DialogDescription className="sr-only">{t("command.menu.description")}</DialogDescription>
           <div className="command-search">
@@ -172,7 +166,6 @@ export function CommandMenu() {
             )}
           </fieldset>
         </DialogContent>
-      </Dialog>
-    </>
+    </Dialog>
   );
 }
