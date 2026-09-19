@@ -43,6 +43,9 @@ jobs:
       - name: Verify frozen install
         run: pnpm install --frozen-lockfile
 
+      - name: Canonicalize generated foundation
+        run: pnpm format
+
       - name: Run Stage 00 quality gate
         run: |
           pnpm check
