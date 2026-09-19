@@ -1,9 +1,8 @@
-import type { ProjectRepository } from "@/application/ports/project-repository";
+import type { ProjectListItem, ProjectRepository } from "@/application/ports/project-repository";
 import type { GuidePage, PageId } from "@/domain/guide/guide-document";
 import { StorageError } from "@/domain/project/errors";
 import {
   type ProjectId,
-  type ProjectMetadata,
   type ProjectSnapshot,
   projectSnapshotSchema,
 } from "@/domain/project/hawya-project";
@@ -147,10 +146,10 @@ export class DexieProjectRepository implements ProjectRepository {
     }
   }
 
-  async listMetadata(): Promise<ProjectMetadata[]> {
+  async listMetadata(): Promise<ProjectListItem[]> {
     try {
       const rows = await this.db.projects.orderBy("updatedAt").reverse().toArray();
-      return rows.map((row) => row.metadata);
+      return rows.map((row) => ({ id: row.id, metadata: row.metadata }));
     } catch (error) {
       throw asStorageError("Failed to list project metadata", error);
     }

@@ -2,6 +2,7 @@ import { DirectionProvider } from "@base-ui/react/direction-provider";
 import type { ReactNode } from "react";
 
 import { UiPreferencesProvider, useUiPreferences } from "@/app/providers/ui-preferences";
+import { StudioRuntimeProvider } from "@/app/providers/studio-runtime";
 import { LiveRegionProvider } from "@/components/app/LiveRegion";
 import { I18nProvider } from "@/i18n/I18nProvider";
 
@@ -11,7 +12,9 @@ function LocaleProviders({ children }: { children: ReactNode }) {
   return (
     <DirectionProvider direction={direction}>
       <I18nProvider locale={locale}>
-        <LiveRegionProvider>{children}</LiveRegionProvider>
+        <StudioRuntimeProvider>
+          <LiveRegionProvider>{children}</LiveRegionProvider>
+        </StudioRuntimeProvider>
       </I18nProvider>
     </DirectionProvider>
   );
