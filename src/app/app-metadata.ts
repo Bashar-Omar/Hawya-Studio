@@ -3,5 +3,7 @@ export const appMetadata = {
   arabicName: "ستديو هوية",
   tagline: "Encode the brand once. Publish it everywhere.",
   architecture: "local-first",
-  stage: "Stage 00 — Repository & Toolchain",
+  version: "0.1.0",
+  stage: "Stage 01 — App Shell, UI & RTL Foundation",
+  repositoryUrl: "https://github.com/Bashar-Omar/Hawya-Studio",
 } as const;

@@ -1,6 +1,6 @@
 {
   "name": "hawya-studio",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Free, open-source, local-first brand system production studio.",
   "type": "module",
@@ -25,6 +25,10 @@
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test"
   },
   "dependencies": {
+    "@base-ui/react": "1.8.0",
+    "@fontsource-variable/inter": "5.3.0",
+    "@fontsource-variable/noto-sans-arabic": "5.3.0",
+    "lucide-react": "1.47.0",
     "react": "19.3.0",
     "react-dom": "19.3.0"
   },
