@@ -10,6 +10,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
+    setupFiles: ["./src/test/setup-indexeddb.ts"],
     include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
     passWithNoTests: false,
   },
