@@ -161,7 +161,8 @@ test("Arabic editor keeps physical canvas coordinates across UI RTL and persists
   const inline = textLayer.locator("textarea.editor-inline-text");
   await expect(inline).toHaveAttribute("dir", "rtl");
   await inline.fill("هوية عربية جديدة");
-  await inline.press("Tab");
+  await expect(inline).toBeFocused();
+  await page.keyboard.press("Tab");
   await expect(textLayer).toContainText("هوية عربية جديدة");
 
   const beforeMove = await documentLeft(textLayer);
