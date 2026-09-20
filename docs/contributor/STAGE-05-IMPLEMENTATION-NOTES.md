@@ -52,3 +52,6 @@ Stage 06 will wrap these mutations in the editor command/history system; Stage 0
 ## Compatibility
 
 `ProjectSettings.guideLocaleMode` is an optional additive field. Older Stage 04 projects infer bilingual mode when both content locales are enabled, otherwise they use the default content locale. Because the field is optional and the existing guide shape remains valid, Project Schema v1 and the IndexedDB database version remain unchanged.
+## Verification environment
+
+Stage 05 is verified on the repository's pinned GitHub Actions toolchain (Node 24.21.0 and pnpm 12.4.2). Local runs on unsupported Node versions are not treated as release evidence; the PR quality gate remains authoritative for formatting, linting, strict TypeScript, unit/integration tests, production build, and Chromium browser coverage.
