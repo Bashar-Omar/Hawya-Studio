@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { GuideStudioView } from "@/application/queries/guide-studio-query";
 import { useStudioRuntime } from "@/app/providers/studio-runtime";
-import { appRoutes, brandSystemPath, newProjectPath } from "@/app/routes/route-config";
+import { appRoutes, brandSystemPath, editorPath, newProjectPath } from "@/app/routes/route-config";
 import { useRouter } from "@/app/routes/RouterProvider";
 import { AppShell } from "@/components/app/AppShell";
 import { Button } from "@/components/ui/button";
@@ -279,6 +279,13 @@ export default function GuideStudioPage({ projectId }: { projectId: ProjectId })
                 <h2 id="guide-preview-title">{localizedValue(selected.page.name, locale)}</h2>
               </div>
               <div className="guide-preview-toolbar__actions">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => navigate(editorPath(projectId, selected.page.id))}
+                >
+                  {t("guide.editPage")}
+                </Button>
                 <label className="field-stack guide-template-select">
                   <span className="field-label">{t("guide.template")}</span>
                   <select
