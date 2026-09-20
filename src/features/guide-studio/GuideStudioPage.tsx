@@ -245,13 +245,14 @@ export default function GuideStudioPage({ projectId }: { projectId: ProjectId })
                       <input
                         type="checkbox"
                         checked={customPages.includes(entry.type)}
-                        onChange={(event) =>
+                        onChange={(event) => {
+                          const checked = event.currentTarget.checked;
                           setCustomPages((current) =>
-                            event.currentTarget.checked
+                            checked
                               ? [...current, entry.type]
                               : current.filter((item) => item !== entry.type),
-                          )
-                        }
+                          );
+                        }}
                       />
                       <span>
                         <strong>{localizedValue(entry.title, locale)}</strong>
