@@ -91,14 +91,19 @@ function InlineTextEditor({
   onCommit: (value: string) => void;
 }) {
   const [draft, setDraft] = useState(value);
+  const inputRef = useRef<HTMLTextAreaElement | null>(null);
   useEffect(() => setDraft(value), [value]);
+  useEffect(() => {
+    inputRef.current?.focus();
+    inputRef.current?.select();
+  }, []);
   return (
     <textarea
+      ref={inputRef}
       className="editor-inline-text"
       value={draft}
       dir={layer.direction}
       lang={layer.language}
-      autoFocus
       onChange={(event) => setDraft(event.currentTarget.value)}
       onBlur={() => onCommit(draft)}
       onKeyDown={(event) => {
@@ -148,7 +153,7 @@ export function EditorCanvas(props: EditorCanvasProps) {
     setMoveableTarget(
       props.primaryId ? (layerElements.current.get(props.primaryId) ?? null) : null,
     );
-  }, [props.primaryId, props.scene.layers]);
+  }, [props.primaryId]);
 
   const effectiveTransform = (layer: RenderedSceneLayer): LayerTransform =>
     props.transient.get(layer.id) ?? layer.transform;
@@ -444,10 +449,10 @@ export function EditorCanvas(props: EditorCanvasProps) {
             }}
           />
         ) : null}
-        {props.snapGuides.map((guide, index) => (
+        {props.snapGuides.map((guide) => (
           <div
             className={`editor-snap-guide editor-snap-guide--${guide.axis}`}
-            key={`${guide.axis}-${guide.value}-${index}`}
+            key={`${guide.axis}-${guide.value}-${guide.source}`}
             style={
               guide.axis === "x"
                 ? { left: guide.value * unitScale }
