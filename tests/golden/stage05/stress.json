@@ -1,0 +1,8 @@
+{
+  "localeMode": "bilingual",
+  "pageType": "cover",
+  "title": {
+    "en": "A deliberately long English brand-guideline title used to stress wrapping, spacing, and directional isolation across declarative guide templates without truncating or mutating the semantic source content during rendering or template switching.",
+    "ar": "عنوان عربي طويل ومقصود لاختبار التفاف النص والمسافات والعزل الاتجاهي داخل قوالب دليل الهوية التصريحية، مع الحفاظ على المحتوى الدلالي الأصلي دون اقتطاع أو تغيير عند العرض أو عند التبديل بين القوالب المختلفة."
+  }
+}
