@@ -16,6 +16,10 @@ function round(value: number, digits = 4): number {
   return Math.round(value * scale) / scale;
 }
 
+function finiteChannel(value: number | null | undefined, fallback = 0): number {
+  return typeof value === "number" && Number.isFinite(value) ? value : fallback;
+}
+
 function genericCmyk(rgb: { r: number; g: number; b: number }) {
   const r = rgb.r / 255;
   const g = rgb.g / 255;
@@ -39,9 +43,18 @@ export class ColorJsColorEngine implements ColorEngine {
     }
     const Color = await getColorConstructor();
     const source = new Color(hex);
-    const [r = 0, g = 0, b = 0] = source.to("srgb").coords;
-    const [h = 0, s = 0, l = 0] = source.to("hsl").coords;
-    const [okL = 0, c = 0, okH = 0] = source.to("oklch").coords;
+    const [rawR, rawG, rawB] = source.to("srgb").coords;
+    const [rawH, rawS, rawL] = source.to("hsl").coords;
+    const [rawOkL, rawC, rawOkH] = source.to("oklch").coords;
+    const r = finiteChannel(rawR);
+    const g = finiteChannel(rawG);
+    const b = finiteChannel(rawB);
+    const h = finiteChannel(rawH);
+    const s = finiteChannel(rawS);
+    const l = finiteChannel(rawL);
+    const okL = finiteChannel(rawOkL);
+    const c = finiteChannel(rawC);
+    const okH = finiteChannel(rawOkH);
     const rgb = {
       r: Math.round(r * 255),
       g: Math.round(g * 255),
