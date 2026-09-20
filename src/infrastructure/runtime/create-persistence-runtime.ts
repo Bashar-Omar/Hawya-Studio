@@ -1,4 +1,5 @@
 import { BrandSystemQuery } from "@/application/queries/brand-system-query";
+import { GuideStudioQuery } from "@/application/queries/guide-studio-query";
 import { AssetIngestor } from "@/application/services/asset-ingestor";
 import { DeleteAssetUseCase } from "@/application/use-cases/delete-asset";
 import { ImportAssetUseCase } from "@/application/use-cases/import-asset";
@@ -17,12 +18,15 @@ import { DuplicateProjectUseCase } from "@/application/use-cases/duplicate-proje
 import { ExportProjectArchiveUseCase } from "@/application/use-cases/export-project-archive";
 import { ExportProjectBackupUseCase } from "@/application/use-cases/export-project-backup";
 import { GarbageCollectBinariesUseCase } from "@/application/use-cases/garbage-collect-binaries";
+import { GenerateGuideUseCase } from "@/application/use-cases/generate-guide";
 import { ImportProjectArchiveUseCase } from "@/application/use-cases/import-project-archive";
 import { OpenProjectUseCase } from "@/application/use-cases/open-project";
 import { ProjectSetupWizardUseCase } from "@/application/use-cases/project-setup-wizard";
 import { ProjectSnapshotService } from "@/application/use-cases/project-snapshots";
 import { PutBinaryContentUseCase } from "@/application/use-cases/put-binary-content";
 import { RenameProjectUseCase } from "@/application/use-cases/rename-project";
+import { ResetGuidePageTemplateUseCase } from "@/application/use-cases/reset-guide-page-template";
+import { SwitchGuidePageTemplateUseCase } from "@/application/use-cases/switch-guide-page-template";
 import { SaveProjectUseCase } from "@/application/use-cases/save-project";
 import { FflateProjectArchiveCodec } from "@/infrastructure/archive/fflate-project-archive-codec";
 import { IndexedDbBinaryStore } from "@/infrastructure/binary-store/indexeddb-binary-store";
@@ -106,6 +110,10 @@ export function createPersistenceRuntime(databaseName?: string) {
     loadProjectFonts: new LoadProjectFontsUseCase(projects, binaries, fontRegistry),
     textStyles: new ManageTextStylesUseCase(projects, clock, ids),
     brandSystem: new BrandSystemQuery(projects),
+    guideStudio: new GuideStudioQuery(projects),
+    generateGuide: new GenerateGuideUseCase(projects, clock, ids),
+    switchGuidePageTemplate: new SwitchGuidePageTemplateUseCase(projects, clock),
+    resetGuidePageTemplate: new ResetGuidePageTemplateUseCase(projects, clock),
     fontRegistry,
     colorEngine,
   };
