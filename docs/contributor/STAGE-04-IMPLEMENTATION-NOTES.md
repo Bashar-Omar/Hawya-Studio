@@ -37,6 +37,10 @@ SVG handling combines DOMPurify's SVG profile with Hawya's own deny rules for ex
 - CMYK conversion is explicitly labelled suggested/generic;
 - user-verified CMYK stays separate and is marked for review when the canonical screen color changes.
 
+## Verification discipline
+
+The Stage 04 source delta was reconstructed on GitHub only after its SHA-256 matched the locally produced archive. The temporary transport files and materializer workflow are removed from the feature branch before quality/browser gates run, so neither becomes part of the product history after the final squash merge.
+
 ## Stage boundary
 
 Stage 04 does not generate guide pages, implement the full editor, or pretend suggested print conversions are press-certified. Those remain later-stage responsibilities.
