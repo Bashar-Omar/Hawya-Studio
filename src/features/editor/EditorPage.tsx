@@ -72,7 +72,7 @@ export default function EditorPage({
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const fallbackClipboard = useRef<EditorClipboardPayload | undefined>();
+  const fallbackClipboard = useRef<EditorClipboardPayload | undefined>(undefined);
 
   const sync = useCallback((active: EditorSession) => {
     setSnapshot(active.projectSnapshot());
@@ -557,7 +557,7 @@ export default function EditorPage({
               viewport={viewport}
               tool={tool}
               selection={selection}
-              primaryId={primaryId}
+              {...(primaryId ? { primaryId } : {})}
               transient={transient}
               assetUrls={assetUrls}
               spaceDown={spaceDown}
@@ -585,14 +585,14 @@ export default function EditorPage({
           </main>
 
           <EditorInspector
-            layer={
-              primaryLayer
-                ? {
+            {...(primaryLayer
+              ? {
+                  layer: {
                     ...primaryLayer,
                     transform: transient.get(primaryLayer.id) ?? primaryLayer.transform,
-                  }
-                : undefined
-            }
+                  },
+                }
+              : {})}
             onTransform={(transform) => {
               if (!primaryLayer || primaryLayer.locked) return;
               void run((active) =>
