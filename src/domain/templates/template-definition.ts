@@ -20,7 +20,7 @@ export const templateSlotSchema = z.object({
   id: z.string().min(1),
   role: z.string().min(1),
   contentKinds: z
-    .array(z.enum(["text", "logo", "colors", "typography", "assets", "rule", "summary"]))
+    .array(z.enum(["text", "logo", "colors", "typography", "assets", "rule", "summary", "checklist"]))
     .min(1),
   required: z.boolean(),
   maxItems: z.number().int().positive().optional(),
