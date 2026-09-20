@@ -160,8 +160,8 @@ function SlotContent({
     case "checklist":
       return (
         <ul className="guide-checklist">
-          {value.items.map((item, index) => (
-            <li key={`${localizedValue(item, "en")}-${index}`}>
+          {value.items.map((item) => (
+            <li key={`${item.en ?? ""}::${item.ar ?? ""}`}>
               <LocalizedText value={item} localeMode={localeMode} />
             </li>
           ))}
