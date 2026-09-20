@@ -45,7 +45,7 @@ The Guide Studio is a declarative preview surface only. Freeform editor geometry
 
 ## Switching and reset
 
-Changing a page template validates semantic page type and locale compatibility, rebinds target slots, and preserves `PageContent`, extras, and local overrides. Reset Layout reapplies the current declarative slot binding after confirmation and also preserves semantic content/extras.
+Changing a page template validates semantic page type and locale compatibility, rebinds target slots, and preserves `PageContent`, extras, and local overrides. Reset Layout reapplies the current declarative slot binding and template canvas geometry after confirmation, preserves semantic content/extras, and clears layout-local overrides.
 
 Stage 06 will wrap these mutations in the editor command/history system; Stage 05 does not pre-implement that system.
 
