@@ -3,6 +3,8 @@ import { expect, test, type Page } from "@playwright/test";
 async function createBilingualProjectWithColor(page: Page): Promise<void> {
   await page.goto("/studio");
   await page.getByRole("button", { name: "Create project" }).first().click();
+  await expect(page).toHaveURL(/\/studio\/new$/);
+  await expect(page.getByLabel("Project name")).toBeVisible();
   await page.getByLabel("Project name").fill("Stage Five Identity");
   await page.locator("label.checkbox-row").getByRole("checkbox").check();
   await page.getByRole("button", { name: "Continue" }).click();
