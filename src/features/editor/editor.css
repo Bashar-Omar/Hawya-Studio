@@ -403,7 +403,17 @@
   padding: 20px;
 }
 
+.editor-dialog-backdrop__dismiss {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: transparent;
+  cursor: default;
+}
+
 .editor-shortcuts-dialog {
+  position: relative;
+  z-index: 1;
   width: min(560px, 100%);
   max-height: min(680px, 90vh);
   overflow: auto;
