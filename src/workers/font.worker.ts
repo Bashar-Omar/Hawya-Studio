@@ -9,6 +9,10 @@ import type {
 
 const ARABIC_SAMPLE = "ابتثجحخدذرزسشصضطظعغفقكلمنهوي٠١٢٣٤٥٦٧٨٩،؛؟";
 
+type VariableAxis = { tag: string; min: number; default: number; max: number };
+type FontkitResult = ReturnType<typeof fontkit.create>;
+type FontkitFont = Exclude<FontkitResult, { fonts: unknown }>;
+
 function inferStyle(subfamilyName: string | undefined): "normal" | "italic" | "oblique" {
   const normalized = subfamilyName?.toLowerCase() ?? "";
   if (normalized.includes("oblique")) return "oblique";
@@ -18,9 +22,9 @@ function inferStyle(subfamilyName: string | undefined): "normal" | "italic" | "o
 
 function inferWeight(
   subfamilyName: string | undefined,
-  variationAxes: Record<string, { default: number }> | undefined,
-): number | undefined {
-  const variableWeight = variationAxes?.wght?.default;
+  variationAxes: readonly VariableAxis[],
+): number {
+  const variableWeight = variationAxes.find((axis) => axis.tag === "wght")?.default;
   if (typeof variableWeight === "number") return Math.round(variableWeight);
   const value = subfamilyName?.toLowerCase() ?? "";
   if (value.includes("thin")) return 100;
@@ -34,17 +38,42 @@ function inferWeight(
   return 400;
 }
 
+function selectFont(parsed: FontkitResult): FontkitFont {
+  if ("fonts" in parsed) {
+    const first = parsed.fonts[0];
+    if (!first) {
+      throw new Error("Font collection contains no fonts");
+    }
+    return first as FontkitFont;
+  }
+  return parsed;
+}
+
+function finiteNumber(value: unknown): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function parseVariableAxes(value: unknown): VariableAxis[] {
+  if (!value || typeof value !== "object") {
+    return [];
+  }
+  const axes: VariableAxis[] = [];
+  for (const [tag, candidate] of Object.entries(value)) {
+    if (!candidate || typeof candidate !== "object") continue;
+    const record = candidate as Record<string, unknown>;
+    const min = finiteNumber(record.min);
+    const defaultValue = finiteNumber(record.default);
+    const max = finiteNumber(record.max);
+    if (min === undefined || defaultValue === undefined || max === undefined) continue;
+    axes.push({ tag, min, default: defaultValue, max });
+  }
+  return axes;
+}
+
 function analyze(bytes: Uint8Array): FontAnalysisResult {
-  const font = fontkit.create(bytes);
+  const font = selectFont(fontkit.create(bytes));
   const raw = font as unknown as Record<string, unknown>;
-  const variationAxes = font.variationAxes
-    ? Object.entries(font.variationAxes).map(([tag, axis]) => ({
-        tag,
-        min: axis.min,
-        default: axis.default,
-        max: axis.max,
-      }))
-    : undefined;
+  const variableAxes = parseVariableAxes(raw.variationAxes);
   const sampleCodePoints = [
     ...new Set(Array.from(ARABIC_SAMPLE, (character) => character.codePointAt(0) ?? 0)),
   ];
@@ -52,13 +81,16 @@ function analyze(bytes: Uint8Array): FontAnalysisResult {
     (codePoint) => !font.hasGlyphForCodePoint(codePoint),
   );
   const supported = sampleCodePoints.length - missingCodePoints.length;
+  const familyName = font.familyName || font.fullName || "Uploaded font";
+  const subfamilyName = font.subfamilyName ?? undefined;
+  const postscriptName = font.postscriptName ?? undefined;
   return {
-    familyName: font.familyName || font.fullName || "Uploaded font",
-    ...(font.subfamilyName ? { subfamilyName: font.subfamilyName } : {}),
-    ...(font.postscriptName ? { postscriptName: font.postscriptName } : {}),
-    weight: inferWeight(font.subfamilyName ?? undefined, font.variationAxes ?? undefined),
-    style: inferStyle(font.subfamilyName ?? undefined),
-    ...(variationAxes && variationAxes.length > 0 ? { variableAxes } : {}),
+    familyName,
+    ...(subfamilyName ? { subfamilyName } : {}),
+    ...(postscriptName ? { postscriptName } : {}),
+    weight: inferWeight(subfamilyName, variableAxes),
+    style: inferStyle(subfamilyName),
+    ...(variableAxes.length > 0 ? { variableAxes } : {}),
     coverage: {
       arabic: {
         supported,
