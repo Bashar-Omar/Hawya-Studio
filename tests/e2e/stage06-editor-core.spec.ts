@@ -147,8 +147,15 @@ test("Arabic editor keeps physical canvas coordinates across UI RTL and persists
   await generateMinimalGuideAndOpenEditor(page);
 
   await page.getByRole("button", { name: "Add text (T)" }).click();
-  const textLayer = page.locator(".editor-scene-layer--text").filter({ hasText: "نص عربي" }).last();
-  await expect(textLayer).toBeVisible();
+  const createdTextLayer = page
+    .locator(".editor-scene-layer--text")
+    .filter({ hasText: "نص عربي" })
+    .last();
+  await expect(createdTextLayer).toBeVisible();
+  const textLayerId = await createdTextLayer.getAttribute("data-layer-id");
+  expect(textLayerId).not.toBeNull();
+  if (!textLayerId) return;
+  const textLayer = page.locator(`[data-layer-id="${textLayerId}"]`);
   await expect(textLayer).toHaveAttribute("dir", "rtl");
   await expect(textLayer).toHaveAttribute("lang", "ar");
   const leftBeforeUiRtl = await documentLeft(textLayer);
@@ -176,10 +183,7 @@ test("Arabic editor keeps physical canvas coordinates across UI RTL and persists
   await expectLeftNear(textLayer, afterMove);
 
   await page.reload();
-  const persisted = page
-    .locator(".editor-scene-layer--text")
-    .filter({ hasText: "هوية عربية جديدة" })
-    .last();
+  const persisted = page.locator(`[data-layer-id="${textLayerId}"]`);
   await expect(persisted).toBeVisible();
   await expect(persisted).toHaveAttribute("dir", "rtl");
   await expectLeftNear(persisted, afterMove);
