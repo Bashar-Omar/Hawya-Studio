@@ -144,7 +144,7 @@ export function groupExtraLayers(
 
 export function ungroupExtraLayer(page: GuidePage, groupId: SceneLayerId): string[] {
   const group = page.extras.find((layer) => layer.id === groupId && layer.type === "group");
-  if (!group || group.type !== "group") return [];
+  if (group?.type !== "group") return [];
   const childIds = Array.isArray(group.data.childIds)
     ? group.data.childIds.filter((candidate): candidate is string => typeof candidate === "string")
     : [];
