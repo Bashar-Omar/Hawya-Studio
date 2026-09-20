@@ -8,7 +8,7 @@ import {
   type TemplateSlot,
 } from "@/domain/templates/template-definition";
 
-const PAGE_SLOT_ROLES: Readonly<Record<SemanticPageType, readonly string[]>> = {
+const PAGE_SLOT_ROLES: Readonly<Partial<Record<SemanticPageType, readonly string[]>>> = {
   cover: ["brand.name", "brand.descriptor"],
   "brand-overview": ["page.title", "brand.story", "brand.values"],
   "logo-system-intro": ["page.title", "brand.logo.primary", "brand.logo.variants"],
@@ -52,7 +52,8 @@ function kindForRole(role: string): TemplateSlot["contentKinds"][number] {
   if (role.startsWith("brand.colors")) return "colors";
   if (role.startsWith("brand.typography")) return "typography";
   if (role === "project.assets") return "assets";
-  if (role.startsWith("delivery.")) return "summary";
+  if (role === "delivery.checklist") return "checklist";
+  if (role === "delivery.summary") return "summary";
   return "text";
 }
 
@@ -88,6 +89,7 @@ function makeTemplate(
   bilingualArrangement?: BilingualArrangement,
 ): PageTemplate {
   const roles = PAGE_SLOT_ROLES[pageType];
+  if (!roles) throw new Error(`No built-in slot recipe for ${pageType}`);
   const rects = slotRects(familyId, roles.length);
   return pageTemplateSchema.parse({
     id: `${familyId}.${pageType}.${variantId}`,
