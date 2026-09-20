@@ -45,7 +45,7 @@ function arabicFontPath(): string {
 test("malicious SVG is sanitized before it becomes a project asset", async ({ page }) => {
   await finishProject(page, "Secure Identity");
   const malicious = Buffer.from(
-    '<svg xmlns="http://www.w3.org/2000/svg" onload="window.__hawyaPwned=1"><script>window.__hawyaPwned=1</script><foreignObject><div>bad</div></foreignObject><image href="https://example.com/tracker.png"/><rect width="10" height="10" fill="#111"/></svg>',
+    '<svg xmlns="http://www.w3.org/2000/svg" onload="window.__hawyaPwned=1"><script>window.__hawyaPwned=1</script><style>.remote{fill:url(https://example.com/paint.svg#x)}</style><foreignObject><div>bad</div></foreignObject><image href="https://example.com/tracker.png"/><rect class="remote" width="10" height="10" filter="url(https://example.com/filter.svg#x)" fill="#111"/></svg>',
   );
   await page.locator('input[type="file"]').setInputFiles({
     name: "malicious.svg",
@@ -54,7 +54,8 @@ test("malicious SVG is sanitized before it becomes a project asset", async ({ pa
   });
   const card = page.locator("article.asset-card").filter({ hasText: "malicious" });
   await expect(card).toContainText("SVG sanitized");
-  await expect(card).toContainText(/script|foreignObject|event-handler|external-reference/);
+  await expect(card).toContainText(/script|style|foreignObject|event-handler|external-reference/);
+  await expect(card).toContainText("external-css-url");
   expect(
     await page.evaluate(() => (window as Window & { __hawyaPwned?: number }).__hawyaPwned),
   ).toBeUndefined();
