@@ -47,6 +47,13 @@ export class ResetGuidePageTemplateUseCase {
                 version: bound.template.version,
                 slotBindings: bound.slotBindings,
               },
+              canvas: {
+                ...page.canvas,
+                width: bound.template.canvas.width,
+                height: bound.template.canvas.height,
+                unit: bound.template.canvas.unit,
+              },
+              localOverrides: [],
             },
           },
         },
