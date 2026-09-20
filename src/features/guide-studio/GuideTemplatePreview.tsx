@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { GuideSlotView } from "@/application/queries/guide-studio-query";
 import { useStudioRuntime } from "@/app/providers/studio-runtime";
 import type { Asset } from "@/domain/assets/asset";
+import type { LocalizedString } from "@/domain/common/primitives";
 import { localizedValue } from "@/domain/guide/page-content";
 import type { GuidePageView } from "@/application/queries/guide-studio-query";
 import type { TemplateLocaleMode } from "@/domain/templates/template-definition";
@@ -11,7 +12,7 @@ function LocalizedText({
   value,
   localeMode,
 }: {
-  value: { en?: string; ar?: string };
+  value: LocalizedString;
   localeMode: TemplateLocaleMode;
 }) {
   if (localeMode === "bilingual") {
