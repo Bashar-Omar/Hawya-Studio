@@ -5,7 +5,6 @@ import type { IdGenerator } from "@/application/ports/id-generator";
 import type { ProjectListItem, ProjectRepository } from "@/application/ports/project-repository";
 import { EditorSession } from "@/application/editor/editor-session";
 import { GenerateGuideUseCase } from "@/application/use-cases/generate-guide";
-import type { GuidePage } from "@/domain/guide/guide-document";
 import type { ProjectId, ProjectSnapshot } from "@/domain/project/hawya-project";
 import {
   alignTransforms,
