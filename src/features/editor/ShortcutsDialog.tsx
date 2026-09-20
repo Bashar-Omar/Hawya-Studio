@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -31,7 +31,13 @@ function platformModifier() {
 export function ShortcutsDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useI18n();
   const [query, setQuery] = useState("");
+  const searchRef = useRef<HTMLInputElement | null>(null);
   const modifier = platformModifier();
+
+  useEffect(() => {
+    if (!open) return;
+    searchRef.current?.focus();
+  }, [open]);
   const rows = useMemo(
     () =>
       SHORTCUTS.filter(([label, shortcut]) =>
@@ -41,13 +47,13 @@ export function ShortcutsDialog({ open, onClose }: { open: boolean; onClose: () 
   );
   if (!open) return null;
   return (
-    <div
-      className="editor-dialog-backdrop"
-      role="presentation"
-      onMouseDown={(event) => {
-        if (event.target === event.currentTarget) onClose();
-      }}
-    >
+    <div className="editor-dialog-backdrop">
+      <button
+        type="button"
+        className="editor-dialog-backdrop__dismiss"
+        aria-label={t("editor.close")}
+        onClick={onClose}
+      />
       <section
         className="editor-shortcuts-dialog"
         role="dialog"
@@ -64,11 +70,11 @@ export function ShortcutsDialog({ open, onClose }: { open: boolean; onClose: () 
           </Button>
         </header>
         <input
+          ref={searchRef}
           className="text-input"
           value={query}
           onChange={(event) => setQuery(event.currentTarget.value)}
           placeholder={t("editor.shortcutsSearch")}
-          autoFocus
         />
         <div className="editor-shortcuts-list">
           {rows.map(([label, shortcut]) => (
