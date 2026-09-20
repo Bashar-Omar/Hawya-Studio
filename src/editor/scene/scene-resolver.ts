@@ -122,13 +122,15 @@ function templateLayer(
 }
 
 function resolvedColor(snapshot: ProjectSnapshot, layer: Extract<Layer, { type: "text" }>): string {
-  if ("colorTokenId" in layer.fill) {
+  const fill = layer.fill;
+  if ("colorTokenId" in fill) {
+    const tokenId = fill.colorTokenId;
     return (
-      snapshot.project.brand.colors.tokens.find((token) => token.id === layer.fill.colorTokenId)
-        ?.srgbHex ?? "#111111"
+      snapshot.project.brand.colors.tokens.find((token) => token.id === tokenId)?.srgbHex ??
+      "#111111"
     );
   }
-  return paintColor(layer.fill);
+  return paintColor(fill);
 }
 
 function extraLayer(snapshot: ProjectSnapshot, layer: Layer, index: number): RenderedSceneLayer {
