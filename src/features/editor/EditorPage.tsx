@@ -73,6 +73,8 @@ export default function EditorPage({
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const fallbackClipboard = useRef<EditorClipboardPayload | undefined>(undefined);
+  const operationQueue = useRef<Promise<void>>(Promise.resolve());
+  const pendingOperations = useRef(0);
 
   const sync = useCallback((active: EditorSession) => {
     setSnapshot(active.projectSnapshot());
@@ -149,20 +151,29 @@ export default function EditorPage({
   }, [runtime, snapshot]);
 
   const run = useCallback(
-    async (operation: (active: EditorSession) => Promise<unknown>) => {
-      if (!session || busy) return;
+    (operation: (active: EditorSession) => Promise<unknown>): Promise<void> => {
+      if (!session) return Promise.resolve();
+      pendingOperations.current += 1;
       setBusy(true);
       setError(null);
-      try {
-        await operation(session);
-        sync(session);
-      } catch (cause) {
-        setError(cause instanceof Error ? cause.message : t("common.unknownError"));
-      } finally {
-        setBusy(false);
-      }
+
+      const task = operationQueue.current
+        .then(async () => {
+          await operation(session);
+          sync(session);
+        })
+        .catch((cause: unknown) => {
+          setError(cause instanceof Error ? cause.message : t("common.unknownError"));
+        })
+        .finally(() => {
+          pendingOperations.current = Math.max(0, pendingOperations.current - 1);
+          if (pendingOperations.current === 0) setBusy(false);
+        });
+
+      operationQueue.current = task;
+      return task;
     },
-    [busy, session, sync, t],
+    [session, sync, t],
   );
 
   const setSelectionState = useCallback((ids: SceneLayerId[], primary?: SceneLayerId) => {
