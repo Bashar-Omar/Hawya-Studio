@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { GuideStudioQuery } from "@/application/queries/guide-studio-query";
 import { GenerateGuideUseCase } from "@/application/use-cases/generate-guide";
 import { ManageColorTokensUseCase } from "@/application/use-cases/manage-color-tokens";
+import { ResetGuidePageTemplateUseCase } from "@/application/use-cases/reset-guide-page-template";
 import { SwitchGuidePageTemplateUseCase } from "@/application/use-cases/switch-guide-page-template";
 import { ColorJsColorEngine } from "@/infrastructure/analysis/color-js-color-engine";
 import { DexieProjectRepository } from "@/infrastructure/db/dexie-project-repository";
@@ -85,6 +86,39 @@ describe("Stage 05 guide generator invariants", () => {
     expect(after?.extras).toEqual(extrasBefore);
     expect(after?.localOverrides).toEqual(overridesBefore);
     expect(after?.templateBinding.templateId).toBe("editorial.color-palette.standard");
+  });
+
+  it("reset layout restores template geometry and clears layout overrides without losing semantic content or extras", async () => {
+    const generate = new GenerateGuideUseCase(projects, clock, ids);
+    const reset = new ResetGuidePageTemplateUseCase(projects, clock);
+    const generated = await generate.execute(SYNTHETIC_PROJECT_ID, {
+      profile: "minimal",
+      familyId: "essential",
+      localeMode: "en",
+    });
+    const pageId = generated.project.guide.pageOrder.find(
+      (candidate) => generated.project.guide.pages[candidate]?.semanticType === "color-palette",
+    );
+    expect(pageId).toBeDefined();
+    if (!pageId) return;
+    const edited = structuredClone(generated);
+    const page = edited.project.guide.pages[pageId];
+    expect(page).toBeDefined();
+    if (!page) return;
+    const contentBefore = structuredClone(page.content);
+    const extrasBefore = structuredClone(page.extras);
+    page.canvas.width = 777;
+    page.canvas.height = 333;
+    page.localOverrides = [{ slotId: "manual-layout", x: 12 }];
+    await projects.save(edited);
+
+    const result = await reset.execute(SYNTHETIC_PROJECT_ID, pageId, "en");
+    const after = result.project.guide.pages[pageId];
+    expect(after?.content).toEqual(contentBefore);
+    expect(after?.extras).toEqual(extrasBefore);
+    expect(after?.localOverrides).toEqual([]);
+    expect(after?.canvas.width).toBe(1200);
+    expect(after?.canvas.height).toBe(675);
   });
 
   it("resolves live color tokens after a Brand System edit without rewriting the guide page", async () => {
