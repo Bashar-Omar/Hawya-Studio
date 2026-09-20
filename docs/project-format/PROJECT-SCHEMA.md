@@ -45,6 +45,7 @@ type ProjectSettings = {
   guideProfile: 'minimal'|'standard'|'comprehensive'|'custom';
   pagePreset: PagePresetId;
   templateFamilyId: TemplateFamilyId;
+  guideLocaleMode?: 'en'|'ar'|'bilingual';
   unitDisplay: 'px'|'mm'|'in'|'pt';
   snapEnabled: boolean;
   autosaveEnabled: boolean;

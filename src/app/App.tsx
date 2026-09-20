@@ -6,11 +6,11 @@ import { RouterProvider, useRouter } from "@/app/routes/RouterProvider";
 import { AboutPage } from "@/features/about/AboutPage";
 import { LandingPage } from "@/features/landing/LandingPage";
 import { NewProjectPage } from "@/features/new-project/NewProjectPage";
-import { ProjectGuideShellPage } from "@/features/project-library/ProjectGuideShellPage";
 import { StudioHomePage } from "@/features/project-library/StudioHomePage";
 import { SettingsPage } from "@/features/settings/SettingsPage";
 
 const BrandSystemPage = lazy(() => import("@/features/brand-system/BrandSystemPage"));
+const GuideStudioPage = lazy(() => import("@/features/guide-studio/GuideStudioPage"));
 
 function CurrentRoute() {
   const { pathname, routeId } = useRouter();
@@ -24,7 +24,13 @@ function CurrentRoute() {
     case "newProject":
       return <NewProjectPage {...(projectId ? { projectId } : {})} />;
     case "project":
-      return projectId ? <ProjectGuideShellPage projectId={projectId} /> : <NotFoundPage />;
+      return projectId ? (
+        <Suspense fallback={null}>
+          <GuideStudioPage projectId={projectId} />
+        </Suspense>
+      ) : (
+        <NotFoundPage />
+      );
     case "brand":
       return projectId ? (
         <Suspense fallback={null}>

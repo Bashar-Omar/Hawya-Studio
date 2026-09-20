@@ -303,5 +303,32 @@ export const enMessages = {
   "brand.type.size": "Size",
   "brand.type.lineHeight": "Line height",
   "brand.type.emptyStyles": "No text styles yet.",
+  "guide.title": "Guide Generator",
+  "guide.subtitle": "Generate semantic brand-guideline pages from the live Brand System.",
+  "guide.project": "Project",
+  "guide.generatedTitle": "Your brand guide is generated from reusable semantic content.",
+  "guide.emptyTitle": "Setup complete. The guide shell is ready.",
+  "guide.body":
+    "Choose a profile, template family and locale mode. Hawya omits meaningless profile pages when data is missing, while custom pages can intentionally surface missing-input states.",
+  "guide.openBrand": "Open Brand System",
+  "guide.back": "Back to projects",
+  "guide.generator": "Generate guide",
+  "guide.generatorBody":
+    "Profiles choose semantic page types. Template family changes presentation without owning or duplicating page content.",
+  "guide.profile": "Profile",
+  "guide.family": "Template family",
+  "guide.localeMode": "Document locale mode",
+  "guide.generate": "Generate guide",
+  "guide.regenerate": "Regenerate guide",
+  "guide.customPages": "Custom semantic pages",
+  "guide.dataReady": "Brand data ready",
+  "guide.willNeedInput": "Will be generated as Needs input",
+  "guide.template": "Page template",
+  "guide.resetLayout": "Reset layout",
+  "guide.resetConfirm":
+    "Reset this template layout while keeping semantic page content and extra layers?",
+  "guide.noPages": "No guide pages generated yet",
+  "guide.noPagesBody":
+    "Generate a guide from the real Brand System. No filler pages are created silently.",
   "guideShell.openBrand": "Open Brand System",
 } as const;

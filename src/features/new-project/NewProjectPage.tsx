@@ -139,9 +139,10 @@ function InitialProjectForm() {
           <input
             className="text-input"
             value={form.name}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, name: event.currentTarget.value }))
-            }
+            onChange={(event) => {
+              const value = event.currentTarget.value;
+              setForm((current) => ({ ...current, name: value }));
+            }}
             required
             maxLength={120}
             autoComplete="off"
@@ -153,9 +154,10 @@ function InitialProjectForm() {
             <input
               className="text-input"
               value={form.clientName}
-              onChange={(event) =>
-                setForm((current) => ({ ...current, clientName: event.currentTarget.value }))
-              }
+              onChange={(event) => {
+                const value = event.currentTarget.value;
+                setForm((current) => ({ ...current, clientName: value }));
+              }}
               maxLength={120}
               autoComplete="organization"
             />
@@ -165,9 +167,10 @@ function InitialProjectForm() {
             <input
               className="text-input"
               value={form.designerName}
-              onChange={(event) =>
-                setForm((current) => ({ ...current, designerName: event.currentTarget.value }))
-              }
+              onChange={(event) => {
+                const value = event.currentTarget.value;
+                setForm((current) => ({ ...current, designerName: value }));
+              }}
               maxLength={120}
               autoComplete="name"
             />
@@ -206,9 +209,10 @@ function InitialProjectForm() {
           <input
             type="checkbox"
             checked={form.bilingual}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, bilingual: event.currentTarget.checked }))
-            }
+            onChange={(event) => {
+              const checked = event.currentTarget.checked;
+              setForm((current) => ({ ...current, bilingual: checked }));
+            }}
           />
           <span>
             <strong>{t("wizard.basic.bilingual")}</strong>

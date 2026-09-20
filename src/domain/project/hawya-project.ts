@@ -38,6 +38,7 @@ export const projectSettingsSchema = z.object({
   guideProfile: z.enum(["minimal", "standard", "comprehensive", "custom"]),
   pagePreset: z.string().min(1),
   templateFamilyId: z.string().min(1),
+  guideLocaleMode: z.enum(["en", "ar", "bilingual"]).optional(),
   unitDisplay: z.enum(["px", "mm", "in", "pt"]),
   snapEnabled: z.boolean(),
   autosaveEnabled: z.boolean(),
