@@ -111,7 +111,7 @@ function ColorRow({
       <div
         className="color-token-card__swatch"
         style={{ background: token.srgbHex }}
-        aria-label={token.srgbHex}
+        aria-hidden="true"
       />
       <div className="color-token-card__content">
         <div className="brand-form-grid brand-form-grid--compact">
