@@ -2,6 +2,7 @@ import type { AssetSanitizer, SanitizedSvgResult } from "@/application/ports/ass
 
 const FORBIDDEN_TAGS = [
   "script",
+  "style",
   "foreignObject",
   "iframe",
   "object",
@@ -33,7 +34,7 @@ function inspectRiskyFeatures(source: string): string[] {
   if (/\b(?:href|xlink:href)\s*=\s*["']\s*(?:https?:|\/\/)/i.test(source)) {
     features.push("external-reference");
   }
-  if (/url\s*\(\s*["']?\s*(?:https?:|\/\/|javascript:)/i.test(source)) {
+  if (/url\s*\(\s*["']?\s*(?:https?:|\/\/|javascript:|data:)/i.test(source)) {
     features.push("external-css-url");
   }
   if (/@import/i.test(source)) {
@@ -63,6 +64,16 @@ function parseSvgMetadata(svg: string): Record<string, unknown> {
   };
 }
 
+function containsUnsafeUrlFunction(value: string): boolean {
+  if (!/url\s*\(/i.test(value)) return false;
+  const matches = [...value.matchAll(/url\s*\(\s*(["']?)([^)]*?)\1\s*\)/gi)];
+  if (matches.length === 0) return true;
+  return matches.some((match) => {
+    const target = match[2]?.trim() ?? "";
+    return !target.startsWith("#");
+  });
+}
+
 function enforceLocalReferences(svg: string, rejectedFeatures: string[]): string {
   const documentNode = new DOMParser().parseFromString(svg, "image/svg+xml");
   const root = documentNode.documentElement;
@@ -75,9 +86,19 @@ function enforceLocalReferences(svg: string, rejectedFeatures: string[]): string
         rejectedFeatures.push("event-handler");
         continue;
       }
-      if ((name === "href" || name === "xlink:href") && value && !value.startsWith("#")) {
+      if (
+        (name === "href" || name === "xlink:href" || name === "src") &&
+        value &&
+        !value.startsWith("#")
+      ) {
         node.removeAttribute(attribute.name);
         rejectedFeatures.push("external-reference");
+        continue;
+      }
+      if (containsUnsafeUrlFunction(value)) {
+        node.removeAttribute(attribute.name);
+        rejectedFeatures.push("external-css-url");
+        continue;
       }
       if (name === "style") {
         node.removeAttribute(attribute.name);
@@ -109,7 +130,7 @@ export class DomPurifySvgSanitizer implements AssetSanitizer {
     }
     if (
       parsed.querySelector(
-        "script, foreignObject, iframe, object, embed, animate, animateMotion, animateTransform, set",
+        "script, style, foreignObject, iframe, object, embed, animate, animateMotion, animateTransform, set",
       )
     ) {
       throw new Error("SVG contains unsupported executable content");
