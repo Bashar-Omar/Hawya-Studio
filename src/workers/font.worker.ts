@@ -63,7 +63,7 @@ function requireAnalyzableFont(value: unknown): AnalyzableFont {
     subfamilyName: optionalString(record.subfamilyName),
     postscriptName: optionalString(record.postscriptName),
     characterSet: record.characterSet.filter(
-      (codePoint): codePoint is number => typeof codePoint === "number" && Number.isFinite(codePoint),
+      (codePoint): codePoint is number =>\n        typeof codePoint === "number" && Number.isFinite(codePoint),
     ),
     hasGlyphForCodePoint: (codePoint) =>
       (record.hasGlyphForCodePoint as (value: number) => boolean).call(value, codePoint),
