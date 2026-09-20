@@ -341,11 +341,20 @@ function catalogSection(type: SemanticPageType): GuideSectionType {
   return "delivery";
 }
 
-export const FULL_PAGE_CATALOG = ALL_SEMANTIC_PAGE_TYPES.map((type) => ({
-  type,
-  section: catalogSection(type),
-  title: { en: humanizePageType(type) } satisfies LocalizedString,
-}));
+const representativeEntries = new Map(entries.map((entry) => [entry.type, entry] as const));
+
+export const FULL_PAGE_CATALOG: readonly PageCatalogEntry[] = ALL_SEMANTIC_PAGE_TYPES.map(
+  (type) =>
+    representativeEntries.get(type) ?? {
+      type,
+      section: catalogSection(type),
+      title: { en: humanizePageType(type) },
+      introduction: {
+        en: `Semantic content contract for the ${humanizePageType(type)} guideline page.`,
+      },
+      requirements: [],
+    },
+);
 
 export const PAGE_CATALOG: readonly PageCatalogEntry[] = entries;
 
@@ -401,7 +410,7 @@ export const SECTION_TITLES: Readonly<Record<GuideSectionType, LocalizedString>>
 };
 
 export function pageCatalogEntry(type: SemanticPageType): PageCatalogEntry {
-  const entry = PAGE_CATALOG.find((candidate) => candidate.type === type);
+  const entry = FULL_PAGE_CATALOG.find((candidate) => candidate.type === type);
   if (!entry) throw new Error(`Unknown semantic page type: ${type}`);
   return entry;
 }
