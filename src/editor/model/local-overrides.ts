@@ -1,7 +1,7 @@
 import * as z from "zod";
 
 import type { GuidePage } from "@/domain/guide/guide-document";
-import type { LayerTransform, SceneLayerId } from "@/editor/model/editor-types";
+import type { SceneLayerId } from "@/editor/model/editor-types";
 
 const transformOverrideSchema = z.object({
   x: z.number(),
