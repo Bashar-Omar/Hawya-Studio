@@ -1,7 +1,7 @@
 import type { Clock } from "@/application/ports/clock";
 import type { ProjectRepository } from "@/application/ports/project-repository";
-import { type SemanticPageType } from "@/domain/guide/page-catalog";
-import { type PageId } from "@/domain/guide/guide-document";
+import type { SemanticPageType } from "@/domain/guide/page-catalog";
+import type { PageId } from "@/domain/guide/guide-document";
 import {
   projectSnapshotSchema,
   type ProjectId,
