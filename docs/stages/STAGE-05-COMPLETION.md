@@ -2,6 +2,22 @@
 
 Status: **complete — Stage 05 functional gate is green.**
 
+## Files changed
+
+Stage 05 changed **33 repository files** relative to the merged Stage 04 baseline.
+
+- application shell / routing metadata: `src/app/App.tsx`, `src/app/app-metadata.ts`;
+- semantic guide domain: `src/domain/guide/guide-binding-resolver.ts`, `guide-status.ts`, `page-catalog.ts`, `page-content.ts`;
+- declarative template domain: `src/domain/templates/builtin-template-catalog.ts`, `template-definition.ts`, `template-engine.ts`, and template-engine tests;
+- canonical project/settings compatibility: `src/domain/project/hawya-project.ts`, `docs/project-format/PROJECT-SCHEMA.md`;
+- application layer: guide query plus generate/switch/reset use cases and Stage 05 integration tests;
+- runtime composition: `src/infrastructure/runtime/create-persistence-runtime.ts`;
+- Guide Studio UI: page, preview component, and feature CSS under `src/features/guide-studio/`;
+- setup hardening discovered by browser tests: `src/features/new-project/NewProjectPage.tsx`;
+- EN/AR copy: `src/i18n/messages/en.ts`, `src/i18n/messages/ar.ts`;
+- browser/golden coverage: `tests/e2e/stage05-guide-templates.spec.ts` and EN/AR/bilingual/stress fixtures under `tests/golden/stage05/`;
+- documentation/status: README, Stage 05 implementation/research notes, and this completion record.
+
 ## Binding scope completed
 
 - semantic guide content is separated from visual layout through the explicit `hawya.page-content.v1` PageContent contract;
