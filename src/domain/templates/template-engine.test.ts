@@ -1,5 +1,6 @@
-import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import arGoldenRaw from "../../../tests/golden/stage05/ar.json?raw";
+import bilingualGoldenRaw from "../../../tests/golden/stage05/bilingual.json?raw";
+import enGoldenRaw from "../../../tests/golden/stage05/en.json?raw";
 
 import { describe, expect, it } from "vitest";
 
@@ -14,10 +15,8 @@ interface GoldenSample {
 }
 
 function readGolden(name: "en" | "ar" | "bilingual"): GoldenSample {
-  const path = fileURLToPath(
-    new URL(`../../../tests/golden/stage05/${name}.json`, import.meta.url),
-  );
-  return JSON.parse(readFileSync(path, "utf8")) as GoldenSample;
+  const raw = name === "en" ? enGoldenRaw : name === "ar" ? arGoldenRaw : bilingualGoldenRaw;
+  return JSON.parse(raw) as GoldenSample;
 }
 
 describe("Stage 05 built-in template catalog", () => {
