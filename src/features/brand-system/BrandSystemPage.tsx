@@ -8,12 +8,12 @@ import { useRouter } from "@/app/routes/RouterProvider";
 import { AppShell } from "@/components/app/AppShell";
 import { Button } from "@/components/ui/button";
 import type { ProjectId } from "@/domain/project/hawya-project";
-import { useI18n } from "@/i18n/I18nProvider";
 import { AssetLibraryPanel } from "@/features/brand-system/AssetLibraryPanel";
 import { ColorPanel } from "@/features/brand-system/ColorPanel";
 import { LogoPanel } from "@/features/brand-system/LogoPanel";
 import { TypographyPanel } from "@/features/brand-system/TypographyPanel";
 import "@/features/brand-system/brand-system.css";
+import { useI18n } from "@/i18n/I18nProvider";
 
 type BrandTab = "assets" | "logos" | "colors" | "typography";
 
@@ -44,12 +44,16 @@ export default function BrandSystemPage({ projectId }: { projectId: ProjectId })
     void refresh();
   }, [refresh]);
 
+  const fontCount = view?.snapshot.project.brand.typography.fonts.length ?? 0;
   useEffect(() => {
-    if (!view) return;
+    if (fontCount === 0) {
+      setFontWarningCount(0);
+      return;
+    }
     void runtime.loadProjectFonts
       .execute(projectId)
       .then((result) => setFontWarningCount(result.failed.length));
-  }, [projectId, runtime, view?.snapshot.project.brand.typography.fonts.length]);
+  }, [fontCount, projectId, runtime]);
 
   if (!view) {
     return (
