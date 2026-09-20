@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import {
+  brandSystemPath,
   matchRoute,
   newProjectPath,
   projectIdFromPathname,
@@ -19,11 +20,14 @@ describe("app route matching", () => {
     expect(matchRoute("/missing")).toBe("not-found");
   });
 
-  it("matches validated dynamic project and setup routes", () => {
+  it("matches validated dynamic project, setup and brand routes", () => {
     expect(matchRoute(newProjectPath(projectId))).toBe("newProject");
     expect(matchRoute(projectPath(projectId))).toBe("project");
+    expect(matchRoute(brandSystemPath(projectId))).toBe("brand");
     expect(projectIdFromPathname(newProjectPath(projectId))).toBe(projectId);
     expect(projectIdFromPathname(projectPath(projectId))).toBe(projectId);
+    expect(projectIdFromPathname(brandSystemPath(projectId))).toBe(projectId);
     expect(matchRoute("/studio/projects/not-a-uuid")).toBe("not-found");
+    expect(matchRoute("/studio/projects/not-a-uuid/brand")).toBe("not-found");
   });
 });

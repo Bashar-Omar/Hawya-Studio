@@ -2,7 +2,7 @@ import { ArrowLeft, CheckCircle2, CircleAlert, FileText, Palette, Type, Image } 
 import { useCallback, useEffect, useState } from "react";
 
 import { useStudioRuntime } from "@/app/providers/studio-runtime";
-import { appRoutes, newProjectPath } from "@/app/routes/route-config";
+import { appRoutes, brandSystemPath, newProjectPath } from "@/app/routes/route-config";
 import { useRouter } from "@/app/routes/RouterProvider";
 import { AppShell } from "@/components/app/AppShell";
 import { Button } from "@/components/ui/button";
@@ -89,10 +89,16 @@ export function ProjectGuideShellPage({ projectId }: { projectId: ProjectId }) {
             <h1>{t("guideShell.readyTitle")}</h1>
             <p>{t("guideShell.readyBody")}</p>
           </div>
-          <Button variant="secondary" onClick={() => navigate(appRoutes.studio)}>
-            <ArrowLeft className="directional-icon" aria-hidden="true" size={16} />
-            {t("guideShell.back")}
-          </Button>
+          <div className="guide-shell-heading__actions">
+            <Button onClick={() => navigate(brandSystemPath(projectId))}>
+              <Palette aria-hidden="true" size={16} />
+              {t("guideShell.openBrand")}
+            </Button>
+            <Button variant="secondary" onClick={() => navigate(appRoutes.studio)}>
+              <ArrowLeft className="directional-icon" aria-hidden="true" size={16} />
+              {t("guideShell.back")}
+            </Button>
+          </div>
         </div>
 
         <section className="guide-empty-canvas" aria-labelledby="guide-empty-title">

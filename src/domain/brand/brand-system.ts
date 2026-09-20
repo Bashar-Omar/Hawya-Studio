@@ -121,6 +121,7 @@ export const colorTokenSchema = z.object({
       verifiedCmyk: z
         .object({ c: z.number(), m: z.number(), y: z.number(), k: z.number() })
         .optional(),
+      verifiedCmykNeedsReview: z.boolean().optional(),
       pantoneName: z.string().optional(),
       note: localizedStringSchema.optional(),
     })
