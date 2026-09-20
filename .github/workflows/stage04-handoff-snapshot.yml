@@ -1,0 +1,41 @@
+name: Stage 04 Handoff Snapshot
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    name: Build exact merged Stage 04 handoff
+    if: github.head_ref == 'handoff-stage-04-snapshot'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout repository history
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Build exact merged snapshot
+        shell: bash
+        run: |
+          set -euo pipefail
+          MERGED_SHA='578671a413a5fc8ac4f2402930dff4e26dc5f4f6'
+          git cat-file -e "${MERGED_SHA}^{commit}"
+          git archive --format=zip --output=/tmp/Hawya-Studio-Stage-04-Complete.zip "${MERGED_SHA}"
+          unzip -t /tmp/Hawya-Studio-Stage-04-Complete.zip
+          sha256sum /tmp/Hawya-Studio-Stage-04-Complete.zip | tee /tmp/Hawya-Studio-Stage-04-Complete.sha256
+
+      - name: Upload verified handoff
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: hawya-stage04-handoff
+          path: |
+            /tmp/Hawya-Studio-Stage-04-Complete.zip
+            /tmp/Hawya-Studio-Stage-04-Complete.sha256
+          if-no-files-found: error
+          retention-days: 1
