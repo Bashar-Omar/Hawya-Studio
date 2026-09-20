@@ -1,3 +1,5 @@
+import { lazy, Suspense } from "react";
+
 import { NotFoundPage } from "@/app/routes/NotFoundPage";
 import { projectIdFromPathname } from "@/app/routes/route-config";
 import { RouterProvider, useRouter } from "@/app/routes/RouterProvider";
@@ -7,6 +9,8 @@ import { NewProjectPage } from "@/features/new-project/NewProjectPage";
 import { ProjectGuideShellPage } from "@/features/project-library/ProjectGuideShellPage";
 import { StudioHomePage } from "@/features/project-library/StudioHomePage";
 import { SettingsPage } from "@/features/settings/SettingsPage";
+
+const BrandSystemPage = lazy(() => import("@/features/brand-system/BrandSystemPage"));
 
 function CurrentRoute() {
   const { pathname, routeId } = useRouter();
@@ -21,6 +25,14 @@ function CurrentRoute() {
       return <NewProjectPage {...(projectId ? { projectId } : {})} />;
     case "project":
       return projectId ? <ProjectGuideShellPage projectId={projectId} /> : <NotFoundPage />;
+    case "brand":
+      return projectId ? (
+        <Suspense fallback={null}>
+          <BrandSystemPage projectId={projectId} />
+        </Suspense>
+      ) : (
+        <NotFoundPage />
+      );
     case "settings":
       return <SettingsPage />;
     case "about":

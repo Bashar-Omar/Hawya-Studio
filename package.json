@@ -33,7 +33,10 @@
     "react-dom": "19.3.0",
     "dexie": "4.4.6",
     "fflate": "0.8.3",
-    "zod": "4.6.5"
+    "zod": "4.6.5",
+    "@cantoo/fontkit": "2.0.12",
+    "colorjs.io": "0.7.1",
+    "dompurify": "3.4.15"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",

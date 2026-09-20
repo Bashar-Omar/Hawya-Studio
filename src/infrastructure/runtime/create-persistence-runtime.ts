@@ -1,3 +1,14 @@
+import { BrandSystemQuery } from "@/application/queries/brand-system-query";
+import { AssetIngestor } from "@/application/services/asset-ingestor";
+import { DeleteAssetUseCase } from "@/application/use-cases/delete-asset";
+import { ImportAssetUseCase } from "@/application/use-cases/import-asset";
+import { ImportFontUseCase } from "@/application/use-cases/import-font";
+import { LoadProjectFontsUseCase } from "@/application/use-cases/load-project-fonts";
+import { ManageColorTokensUseCase } from "@/application/use-cases/manage-color-tokens";
+import { ManageLogoVariantsUseCase } from "@/application/use-cases/manage-logo-variants";
+import { ManageTextStylesUseCase } from "@/application/use-cases/manage-text-styles";
+import { ReplaceAssetUseCase } from "@/application/use-cases/replace-asset";
+import { UpdateAssetTagsUseCase } from "@/application/use-cases/update-asset-tags";
 import { ProjectLibraryQuery } from "@/application/queries/project-library-query";
 import { CreateProjectUseCase } from "@/application/use-cases/create-project";
 import { DeleteProjectUseCase } from "@/application/use-cases/delete-project";
@@ -15,6 +26,11 @@ import { RenameProjectUseCase } from "@/application/use-cases/rename-project";
 import { SaveProjectUseCase } from "@/application/use-cases/save-project";
 import { FflateProjectArchiveCodec } from "@/infrastructure/archive/fflate-project-archive-codec";
 import { IndexedDbBinaryStore } from "@/infrastructure/binary-store/indexeddb-binary-store";
+import { ColorJsColorEngine } from "@/infrastructure/analysis/color-js-color-engine";
+import { WorkerFontAnalyzer } from "@/infrastructure/analysis/worker-font-analyzer";
+import { WorkerRasterAnalyzer } from "@/infrastructure/analysis/worker-raster-analyzer";
+import { BrowserFontRegistry } from "@/infrastructure/fonts/browser-font-registry";
+import { DomPurifySvgSanitizer } from "@/infrastructure/sanitization/dompurify-svg-sanitizer";
 import { DexieBinaryReferenceIndex } from "@/infrastructure/db/dexie-binary-reference-index";
 import { DexieProjectRepository } from "@/infrastructure/db/dexie-project-repository";
 import { DexieSetupDraftRepository } from "@/infrastructure/db/dexie-setup-draft-repository";
@@ -36,6 +52,20 @@ export function createPersistenceRuntime(databaseName?: string) {
   const binaryReferences = new DexieBinaryReferenceIndex(database);
   const garbageCollectBinaries = new GarbageCollectBinariesUseCase(binaries, binaryReferences);
   const archiveCodec = new FflateProjectArchiveCodec(hasher, clock);
+  const svgSanitizer = new DomPurifySvgSanitizer();
+  const fontAnalyzer = new WorkerFontAnalyzer();
+  const rasterAnalyzer = new WorkerRasterAnalyzer();
+  const fontRegistry = new BrowserFontRegistry();
+  const colorEngine = new ColorJsColorEngine();
+  const assetIngestor = new AssetIngestor(
+    hasher,
+    binaries,
+    svgSanitizer,
+    fontAnalyzer,
+    rasterAnalyzer,
+    clock,
+  );
+  const importAsset = new ImportAssetUseCase(projects, assetIngestor, clock, ids);
   const exportProjectArchive = new ExportProjectArchiveUseCase(projects, binaries, archiveCodec);
   const deleteProject = new DeleteProjectUseCase(projects, garbageCollectBinaries);
 
@@ -65,6 +95,19 @@ export function createPersistenceRuntime(databaseName?: string) {
     openProject: new OpenProjectUseCase(projects, clock),
     setupWizard: new ProjectSetupWizardUseCase(projects, setupDrafts, clock, ids),
     projectLibrary: new ProjectLibraryQuery(projects, setupDrafts),
+    assetIngestor,
+    importAsset,
+    replaceAsset: new ReplaceAssetUseCase(projects, assetIngestor, garbageCollectBinaries, clock),
+    updateAssetTags: new UpdateAssetTagsUseCase(projects, clock),
+    deleteAsset: new DeleteAssetUseCase(projects, garbageCollectBinaries, clock),
+    logoVariants: new ManageLogoVariantsUseCase(projects, clock, ids),
+    colorTokens: new ManageColorTokensUseCase(projects, colorEngine, clock, ids),
+    importFont: new ImportFontUseCase(importAsset, projects, binaries, fontRegistry, clock, ids),
+    loadProjectFonts: new LoadProjectFontsUseCase(projects, binaries, fontRegistry),
+    textStyles: new ManageTextStylesUseCase(projects, clock, ids),
+    brandSystem: new BrandSystemQuery(projects),
+    fontRegistry,
+    colorEngine,
   };
 }
 
