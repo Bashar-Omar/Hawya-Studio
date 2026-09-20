@@ -24,7 +24,6 @@ import type {
   EditorTool,
   EditorViewportState,
   LayerTransform,
-  RenderedSceneLayer,
   SceneLayerId,
 } from "@/editor/model/editor-types";
 import { useI18n } from "@/i18n/I18nProvider";
@@ -61,7 +60,6 @@ export default function EditorPage({
   const { t } = useI18n();
   const [session, setSession] = useState<EditorSession | null>(null);
   const [snapshot, setSnapshot] = useState<ProjectSnapshot | null>(null);
-  const [revision, setRevision] = useState(0);
   const [tool, setTool] = useState<EditorTool>("select");
   const [selection, setSelection] = useState<SceneLayerId[]>([]);
   const [primaryId, setPrimaryId] = useState<SceneLayerId | undefined>();
@@ -79,7 +77,6 @@ export default function EditorPage({
   const sync = useCallback((active: EditorSession) => {
     setSnapshot(active.projectSnapshot());
     setTransient(new Map(active.transient()));
-    setRevision((value) => value + 1);
   }, []);
 
   useEffect(() => {
@@ -90,7 +87,6 @@ export default function EditorPage({
         if (!active) return;
         setSession(opened);
         setSnapshot(opened.projectSnapshot());
-        setRevision((value) => value + 1);
         setError(null);
       })
       .catch((cause: unknown) => {
@@ -106,18 +102,25 @@ export default function EditorPage({
   const localeMode = snapshot ? inferGuideLocaleMode(snapshot) : "en";
   const scene = useMemo(
     () => (snapshot && page ? resolveRenderedScene(snapshot, page, localeMode) : undefined),
-    [localeMode, page, revision, snapshot],
+    [localeMode, page, snapshot],
   );
   const layerMap = useMemo(
     () => new Map(scene?.layers.map((layer) => [layer.id, layer] as const) ?? []),
     [scene],
   );
   const primaryLayer = primaryId ? layerMap.get(primaryId) : undefined;
-  const selectedLayers = selection.flatMap((id) => {
-    const layer = layerMap.get(id);
-    return layer ? [layer] : [];
-  });
-  const unlockedSelected = selectedLayers.filter((layer) => !layer.locked);
+  const selectedLayers = useMemo(
+    () =>
+      selection.flatMap((id) => {
+        const layer = layerMap.get(id);
+        return layer ? [layer] : [];
+      }),
+    [layerMap, selection],
+  );
+  const unlockedSelected = useMemo(
+    () => selectedLayers.filter((layer) => !layer.locked),
+    [selectedLayers],
+  );
   const history = session?.historyState();
 
   useEffect(() => {
@@ -162,20 +165,20 @@ export default function EditorPage({
     [busy, session, sync, t],
   );
 
-  const setSelectionState = (ids: SceneLayerId[], primary?: SceneLayerId) => {
+  const setSelectionState = useCallback((ids: SceneLayerId[], primary?: SceneLayerId) => {
     setSelection(ids);
     setPrimaryId(primary);
-  };
+  }, []);
 
-  const centerPoint = () => {
+  const centerPoint = useCallback(() => {
     if (!page) return { x: 80, y: 80 };
     return {
       x: Math.max(24, page.canvas.width / 2 - 100),
       y: Math.max(24, page.canvas.height / 2 - 50),
     };
-  };
+  }, [page]);
 
-  const addText = () => {
+  const addText = useCallback(() => {
     const point = centerPoint();
     void run(async (active) => {
       const id = await active.addText(
@@ -191,21 +194,25 @@ export default function EditorPage({
       setSelectionState([id], id);
       setTool("select");
     });
-  };
+  }, [centerPoint, localeMode, run, setSelectionState]);
 
-  const addShape = () => {
+  const addShape = useCallback(() => {
     const point = centerPoint();
     void run(async (active) => {
       const id = await active.addShape(point.x, point.y);
       setSelectionState([id], id);
       setTool("select");
     });
-  };
+  }, [centerPoint, run, setSelectionState]);
 
-  const placeableAsset = snapshot?.assets.find((asset) =>
-    ["image", "vector", "logo", "icon", "illustration"].includes(asset.kind),
+  const placeableAsset = useMemo(
+    () =>
+      snapshot?.assets.find((asset) =>
+        ["image", "vector", "logo", "icon", "illustration"].includes(asset.kind),
+      ),
+    [snapshot],
   );
-  const addAsset = () => {
+  const addAsset = useCallback(() => {
     if (!placeableAsset) return;
     const point = centerPoint();
     void run(async (active) => {
@@ -214,7 +221,7 @@ export default function EditorPage({
       setSelectionState([id], id);
       setTool("select");
     });
-  };
+  }, [centerPoint, placeableAsset, run, setSelectionState]);
 
   const fitPage = useCallback(() => {
     if (!page) return;
@@ -236,7 +243,7 @@ export default function EditorPage({
       const ids = await active.duplicate(selection);
       if (ids.length) setSelectionState(ids, ids.at(-1));
     });
-  }, [run, selection]);
+  }, [run, selection, setSelectionState]);
 
   const deleteSelected = useCallback(() => {
     const ids = unlockedSelected.map((layer) => layer.id);
@@ -245,9 +252,9 @@ export default function EditorPage({
       await active.delete(ids);
       setSelectionState([], undefined);
     });
-  }, [run, unlockedSelected]);
+  }, [run, setSelectionState, unlockedSelected]);
 
-  const group = () => {
+  const group = useCallback(() => {
     const ids = unlockedSelected
       .filter((layer) => layer.source === "extra" && !layer.parentGroupId)
       .map((layer) => layer.id);
@@ -256,15 +263,15 @@ export default function EditorPage({
       const id = await active.group(ids);
       if (id) setSelectionState([id], id);
     });
-  };
+  }, [run, setSelectionState, unlockedSelected]);
 
-  const ungroup = () => {
-    if (!primaryLayer || primaryLayer.type !== "group" || primaryLayer.source !== "extra") return;
+  const ungroup = useCallback(() => {
+    if (primaryLayer?.type !== "group" || primaryLayer.source !== "extra") return;
     void run(async (active) => {
       const ids = await active.ungroup(primaryLayer.id);
       setSelectionState(ids, ids.at(-1));
     });
-  };
+  }, [primaryLayer, run, setSelectionState]);
 
   const align = (command: AlignmentCommand) => {
     if (unlockedSelected.length < 2) return;
@@ -329,7 +336,7 @@ export default function EditorPage({
       const ids = await active.paste(payload as EditorClipboardPayload);
       if (ids.length) setSelectionState(ids, ids.at(-1));
     });
-  }, [run, session]);
+  }, [run, session, setSelectionState]);
 
   useEffect(() => {
     const keyDown = (event: KeyboardEvent) => {
@@ -440,6 +447,7 @@ export default function EditorPage({
     paste,
     run,
     selection.length,
+    setSelectionState,
     ungroup,
     unlockedSelected,
   ]);
