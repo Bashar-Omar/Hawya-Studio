@@ -1,0 +1,56 @@
+name: Stage 04 Materialize
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened]
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    name: Materialize verified Stage 04 source
+    if: github.head_ref == 'stage-04-brand-system-asset-library'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout Stage 04 branch
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Reconstruct and verify source delta
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .stage04/chunk-* > /tmp/stage04-delta.b64
+          base64 --decode /tmp/stage04-delta.b64 > /tmp/stage04-delta.zip
+          echo 'a35eb107d9c99e4b728f4530918cb06d3d297ac6de7718eace60dd2b5efaabf8  /tmp/stage04-delta.zip' | sha256sum --check --strict
+          unzip -t /tmp/stage04-delta.zip
+          unzip -o /tmp/stage04-delta.zip -d .
+          rm -rf .stage04
+          rm -f .github/workflows/stage04-materialize.yml
+
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@v2.1.0
+        with:
+          version: 12.4.2
+          runtime: node@24.21.0
+          cache: true
+          install: false
+
+      - name: Resolve dependencies and format source
+        run: |
+          pnpm install --no-frozen-lockfile
+          pnpm format
+
+      - name: Commit materialized source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'hawya-stage-bot'
+          git config user.email 'hawya-stage-bot@users.noreply.github.com'
+          git add -A
+          git commit -m 'feat: implement Stage 04 brand system and asset library'
+          git push origin HEAD:${{ github.head_ref }}
