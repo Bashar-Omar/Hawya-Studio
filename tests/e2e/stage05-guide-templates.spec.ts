@@ -6,8 +6,8 @@ async function createBilingualProjectWithColor(page: Page): Promise<void> {
   await expect(page.getByLabel("Project name")).toBeVisible();
   await page.getByLabel("Project name").fill("Stage Five Identity");
   const bilingual = page.locator("label.checkbox-row").getByRole("checkbox");
-  await bilingual.focus();
-  await page.keyboard.press("Space");
+  await expect(bilingual).toBeVisible();
+  await bilingual.evaluate((element: HTMLInputElement) => element.click());
   await expect(bilingual).toBeChecked();
   await page.getByRole("button", { name: "Continue" }).click();
   await page.getByRole("button", { name: "Skip for now" }).click();
