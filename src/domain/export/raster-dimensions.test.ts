@@ -1,9 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  exportUnitToCssPixels,
-  rasterPixelDimensions,
-} from "@/domain/export/raster-dimensions";
+import { exportUnitToCssPixels, rasterPixelDimensions } from "@/domain/export/raster-dimensions";
 
 describe("Stage 08 raster dimensions", () => {
   it("converts physical document units at the browser CSS 96 dpi baseline", () => {

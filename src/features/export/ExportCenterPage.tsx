@@ -176,8 +176,7 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
       return [{ pageId, page, dimensions }];
     });
   }, [format, rasterScale, selectedPages, workspace]);
-  const rasterScaleValid =
-    Number.isFinite(rasterScale) && rasterScale >= 0.25 && rasterScale <= 8;
+  const rasterScaleValid = Number.isFinite(rasterScale) && rasterScale >= 0.25 && rasterScale <= 8;
   const rasterWithinSafetyCap = rasterTargets.every(
     (target) => target.dimensions.pixels <= 100_000_000,
   );
@@ -191,11 +190,7 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
     format !== "delivery" || Object.values(deliverySelection).some(Boolean);
   const canRun =
     Boolean(
-      workspace &&
-        preflight?.ok &&
-        selectionValid &&
-        rasterOptionsValid &&
-        deliverySelectionValid,
+      workspace && preflight?.ok && selectionValid && rasterOptionsValid && deliverySelectionValid,
     ) &&
     (!warningsNeedAcceptance || warningsAccepted) &&
     !busy;
@@ -432,9 +427,7 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
                         className="text-input"
                         value={scalePreset}
                         onChange={(event) =>
-                          setScalePreset(
-                            event.currentTarget.value as "1" | "2" | "3" | "custom",
-                          )
+                          setScalePreset(event.currentTarget.value as "1" | "2" | "3" | "custom")
                         }
                       >
                         <option value="1">1×</option>
@@ -504,7 +497,7 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
                           : t("export.backgroundFlatten")}
                       </span>
                     </label>
-                    {(format === "jpeg" || flattenBackground) ? (
+                    {format === "jpeg" || flattenBackground ? (
                       <label className="field-stack">
                         <span className="field-label">{t("export.backgroundColor")}</span>
                         <input

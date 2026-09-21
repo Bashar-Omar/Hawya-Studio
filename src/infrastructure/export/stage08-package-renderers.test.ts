@@ -108,9 +108,9 @@ describe("Stage 08 developer and package exports", () => {
     await web.render(fixture.snapshot, { localeMode: "bilingual", fontPolicy: "omit" }, signal);
 
     expect(omitPackager.entries.some((entry) => entry.path === "index.html")).toBe(true);
-    expect(
-      omitPackager.entries.some((entry) => entry.path.startsWith("assets/pages/page-")),
-    ).toBe(true);
+    expect(omitPackager.entries.some((entry) => entry.path.startsWith("assets/pages/page-"))).toBe(
+      true,
+    );
     expect(omitPackager.entries.some((entry) => entry.path === "data/brand.json")).toBe(true);
     expect(omitPackager.entries.some((entry) => entry.path === "DEPLOY.md")).toBe(true);
     expect(omitPackager.entries.some((entry) => entry.path.startsWith("fonts/"))).toBe(false);

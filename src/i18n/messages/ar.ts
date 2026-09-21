@@ -525,7 +525,8 @@ export const arMessages: MessageCatalog = {
   "export.fontPolicyInclude": "تضمين ملفات الخطوط — تم تأكيد الحقوق",
   "export.fontPolicyRequired": "اختر سياسة ملفات الخطوط قبل تصدير هذه الحزمة.",
   "export.deliveryContents": "محتويات حزمة التسليم",
-  "export.deliveryContentsBody": "اختر الفئات التي تريد تضمينها. يتم منع تكرار الملفات الثنائية داخل الحزمة.",
+  "export.deliveryContentsBody":
+    "اختر الفئات التي تريد تضمينها. يتم منع تكرار الملفات الثنائية داخل الحزمة.",
   "export.delivery.guidelines": "دليل الهوية بصيغة Markdown",
   "export.delivery.artwork": "صفحات SVG القابلة للتحرير والمحولة لمسارات",
   "export.delivery.logos": "نسخ الشعار SVG المعقمة",
@@ -534,7 +535,8 @@ export const arMessages: MessageCatalog = {
   "export.delivery.fonts": "ملفات الخطوط",
   "export.delivery.sourceAttachments": "المرفقات المصدرية كما هي",
   "export.deliveryRequired": "اختر فئة واحدة على الأقل لحزمة التسليم.",
-  "export.deliveryFontsPolicy": "تم اختيار ملفات الخطوط، لكنها لن تُضمَّن إلا بعد اختيار «تضمين ملفات الخطوط — تم تأكيد الحقوق».",
+  "export.deliveryFontsPolicy":
+    "تم اختيار ملفات الخطوط، لكنها لن تُضمَّن إلا بعد اختيار «تضمين ملفات الخطوط — تم تأكيد الحقوق».",
   "export.preflightKicker": "بوابة الأمان",
   "export.preflight": "الفحص المسبق للتصدير",
   "export.blockingCount": "{count} مانع",

@@ -538,7 +538,8 @@ export const enMessages = {
   "export.fontPolicyInclude": "Include font binaries — rights confirmed",
   "export.fontPolicyRequired": "Choose a font-binary policy before exporting this package.",
   "export.deliveryContents": "Delivery contents",
-  "export.deliveryContentsBody": "Select the categories to include. Binary files are deduplicated inside the package.",
+  "export.deliveryContentsBody":
+    "Select the categories to include. Binary files are deduplicated inside the package.",
   "export.delivery.guidelines": "Guidelines Markdown",
   "export.delivery.artwork": "Editable + outlined page artwork",
   "export.delivery.logos": "Sanitized SVG logo variants",
@@ -547,7 +548,8 @@ export const enMessages = {
   "export.delivery.fonts": "Font binaries",
   "export.delivery.sourceAttachments": "Opaque source attachments",
   "export.deliveryRequired": "Select at least one delivery category.",
-  "export.deliveryFontsPolicy": "Font binaries are selected, but they will only be packaged after choosing “Include font binaries — rights confirmed”.",
+  "export.deliveryFontsPolicy":
+    "Font binaries are selected, but they will only be packaged after choosing “Include font binaries — rights confirmed”.",
   "export.preflightKicker": "Safety gate",
   "export.preflight": "Export preflight",
   "export.blockingCount": "{count} blocking",
