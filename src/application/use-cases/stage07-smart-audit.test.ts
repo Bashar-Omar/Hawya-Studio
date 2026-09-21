@@ -273,6 +273,9 @@ describe("Stage 07 smart-rule and audit application boundaries", () => {
     expect(emptyGuideSection?.severity).toBe("warning");
     expect(incompatibleTemplate?.severity).toBe("blocking");
 
+    snapshot.project.assetRefs = snapshot.project.assetRefs.filter(
+      (assetRef) => assetRef.assetId !== "00000000-0000-4000-8000-000000000888",
+    );
     const projects = new MemoryProjects(snapshot);
     const quickFix = new ApplyAuditQuickFixUseCase(projects, new TestClock());
     if (!detached?.quickFix || !outside?.quickFix || !invalidOverride?.quickFix) return;
