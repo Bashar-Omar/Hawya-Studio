@@ -23,11 +23,8 @@ import {
   setSceneVisibility,
   ungroupExtraLayer,
 } from "@/editor/model/page-operations";
-import type {
-  EditorClipboardPayload,
-  LayerTransform,
-  SceneLayerId,
-} from "@/editor/model/editor-types";
+import type { EditorClipboardPayload } from "@/editor/model/editor-clipboard";
+import type { LayerTransform, SceneLayerId } from "@/editor/model/editor-types";
 
 export class EditorSession {
   private readonly history: EditorHistory;
