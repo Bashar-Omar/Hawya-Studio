@@ -65,9 +65,12 @@ function fromAudit(issue: AuditIssue, format: ExportFormat): ExportPreflightIssu
   if (issue.severity === "info") return undefined;
 
   let severity: ExportPreflightIssue["severity"] = "warning";
-  if (ALWAYS_BLOCKING_AUDIT_CODES.has(issue.code)) severity = "blocking";
+  if (format === "hawya") {
+    severity = issue.code === "missing-binary" ? "blocking" : "warning";
+  } else if (ALWAYS_BLOCKING_AUDIT_CODES.has(issue.code)) {
+    severity = "blocking";
+  }
   if (issue.code === "missing-primary-logo" && ARTWORK_FORMATS.has(format)) severity = "blocking";
-  if (issue.code === "missing-primary-logo" && format === "hawya") severity = "warning";
 
   return {
     code: `audit.${issue.code}`,
