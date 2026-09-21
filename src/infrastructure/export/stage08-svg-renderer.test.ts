@@ -151,5 +151,4 @@ describe("Stage 08 SVG renderer", () => {
       `data-layer-id="${firstId}" opacity="1" transform="translate(90 60) rotate(0) scale(1 1) translate(-90 -60)"`,
     );
   });
-
 });
