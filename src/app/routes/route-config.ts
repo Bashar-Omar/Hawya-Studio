@@ -10,7 +10,14 @@ export const appRoutes = {
 } as const;
 
 export type AppRouteId = keyof typeof appRoutes;
-export type MatchedRouteId =\n  | AppRouteId\n  | "project"\n  | "brand"\n  | "editor"\n  | "export"\n  | "print"\n  | "not-found";
+export type MatchedRouteId =
+  | AppRouteId
+  | "project"
+  | "brand"
+  | "editor"
+  | "export"
+  | "print"
+  | "not-found";
 
 function normalizePathname(pathname: string): string {
   if (pathname === "/") return pathname;
