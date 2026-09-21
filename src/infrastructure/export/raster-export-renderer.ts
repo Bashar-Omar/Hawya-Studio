@@ -1,5 +1,6 @@
 import type { SceneRasterizer } from "@/application/ports/scene-rasterizer";
 import type { ExportArtifact, ExportRenderer, RasterFormat } from "@/domain/export/export-contract";
+import { rasterPixelDimensions } from "@/domain/export/raster-dimensions";
 import type { ProjectSnapshot } from "@/domain/project/hawya-project";
 import type { TemplateLocaleMode } from "@/domain/templates/template-definition";
 import { slugifyFilename } from "@/infrastructure/export/export-helpers";
@@ -9,6 +10,7 @@ export interface RasterExportOptions {
   localeMode: TemplateLocaleMode;
   scale: number;
   quality?: number;
+  background?: string;
   pageIds?: readonly string[];
 }
 
@@ -43,14 +45,20 @@ export class RasterExportRenderer implements ExportRenderer<RasterExportOptions>
       const page = pageId ? snapshot.project.guide.pages[pageId] : undefined;
       if (!page) throw new Error("Raster export page is missing");
       const svgText = new TextDecoder().decode(svgs[index]?.bytes);
+      const dimensions = rasterPixelDimensions(
+        page.canvas.width,
+        page.canvas.height,
+        page.canvas.unit,
+        options.scale,
+      );
       const bytes = await this.rasterizer.rasterize(
         {
           svg: svgText,
-          width: page.canvas.width,
-          height: page.canvas.height,
-          scale: options.scale,
+          width: dimensions.width,
+          height: dimensions.height,
           format: this.format,
           ...(options.quality !== undefined ? { quality: options.quality } : {}),
+          ...(options.background ? { background: options.background } : {}),
         },
         signal,
       );
