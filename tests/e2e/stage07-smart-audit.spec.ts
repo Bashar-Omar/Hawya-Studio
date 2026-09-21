@@ -60,6 +60,7 @@ test("Smart Audit measures logo geometry, requires explicit professional-rule co
   await page.getByRole("button", { name: "Analyze logo" }).click();
   await expect(page.getByTestId("logo-analysis")).toBeVisible();
   await expect(page.getByTestId("crop-suggestion")).toBeVisible();
+  await expect(page.getByTestId("clear-space-preview").locator("img")).toBeVisible();
   await expect(page.locator(".audit-palette__item")).toHaveCount(2);
   await expect(page.locator(".audit-dont-example__preview img")).toHaveCount(8);
 
