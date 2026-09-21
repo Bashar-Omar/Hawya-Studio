@@ -7,7 +7,10 @@ import type {
   AnalysisWorkerRequest,
   AnalysisWorkerResponse,
 } from "@/infrastructure/workers/worker-protocol";
-import type { ExportWorkerRequest, ExportWorkerResponse } from "@/infrastructure/workers/export-worker-protocol";
+import type {
+  ExportWorkerRequest,
+  ExportWorkerResponse,
+} from "@/infrastructure/workers/export-worker-protocol";
 
 const ARABIC_SAMPLE = "ابتثجحخدذرزسشصضطظعغفقكلمنهوي٠١٢٣٤٥٦٧٨٩،؛؟";
 
@@ -109,30 +112,49 @@ interface OutlineFont {
   unitsPerEm: number;
   ascent: number;
   descent: number;
-  layout(text: string, features?: Readonly<Record<string, boolean>>): { glyphs: readonly LayoutGlyph[]; positions: readonly LayoutPosition[] };
+  layout(
+    text: string,
+    features?: Readonly<Record<string, boolean>>,
+  ): { glyphs: readonly LayoutGlyph[]; positions: readonly LayoutPosition[] };
 }
 
 function requireOutlineFont(value: unknown): OutlineFont {
   if (!value || typeof value !== "object") throw new Error("Font parser returned no font");
   const record = value as Record<string, unknown>;
-  if (typeof record.layout !== "function") throw new Error("Font collections are not supported by outlining");
+  if (typeof record.layout !== "function")
+    throw new Error("Font collections are not supported by outlining");
   const unitsPerEm = finiteNumber(record.unitsPerEm);
   const ascent = finiteNumber(record.ascent);
   const descent = finiteNumber(record.descent);
-  if (!unitsPerEm || ascent === undefined || descent === undefined) throw new Error("Font metrics are unavailable");
+  if (!unitsPerEm || ascent === undefined || descent === undefined)
+    throw new Error("Font metrics are unavailable");
   return {
     unitsPerEm,
     ascent,
     descent,
-    layout: (text, features) => (record.layout as (text: string, features?: Readonly<Record<string, boolean>>) => { glyphs: readonly LayoutGlyph[]; positions: readonly LayoutPosition[] }).call(value, text, features),
+    layout: (text, features) =>
+      (
+        record.layout as (
+          text: string,
+          features?: Readonly<Record<string, boolean>>,
+        ) => { glyphs: readonly LayoutGlyph[]; positions: readonly LayoutPosition[] }
+      ).call(value, text, features),
   };
 }
 
-function outline(bytes: Uint8Array, text: string, request: Extract<ExportWorkerRequest, { type: "outline-font" }>): FontOutlineResult {
+function outline(
+  bytes: Uint8Array,
+  text: string,
+  request: Extract<ExportWorkerRequest, { type: "outline-font" }>,
+): FontOutlineResult {
   const font = requireOutlineFont(fontkit.create(bytes));
   const run = font.layout(text, request.options.features);
-  if (run.glyphs.length !== run.positions.length) throw new Error("Font layout returned mismatched glyph positions");
-  const letterSpacingUnits = request.options.fontSize > 0 ? (request.options.letterSpacing / request.options.fontSize) * font.unitsPerEm : 0;
+  if (run.glyphs.length !== run.positions.length)
+    throw new Error("Font layout returned mismatched glyph positions");
+  const letterSpacingUnits =
+    request.options.fontSize > 0
+      ? (request.options.letterSpacing / request.options.fontSize) * font.unitsPerEm
+      : 0;
   const glyphs: FontOutlineResult["glyphs"] = [];
   let x = 0;
   let y = 0;
@@ -144,7 +166,13 @@ function outline(bytes: Uint8Array, text: string, request: Extract<ExportWorkerR
     x += position.xAdvance + (index < run.glyphs.length - 1 ? letterSpacingUnits : 0);
     y += position.yAdvance;
   }
-  return { glyphs, unitsPerEm: font.unitsPerEm, ascent: font.ascent, descent: font.descent, advanceWidth: x };
+  return {
+    glyphs,
+    unitsPerEm: font.unitsPerEm,
+    ascent: font.ascent,
+    descent: font.descent,
+    advanceWidth: x,
+  };
 }
 
 function analyze(bytes: Uint8Array): FontAnalysisResult {
@@ -188,9 +216,17 @@ self.onmessage = (event: MessageEvent<AnalysisWorkerRequest | ExportWorkerReques
   if (request.type === "analyze-font") {
     let response: AnalysisWorkerResponse;
     try {
-      response = { id: request.id, type: "font-result", result: analyze(new Uint8Array(request.bytes)) };
+      response = {
+        id: request.id,
+        type: "font-result",
+        result: analyze(new Uint8Array(request.bytes)),
+      };
     } catch (error) {
-      response = { id: request.id, type: "error", message: error instanceof Error ? error.message : "Font analysis failed" };
+      response = {
+        id: request.id,
+        type: "error",
+        message: error instanceof Error ? error.message : "Font analysis failed",
+      };
     }
     self.postMessage(response);
     return;
@@ -198,9 +234,17 @@ self.onmessage = (event: MessageEvent<AnalysisWorkerRequest | ExportWorkerReques
   if (request.type === "outline-font") {
     let response: ExportWorkerResponse;
     try {
-      response = { id: request.id, type: "font-outline-result", result: outline(new Uint8Array(request.bytes), request.text, request) };
+      response = {
+        id: request.id,
+        type: "font-outline-result",
+        result: outline(new Uint8Array(request.bytes), request.text, request),
+      };
     } catch (error) {
-      response = { id: request.id, type: "error", message: error instanceof Error ? error.message : "Font outlining failed" };
+      response = {
+        id: request.id,
+        type: "error",
+        message: error instanceof Error ? error.message : "Font outlining failed",
+      };
     }
     self.postMessage(response);
   }

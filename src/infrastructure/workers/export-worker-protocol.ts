@@ -2,8 +2,23 @@ import type { FontOutlineOptions, FontOutlineResult } from "@/application/ports/
 import type { RasterFormat } from "@/domain/export/export-contract";
 
 export type ExportWorkerRequest =
-  | { id: string; type: "outline-font"; bytes: ArrayBuffer; text: string; options: FontOutlineOptions }
-  | { id: string; type: "rasterize-svg"; svg: string; width: number; height: number; scale: number; format: RasterFormat; quality?: number };
+  | {
+      id: string;
+      type: "outline-font";
+      bytes: ArrayBuffer;
+      text: string;
+      options: FontOutlineOptions;
+    }
+  | {
+      id: string;
+      type: "rasterize-svg";
+      svg: string;
+      width: number;
+      height: number;
+      scale: number;
+      format: RasterFormat;
+      quality?: number;
+    };
 
 export type ExportWorkerResponse =
   | { id: string; type: "font-outline-result"; result: FontOutlineResult }

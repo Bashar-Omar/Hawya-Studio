@@ -24,7 +24,10 @@ export interface ExportScene {
   textStyles: Readonly<Record<string, ExportTextStyle>>;
 }
 
-function tokenByRole(snapshot: ProjectSnapshot, layer: RenderedTextLayer): TextStyleToken | undefined {
+function tokenByRole(
+  snapshot: ProjectSnapshot,
+  layer: RenderedTextLayer,
+): TextStyleToken | undefined {
   const styles = snapshot.project.brand.typography.styles;
   if (layer.source === "extra") {
     const source = layer.id;
@@ -38,10 +41,15 @@ function tokenByRole(snapshot: ProjectSnapshot, layer: RenderedTextLayer): TextS
     }
   }
   if (layer.name === "brand.name" || layer.name === "page.title") {
-    return styles.find((style) => style.role === "display") ?? styles.find((style) => style.role === "h1");
+    return (
+      styles.find((style) => style.role === "display") ??
+      styles.find((style) => style.role === "h1")
+    );
   }
   if (layer.name.includes("title") || layer.name.includes("heading")) {
-    return styles.find((style) => style.role === "h2") ?? styles.find((style) => style.role === "h1");
+    return (
+      styles.find((style) => style.role === "h2") ?? styles.find((style) => style.role === "h1")
+    );
   }
   return styles.find((style) => style.role === "body") ?? styles[0];
 }
@@ -52,7 +60,8 @@ function resolveStyle(snapshot: ProjectSnapshot, layer: RenderedTextLayer): Expo
     ? snapshot.project.brand.typography.fonts.find((candidate) => candidate.id === token.fontRefId)
     : undefined;
   const color = token?.colorTokenId
-    ? snapshot.project.brand.colors.tokens.find((candidate) => candidate.id === token.colorTokenId)?.srgbHex
+    ? snapshot.project.brand.colors.tokens.find((candidate) => candidate.id === token.colorTokenId)
+        ?.srgbHex
     : undefined;
   return {
     ...(token ? { tokenId: token.id, fontRefId: token.fontRefId } : {}),
