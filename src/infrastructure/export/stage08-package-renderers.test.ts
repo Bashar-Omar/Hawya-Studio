@@ -13,6 +13,7 @@ import {
   buildDesignTokensJson,
 } from "@/infrastructure/export/brand-artifact-builders";
 import {
+  DEFAULT_DELIVERY_SELECTION,
   DeliveryExportRenderer,
   WebGuideExportRenderer,
 } from "@/infrastructure/export/package-export-renderers";
@@ -72,13 +73,19 @@ describe("Stage 08 developer and package exports", () => {
     );
 
     expect(tokens).toContain('"format": "hawya-brand-tokens"');
+    expect(tokens).toContain('"enabled"');
+    expect(tokens).toContain('"assets"');
     expect(tokens).toContain('"srgb": "#111111"');
     expect(css).toContain("--hawya-color-primary-");
     expect(css).toContain("#111111");
     expect(css).not.toContain("CMYK");
+    expect(markdown).toContain("---\nformat: hawya-brand-guidelines\nversion: 1");
+    expect(markdown).toContain('locales: ["en","ar"]');
     expect(markdown).toContain("# Synthetic Identity");
     expect(markdown).toContain("# هوية تجريبية");
     expect(markdown).toContain("### Colors");
+    expect(markdown).toContain("### الألوان");
+    expect(markdown).toContain("## Asset map");
   });
 
   it("uses generated archive paths and omits font binaries unless the user explicitly confirmed inclusion", async () => {
@@ -101,7 +108,11 @@ describe("Stage 08 developer and package exports", () => {
     await web.render(fixture.snapshot, { localeMode: "bilingual", fontPolicy: "omit" }, signal);
 
     expect(omitPackager.entries.some((entry) => entry.path === "index.html")).toBe(true);
-    expect(omitPackager.entries.some((entry) => entry.path.startsWith("pages/page-"))).toBe(true);
+    expect(
+      omitPackager.entries.some((entry) => entry.path.startsWith("assets/pages/page-")),
+    ).toBe(true);
+    expect(omitPackager.entries.some((entry) => entry.path === "data/brand.json")).toBe(true);
+    expect(omitPackager.entries.some((entry) => entry.path === "DEPLOY.md")).toBe(true);
     expect(omitPackager.entries.some((entry) => entry.path.startsWith("fonts/"))).toBe(false);
     expect(
       omitPackager.entries.every(
@@ -112,11 +123,19 @@ describe("Stage 08 developer and package exports", () => {
     const delivery = new DeliveryExportRenderer(includePackager, editable, outlined, binaries);
     await delivery.render(
       fixture.snapshot,
-      { localeMode: "en", fontPolicy: "include-confirmed" },
+      {
+        localeMode: "en",
+        fontPolicy: "include-confirmed",
+        include: {
+          ...DEFAULT_DELIVERY_SELECTION,
+          fonts: true,
+          sourceAttachments: true,
+        },
+      },
       signal,
     );
 
-    expect(includePackager.entries.some((entry) => entry.path.startsWith("fonts/font-"))).toBe(
+    expect(includePackager.entries.some((entry) => entry.path.startsWith("Fonts/font-"))).toBe(
       true,
     );
     expect(
@@ -126,10 +145,23 @@ describe("Stage 08 developer and package exports", () => {
     ).toBe(false);
     expect(includePackager.entries.some((entry) => entry.path === "manifest.json")).toBe(true);
     expect(
-      includePackager.entries.some((entry) => entry.path.startsWith("artwork/editable/page-")),
+      includePackager.entries.some((entry) => entry.path.startsWith("Artwork/Editable/page-")),
     ).toBe(true);
     expect(
-      includePackager.entries.some((entry) => entry.path.startsWith("artwork/outlined/page-")),
+      includePackager.entries.some((entry) => entry.path.startsWith("Artwork/Outlined/page-")),
     ).toBe(true);
+    expect(
+      includePackager.entries.some((entry) => entry.path === "Guidelines/Brand-Guidelines.md"),
+    ).toBe(true);
+    expect(includePackager.entries.some((entry) => entry.path === "Colors/brand-tokens.json")).toBe(
+      true,
+    );
+    const binaryPaths = includePackager.entries.filter(
+      (entry) =>
+        entry.path.startsWith("Fonts/") ||
+        entry.path.startsWith("Logos/") ||
+        entry.path.startsWith("Source-Attachments/"),
+    );
+    expect(new Set(binaryPaths.map((entry) => entry.path)).size).toBe(binaryPaths.length);
   });
 });
