@@ -82,7 +82,10 @@ function textBearingProject(snapshot: ProjectSnapshot): boolean {
   return snapshot.project.guide.pageOrder.some((pageId) => {
     const page = snapshot.project.guide.pages[pageId];
     if (!page) return false;
-    return page.extras.some((layer) => layer.type === "text") || Object.keys(page.templateBinding.slotBindings).length > 0;
+    return (
+      page.extras.some((layer) => layer.type === "text") ||
+      Object.keys(page.templateBinding.slotBindings).length > 0
+    );
   });
 }
 
@@ -122,7 +125,8 @@ export function runExportPreflight(input: ExportPreflightInput): ExportPreflight
     }
   }
 
-  const needsRenderedFonts = FONT_RENDERING_FORMATS.has(input.format) && textBearingProject(input.snapshot);
+  const needsRenderedFonts =
+    FONT_RENDERING_FORMATS.has(input.format) && textBearingProject(input.snapshot);
   const needsPackagedFonts =
     (input.format === "web-guide" || input.format === "delivery") &&
     input.fontPolicy === "include-confirmed";
