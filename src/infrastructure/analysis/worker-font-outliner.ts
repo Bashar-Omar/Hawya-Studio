@@ -67,9 +67,7 @@ export class WorkerFontOutliner implements FontOutliner {
         } else {
           reject(
             new Error(
-              event.data.type === "error"
-                ? event.data.message
-                : "Unexpected font worker response",
+              event.data.type === "error" ? event.data.message : "Unexpected font worker response",
             ),
           );
         }
