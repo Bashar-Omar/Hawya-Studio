@@ -3,26 +3,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/i18n/I18nProvider";
 
-const SHORTCUTS = [
-  ["Select tool", "V"],
-  ["Hand / pan", "H · Space drag"],
-  ["Text", "T"],
-  ["Rectangle", "R"],
-  ["Place asset", "I"],
-  ["Undo", "Mod+Z"],
-  ["Redo", "Shift+Mod+Z · Ctrl+Y"],
-  ["Duplicate", "Mod+D"],
-  ["Delete", "Delete · Backspace"],
-  ["Group", "Mod+G"],
-  ["Ungroup", "Shift+Mod+G"],
-  ["Fit page", "Mod+0"],
-  ["100%", "Mod+1"],
-  ["Zoom", "+ / -"],
-  ["Nudge", "Arrow · Shift+Arrow"],
-  ["Disable snapping", "Hold Alt/Option"],
-  ["Cancel / exit text edit", "Escape"],
-] as const;
-
 function platformModifier() {
   if (typeof navigator === "undefined") return "Ctrl/Cmd";
   return /Mac|iPhone|iPad/.test(navigator.userAgent) ? "Cmd" : "Ctrl";
@@ -38,12 +18,35 @@ export function ShortcutsDialog({ open, onClose }: { open: boolean; onClose: () 
     if (!open) return;
     searchRef.current?.focus();
   }, [open]);
+  const shortcuts = useMemo(
+    () =>
+      [
+        [t("editor.tool.select"), "V"],
+        [t("editor.tool.hand"), "H · Space drag"],
+        [t("editor.tool.text"), "T"],
+        [t("editor.tool.shape"), "R"],
+        [t("editor.tool.asset"), "I"],
+        [t("editor.undo"), "Mod+Z"],
+        [t("editor.redo"), "Shift+Mod+Z · Ctrl+Y"],
+        [t("editor.copy"), "Mod+D"],
+        [t("editor.shortcuts.delete"), "Delete · Backspace"],
+        [t("editor.group"), "Mod+G"],
+        [t("editor.ungroup"), "Shift+Mod+G"],
+        [t("editor.fit"), "Mod+0"],
+        [t("editor.shortcuts.view100"), "Mod+1"],
+        [t("editor.shortcuts.zoom"), "+ / -"],
+        [t("editor.shortcuts.nudge"), "Arrow · Shift+Arrow"],
+        [t("editor.shortcuts.disableSnap"), "Hold Alt/Option"],
+        [t("editor.shortcuts.cancel"), "Escape"],
+      ] as const,
+    [t],
+  );
   const rows = useMemo(
     () =>
-      SHORTCUTS.filter(([label, shortcut]) =>
+      shortcuts.filter(([label, shortcut]) =>
         `${label} ${shortcut}`.toLowerCase().includes(query.toLowerCase()),
       ),
-    [query],
+    [query, shortcuts],
   );
   if (!open) return null;
   return (
@@ -62,7 +65,7 @@ export function ShortcutsDialog({ open, onClose }: { open: boolean; onClose: () 
       >
         <header className="editor-shortcuts-dialog__header">
           <div>
-            <p className="panel-kicker">Keyboard</p>
+            <p className="panel-kicker">{t("editor.keyboard")}</p>
             <h2 id="editor-shortcuts-title">{t("editor.shortcuts")}</h2>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose}>
