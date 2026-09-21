@@ -136,6 +136,28 @@ describe("Stage 06 editor core invariants", () => {
     expect(session.page().extras.find((layer) => layer.id === shapeId)?.transform.x).toBe(220);
   });
 
+  it("does not persist or grow history when a command produces no Immer patches", async () => {
+    const repository = new RecordingProjectRepository(await fixtureSnapshot());
+    const session = await EditorSession.open(
+      repository,
+      new TestClock(),
+      new SequenceIds(),
+      SYNTHETIC_PROJECT_ID,
+      SYNTHETIC_PAGE_ID,
+    );
+    const shapeId = await session.addShape(100, 120);
+    const shape = session.page().extras.find((layer) => layer.id === shapeId);
+    expect(shape).toBeDefined();
+    if (!shape) return;
+
+    expect(repository.saveCount).toBe(1);
+    expect(session.historyState().undoEntries).toBe(1);
+    await session.setTransforms("No-op geometry", { [shapeId]: structuredClone(shape.transform) });
+    expect(repository.saveCount).toBe(1);
+    expect(session.historyState().undoEntries).toBe(1);
+    expect(session.historyState().undoLabel).toBe("Add rectangle");
+  });
+
   it("bounds session history while retaining reversible Immer patches and labels", async () => {
     const snapshot = await fixtureSnapshot();
     const page = structuredClone(snapshot.project.guide.pages[SYNTHETIC_PAGE_ID]);
