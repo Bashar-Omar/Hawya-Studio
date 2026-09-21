@@ -486,7 +486,7 @@ export default function EditorPage({
             </Button>
             <div>
               <p className="panel-kicker">
-                Editor · {page.canvas.width} × {page.canvas.height} {page.canvas.unit}
+                {t("editor.title")} · {page.canvas.width} × {page.canvas.height} {page.canvas.unit}
               </p>
               <h1>{page.name.en ?? page.name.ar ?? "Guide page"}</h1>
             </div>
