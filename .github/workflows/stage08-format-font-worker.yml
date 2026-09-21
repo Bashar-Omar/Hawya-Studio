@@ -1,0 +1,38 @@
+name: Stage 08 format font worker hardening
+
+on:
+  push:
+    branches: [stage-08-exports]
+    paths: [".github/workflows/stage08-format-font-worker.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: stage-08-exports
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v5
+        with:
+          run_install: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: package.json
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Format Stage 08 font worker hardening
+        run: |
+          pnpm exec biome format --write             src/infrastructure/analysis/worker-font-outliner.ts             src/workers/font.worker.ts
+          rm .github/workflows/stage08-format-font-worker.yml
+      - name: Commit formatter output
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "style: format Stage 08 font worker hardening"
+          git push origin HEAD:stage-08-exports
