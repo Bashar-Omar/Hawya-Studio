@@ -131,7 +131,9 @@ export class WorkerFontOutliner implements FontOutliner {
         return;
       }
       pending.reject(
-        new Error(event.data.type === "error" ? event.data.message : "Unexpected font worker response"),
+        new Error(
+          event.data.type === "error" ? event.data.message : "Unexpected font worker response",
+        ),
       );
     };
     worker.onerror = (event) => {

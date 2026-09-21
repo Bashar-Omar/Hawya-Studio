@@ -144,9 +144,7 @@ function requireOutlineFont(value: unknown): OutlineFont {
 
 const outlineFonts = new Map<string, OutlineFont>();
 
-function outlineFont(
-  request: Extract<ExportWorkerRequest, { type: "outline-font" }>,
-): OutlineFont {
+function outlineFont(request: Extract<ExportWorkerRequest, { type: "outline-font" }>): OutlineFont {
   const cached = outlineFonts.get(request.fontKey);
   if (cached) return cached;
   if (!request.bytes) throw new Error("Font binary is unavailable for the requested outline font");
