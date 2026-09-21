@@ -18,9 +18,15 @@ export type ExportWorkerRequest =
       scale: number;
       format: RasterFormat;
       quality?: number;
+    }
+  | {
+      id: string;
+      type: "package-archive";
+      entries: Array<{ path: string; bytes: ArrayBuffer }>;
     };
 
 export type ExportWorkerResponse =
   | { id: string; type: "font-outline-result"; result: FontOutlineResult }
   | { id: string; type: "raster-result"; bytes: ArrayBuffer; mime: string }
+  | { id: string; type: "archive-result"; bytes: ArrayBuffer }
   | { id: string; type: "error"; message: string };
