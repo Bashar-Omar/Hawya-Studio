@@ -63,7 +63,7 @@ const TOOL_BUTTONS: Array<{ tool: EditorTool; icon: typeof MousePointer2 }> = [
 export function EditorToolbar(props: EditorToolbarProps) {
   const { t } = useI18n();
   return (
-    <div className="editor-toolbar" role="toolbar" aria-label="Editor tools">
+    <div className="editor-toolbar" role="toolbar" aria-label={t("editor.tools")}>
       <div className="editor-toolbar__group">
         {TOOL_BUTTONS.map(({ tool, icon: Icon }) => {
           const label =
