@@ -19,5 +19,10 @@ export interface FontOutlineResult {
 }
 
 export interface FontOutliner {
-  outline(bytes: Uint8Array, text: string, options: FontOutlineOptions): Promise<FontOutlineResult>;
+  outline(
+    bytes: Uint8Array,
+    text: string,
+    options: FontOutlineOptions,
+    signal: AbortSignal,
+  ): Promise<FontOutlineResult>;
 }

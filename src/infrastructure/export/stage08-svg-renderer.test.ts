@@ -41,6 +41,7 @@ class FixtureOutliner implements FontOutliner {
     _bytes: Uint8Array,
     text: string,
     options: FontOutlineOptions,
+    _signal: AbortSignal,
   ): Promise<FontOutlineResult> {
     this.calls.push({ text, options });
     return {
@@ -83,17 +84,19 @@ describe("Stage 08 SVG renderer", () => {
       ]),
     );
     const outliner = new FixtureOutliner();
-    const renderer = new SvgExportRenderer(new FixtureBinaryStore(values), outliner);
+    const binaries = new FixtureBinaryStore(values);
+    const editableRenderer = new SvgExportRenderer(binaries, outliner, "editable");
+    const outlinedRenderer = new SvgExportRenderer(binaries, outliner, "outlined");
     const signal = new AbortController().signal;
 
-    const editable = await renderer.render(
+    const editable = await editableRenderer.render(
       fixture.snapshot,
-      { mode: "editable", localeMode: "en", pageIds: [SYNTHETIC_PAGE_ID] },
+      { localeMode: "en", pageIds: [SYNTHETIC_PAGE_ID] },
       signal,
     );
-    const outlined = await renderer.render(
+    const outlined = await outlinedRenderer.render(
       fixture.snapshot,
-      { mode: "outlined", localeMode: "en", pageIds: [SYNTHETIC_PAGE_ID] },
+      { localeMode: "en", pageIds: [SYNTHETIC_PAGE_ID] },
       signal,
     );
     const editableText = new TextDecoder().decode(editable[0]?.bytes);

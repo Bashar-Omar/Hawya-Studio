@@ -30,7 +30,7 @@ export class RasterExportRenderer implements ExportRenderer<RasterExportOptions>
     const pageIds = options.pageIds ?? snapshot.project.guide.pageOrder;
     const svgs = await this.svg.render(
       snapshot,
-      { mode: "outlined", localeMode: options.localeMode, pageIds },
+      { localeMode: options.localeMode, pageIds },
       signal,
     );
     const artifacts: ExportArtifact[] = [];

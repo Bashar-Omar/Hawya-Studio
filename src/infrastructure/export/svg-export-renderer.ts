@@ -13,7 +13,6 @@ import type {
 import { dataUri, escapeXml, slugifyFilename, utf8 } from "@/infrastructure/export/export-helpers";
 
 export interface SvgExportOptions {
-  mode: "editable" | "outlined";
   localeMode: TemplateLocaleMode;
   pageIds?: readonly string[];
 }
@@ -73,16 +72,22 @@ async function outlinedTextMarkup(
   style: ExportTextStyle,
   fontBytes: Uint8Array,
   outliner: FontOutliner,
+  signal: AbortSignal,
 ): Promise<string> {
   const lines = layer.text.split("\n");
   const rows: string[] = [];
   for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
     const text = lines[lineIndex] ?? "";
-    const outline = await outliner.outline(fontBytes, text || " ", {
-      fontSize: style.fontSize,
-      letterSpacing: style.letterSpacing,
-      ...(style.features ? { features: style.features } : {}),
-    });
+    const outline = await outliner.outline(
+      fontBytes,
+      text || " ",
+      {
+        fontSize: style.fontSize,
+        letterSpacing: style.letterSpacing,
+        ...(style.features ? { features: style.features } : {}),
+      },
+      signal,
+    );
     const scale = style.fontSize / outline.unitsPerEm;
     const renderedWidth = outline.advanceWidth * scale;
     const xOffset =
@@ -104,12 +109,15 @@ async function outlinedTextMarkup(
 }
 
 export class SvgExportRenderer implements ExportRenderer<SvgExportOptions> {
-  readonly format = "svg-editable" as const;
+  readonly format: "svg-editable" | "svg-outlined";
 
   constructor(
     private readonly binaries: BinaryStore,
     private readonly outliner: FontOutliner,
-  ) {}
+    private readonly mode: "editable" | "outlined",
+  ) {
+    this.format = mode === "editable" ? "svg-editable" : "svg-outlined";
+  }
 
   async render(
     snapshot: ProjectSnapshot,
@@ -126,7 +134,7 @@ export class SvgExportRenderer implements ExportRenderer<SvgExportOptions> {
       if (!page) throw new Error(`Export page ${pageId} is missing`);
       const svg = await this.renderPage(snapshot, page, options, assets, fontBytesByRef, signal);
       artifacts.push({
-        filename: `${slugifyFilename(snapshot.project.metadata.name)}-${slugifyFilename(page.name.en ?? page.name.ar ?? page.semanticType)}${options.mode === "outlined" ? "-outlined" : ""}.svg`,
+        filename: `${slugifyFilename(snapshot.project.metadata.name)}-${slugifyFilename(page.name.en ?? page.name.ar ?? page.semanticType)}${this.mode === "outlined" ? "-outlined" : ""}.svg`,
         mime: "image/svg+xml",
         bytes: utf8(svg),
       });
@@ -185,15 +193,15 @@ export class SvgExportRenderer implements ExportRenderer<SvgExportOptions> {
       } else if (layer.type === "text") {
         const style = scene.textStyles[layer.id];
         if (!style) throw new Error(`Text style for layer ${layer.id} is unavailable`);
-        if (options.mode === "editable") body = editableTextMarkup(layer, style);
+        if (this.mode === "editable") body = editableTextMarkup(layer, style);
         else {
           const fontBytes = style.fontRefId ? fonts.get(style.fontRefId) : undefined;
           if (!fontBytes) throw new Error(`Font binary for text layer ${layer.id} is unavailable`);
-          body = await outlinedTextMarkup(layer, style, fontBytes, this.outliner);
+          body = await outlinedTextMarkup(layer, style, fontBytes, this.outliner, signal);
         }
       }
       content.push(`${layerOpen(layer)}${body}</g>`);
     }
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${scene.rendered.pageWidth}" height="${scene.rendered.pageHeight}" viewBox="0 0 ${scene.rendered.pageWidth} ${scene.rendered.pageHeight}" data-hawya-export="${options.mode}"><title>${escapeXml(page.name.en ?? page.name.ar ?? page.semanticType)}</title>${content.join("")}</svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${scene.rendered.pageWidth}" height="${scene.rendered.pageHeight}" viewBox="0 0 ${scene.rendered.pageWidth} ${scene.rendered.pageHeight}" data-hawya-export="${this.mode}"><title>${escapeXml(page.name.en ?? page.name.ar ?? page.semanticType)}</title>${content.join("")}</svg>`;
   }
 }
