@@ -50,6 +50,9 @@ jobs:
                       raise SystemExit(f"Unsafe tar member: {member.name}")
                   if not member.isfile():
                       raise SystemExit(f"Unexpected non-file tar member: {member.name}")
+              with open("/tmp/stage07-members.txt", "w", encoding="utf-8") as handle:
+                  for member in members:
+                      handle.write(member.name + "\n")
               print(f"Verified {len(members)} safe Stage 07 source files")
           PY
           tar -xf /tmp/stage07-source.tar -C .
@@ -60,8 +63,24 @@ jobs:
       - name: Apply canonical formatting
         run: pnpm format
 
+      - name: Package formatted source diagnostic
+        shell: bash
+        run: |
+          set -euo pipefail
+          zip -q /tmp/stage07-formatted-source.zip -@ < /tmp/stage07-members.txt
+          sha256sum /tmp/stage07-formatted-source.zip
+
       - name: Quality gate before commit
         run: pnpm check
+
+      - name: Upload formatted source diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: stage07-formatted-source-diagnostic
+          path: /tmp/stage07-formatted-source.zip
+          if-no-files-found: error
+          retention-days: 1
 
       - name: Production build before commit
         run: pnpm build
