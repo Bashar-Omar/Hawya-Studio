@@ -259,9 +259,7 @@ describe("Stage 07 smart-rule and audit application boundaries", () => {
     const missingProjectAsset = report.issues.find(
       (entry) => entry.code === "missing-project-asset",
     );
-    const emptyGuideSection = report.issues.find(
-      (entry) => entry.code === "empty-guide-section",
-    );
+    const emptyGuideSection = report.issues.find((entry) => entry.code === "empty-guide-section");
     const incompatibleTemplate = report.issues.find(
       (entry) => entry.code === "incompatible-page-template",
     );
