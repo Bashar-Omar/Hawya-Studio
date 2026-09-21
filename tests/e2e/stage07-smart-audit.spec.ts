@@ -28,7 +28,7 @@ async function finishProject(page: Page): Promise<void> {
     page.getByRole("heading", { name: "Setup complete. The guide shell is ready." }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Open Brand System" }).click();
-  await expect(page.getByRole("heading", { name: "Stage Seven Identity" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Stage Seven Identity", level: 1 })).toBeVisible();
 }
 
 function measuredSvg(): Buffer {
