@@ -60,6 +60,30 @@ type LogoSystem = {
 
 Smart-analysis fields include `source: 'measured'|'suggested'|'user'` where professional interpretation is involved.
 
+### Stage 07 smart-analysis provenance
+
+Stage 07 does not change the project schema version. It uses the existing extensible logo geometry/rule envelopes with explicit provenance.
+
+A measured logo analysis stores plain deterministic data such as:
+
+```ts
+type LogoGeometryInsight = {
+  kind: 'svg' | 'raster';
+  canvas: {width: number; height: number};
+  visibleBounds: {x: number; y: number; width: number; height: number};
+  aspectRatio: number;
+  padding: {top: number; right: number; bottom: number; left: number};
+  cropSuggestion?: {x: number; y: number; width: number; height: number};
+  paletteCandidates: string[];
+};
+```
+
+Analyzer output is persisted on the logo variant with `source: 'measured'`. Measurement alone never creates a professional clear-space or minimum-size rule.
+
+Confirmed rule payloads retain the existing rule envelope and become `source: 'user'` only after an explicit application use case confirms them. Incorrect-use rules likewise record only user-confirmed deterministic rule kinds.
+
+Audit reports, contrast matrices and quick-fix availability are derived from the canonical project snapshot and are not serialized as a second source of truth.
+
 ## Colors
 
 ```ts
