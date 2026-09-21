@@ -273,6 +273,8 @@ export const arMessages: MessageCatalog = {
   "audit.logo.minimumSize": "قاعدة الحد الأدنى للحجم",
   "audit.logo.screenPx": "الحد الأدنى للشاشة (px)",
   "audit.logo.printMm": "الحد الأدنى للطباعة (mm)",
+  "audit.logo.minimumPreview": "معاينة الشاشة · {value} بكسل",
+  "audit.logo.previewUnavailable": "المعاينة غير متاحة",
   "audit.logo.minimumNote":
     "أدخل حدًا احترافيًا راجعته أنت. هوية لا يخترع حجمًا معتمدًا من تلقاء نفسه.",
   "audit.logo.donts": "أمثلة الاستخدام الخاطئ الحتمية",
