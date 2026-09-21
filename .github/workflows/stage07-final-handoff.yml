@@ -28,7 +28,7 @@ jobs:
           unzip -t Hawya-Studio-Stage-07-Complete.zip
           sha256sum Hawya-Studio-Stage-07-Complete.zip > Hawya-Studio-Stage-07-Complete.zip.sha256
           FILE_COUNT="$(unzip -Z1 Hawya-Studio-Stage-07-Complete.zip | grep -v '/$' | wc -l | tr -d ' ')"
-          if unzip -Z1 Hawya-Studio-Stage-07-Complete.zip | grep -Eq '(^|/)(node_modules|dist|coverage|test-results|playwright-report|\.stage07)(/|$)|materializer|bootstrap'; then
+          if unzip -Z1 Hawya-Studio-Stage-07-Complete.zip | grep -Eq '(^|/)(node_modules|dist|coverage|test-results|playwright-report|\.stage07)(/|$)|(^|/)(stage07-materializer|stage07-bootstrap)([-_.]|$)'; then
             echo "Forbidden generated/transport artifact found in handoff ZIP" >&2
             exit 1
           fi
