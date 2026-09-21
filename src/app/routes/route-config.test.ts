@@ -41,6 +41,8 @@ describe("app route matching", () => {
     expect(pageIdFromPathname(editorPath(projectId, pageId))).toBe(pageId);
     expect(matchRoute("/studio/projects/not-a-uuid")).toBe("not-found");
     expect(matchRoute("/studio/projects/not-a-uuid/brand")).toBe("not-found");
+    expect(matchRoute("/studio/projects/not-a-uuid/export")).toBe("not-found");
+    expect(matchRoute("/studio/projects/not-a-uuid/print")).toBe("not-found");
     expect(matchRoute(`/studio/projects/${projectId}/editor/not-a-uuid`)).toBe("not-found");
   });
 });
