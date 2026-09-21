@@ -6,9 +6,7 @@ import { slugifyFilename } from "@/infrastructure/export/export-helpers";
 
 export interface ProjectArchiveExportOptions {}
 
-export class ProjectArchiveExportRenderer
-  implements ExportRenderer<ProjectArchiveExportOptions>
-{
+export class ProjectArchiveExportRenderer implements ExportRenderer<ProjectArchiveExportOptions> {
   readonly format = "hawya" as const;
 
   constructor(

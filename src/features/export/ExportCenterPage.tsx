@@ -65,13 +65,7 @@ const FORMAT_LABELS: Record<ExportFormat, string> = {
   delivery: "Delivery ZIP",
 };
 
-const PAGE_FORMATS = new Set<ExportFormat>([
-  "svg-editable",
-  "svg-outlined",
-  "png",
-  "webp",
-  "jpeg",
-]);
+const PAGE_FORMATS = new Set<ExportFormat>(["svg-editable", "svg-outlined", "png", "webp", "jpeg"]);
 
 function formatBytes(value: number): string {
   if (value < 1024) return `${value} B`;
@@ -184,11 +178,7 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
         pageIds: selectedPages,
       };
     }
-    if (
-      format === "tokens-json" ||
-      format === "css-variables" ||
-      format === "brand-guidelines"
-    ) {
+    if (format === "tokens-json" || format === "css-variables" || format === "brand-guidelines") {
       return { format, localeMode };
     }
     if (format === "web-guide" || format === "delivery") {
@@ -296,9 +286,7 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
                 </div>
                 <div className="export-fidelity-chips" aria-label={t("export.fidelity.title")}>
                   <span>
-                    {fidelity.editable
-                      ? t("export.fidelity.editable")
-                      : t("export.fidelity.fixed")}
+                    {fidelity.editable ? t("export.fidelity.editable") : t("export.fidelity.fixed")}
                   </span>
                   <span>
                     {fidelity.vector
@@ -349,9 +337,7 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
                       }
                       onChange={(event) =>
                         setSelectedPages(
-                          event.currentTarget.checked
-                            ? [...snapshot.project.guide.pageOrder]
-                            : [],
+                          event.currentTarget.checked ? [...snapshot.project.guide.pageOrder] : [],
                         )
                       }
                     />
@@ -392,9 +378,7 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
                     <select
                       className="text-input"
                       value={scale}
-                      onChange={(event) =>
-                        setScale(Number(event.currentTarget.value) as 1 | 2 | 3)
-                      }
+                      onChange={(event) => setScale(Number(event.currentTarget.value) as 1 | 2 | 3)}
                     >
                       <option value={1}>1×</option>
                       <option value={2}>2×</option>
@@ -445,7 +429,10 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
               ) : null}
             </section>
 
-            <section className="export-card export-preflight" aria-labelledby="export-preflight-title">
+            <section
+              className="export-card export-preflight"
+              aria-labelledby="export-preflight-title"
+            >
               <div className="export-card__title">
                 <div>
                   <p className="eyebrow">{t("export.preflightKicker")}</p>
@@ -455,9 +442,7 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
                   <span>
                     {t("export.blockingCount", { count: preflight?.counts.blocking ?? 0 })}
                   </span>
-                  <span>
-                    {t("export.warningCount", { count: preflight?.counts.warning ?? 0 })}
-                  </span>
+                  <span>{t("export.warningCount", { count: preflight?.counts.warning ?? 0 })}</span>
                 </div>
               </div>
 

@@ -80,12 +80,7 @@ export function createExportFeatureRuntime(
     "brand-guidelines": new BrandArtifactRenderer("brand-guidelines"),
   } as const;
   const webGuide = new WebGuideExportRenderer(packager, outlinedSvg, runtime.binaries);
-  const delivery = new DeliveryExportRenderer(
-    packager,
-    editableSvg,
-    outlinedSvg,
-    runtime.binaries,
-  );
+  const delivery = new DeliveryExportRenderer(packager, editableSvg, outlinedSvg, runtime.binaries);
   const archive = new ProjectArchiveExportRenderer(runtime.binaries, runtime.archiveCodec);
   const files = new BrowserArtifactFiles();
 
@@ -111,14 +106,20 @@ export function createExportFeatureRuntime(
       case "svg-editable":
         artifacts = await editableSvg.render(
           active.snapshot,
-          { localeMode: request.localeMode, ...(request.pageIds ? { pageIds: request.pageIds } : {}) },
+          {
+            localeMode: request.localeMode,
+            ...(request.pageIds ? { pageIds: request.pageIds } : {}),
+          },
           signal,
         );
         break;
       case "svg-outlined":
         artifacts = await outlinedSvg.render(
           active.snapshot,
-          { localeMode: request.localeMode, ...(request.pageIds ? { pageIds: request.pageIds } : {}) },
+          {
+            localeMode: request.localeMode,
+            ...(request.pageIds ? { pageIds: request.pageIds } : {}),
+          },
           signal,
         );
         break;
