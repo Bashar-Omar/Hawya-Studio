@@ -179,28 +179,49 @@ export class SvgExportRenderer implements ExportRenderer<SvgExportOptions> {
     const sorted = [...scene.rendered.layers]
       .filter((layer) => layer.visible)
       .sort((left, right) => left.zIndex - right.zIndex);
-    for (const layer of sorted) {
+    const layersById = new Map(sorted.map((layer) => [layer.id, layer] as const));
+
+    const renderLayer = async (layer: RenderedSceneLayer): Promise<string> => {
       if (signal.aborted) throw new DOMException("Export cancelled", "AbortError");
-      if (layer.type === "group") continue;
+
+      if (layer.type === "group") {
+        const children = layer.childIds
+          .map((id) => layersById.get(id))
+          .filter((child): child is RenderedSceneLayer => Boolean(child))
+          .sort((left, right) => left.zIndex - right.zIndex);
+        const body: string[] = [];
+        for (const child of children) body.push(await renderLayer(child));
+        return `${layerOpen(layer)}${body.join("")}</g>`;
+      }
+
       let body = "";
-      if (layer.type === "shape") body = shapeMarkup(layer);
-      else if (layer.type === "image" || layer.type === "vector") {
+      if (layer.type === "shape") {
+        body = shapeMarkup(layer);
+      } else if (layer.type === "image" || layer.type === "vector") {
         const asset = layer.assetId ? assets.get(layer.assetId) : undefined;
-        if (!asset)
+        if (!asset) {
           throw new Error(`Asset ${layer.assetId ?? "unknown"} is unavailable during SVG export`);
+        }
         const fit = layer.type === "image" ? layer.fit : "contain";
         body = `<image width="${layer.transform.width}" height="${layer.transform.height}" href="${dataUri(asset.mime, asset.bytes)}" preserveAspectRatio="${preserveAspect(fit)}"/>`;
       } else if (layer.type === "text") {
         const style = scene.textStyles[layer.id];
         if (!style) throw new Error(`Text style for layer ${layer.id} is unavailable`);
-        if (this.mode === "editable") body = editableTextMarkup(layer, style);
-        else {
+        if (this.mode === "editable") {
+          body = editableTextMarkup(layer, style);
+        } else {
           const fontBytes = style.fontRefId ? fonts.get(style.fontRefId) : undefined;
-          if (!fontBytes) throw new Error(`Font binary for text layer ${layer.id} is unavailable`);
+          if (!fontBytes) {
+            throw new Error(`Font binary for text layer ${layer.id} is unavailable`);
+          }
           body = await outlinedTextMarkup(layer, style, fontBytes, this.outliner, signal);
         }
       }
-      content.push(`${layerOpen(layer)}${body}</g>`);
+      return `${layerOpen(layer)}${body}</g>`;
+    };
+
+    for (const layer of sorted.filter((candidate) => !candidate.parentGroupId)) {
+      content.push(await renderLayer(layer));
     }
     return `<svg xmlns="http://www.w3.org/2000/svg" width="${scene.rendered.pageWidth}" height="${scene.rendered.pageHeight}" viewBox="0 0 ${scene.rendered.pageWidth} ${scene.rendered.pageHeight}" data-hawya-export="${this.mode}"><title>${escapeXml(page.name.en ?? page.name.ar ?? page.semanticType)}</title>${content.join("")}</svg>`;
   }
