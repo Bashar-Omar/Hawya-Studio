@@ -324,13 +324,15 @@ export const enMessages = {
   "audit.issue.missingColorToken": "Reference points to a missing color token",
   "audit.issue.missingTextStyleToken": "Text layer references a missing text style token",
   "audit.issue.detachedColorToken": "Local color matches a token but is detached",
-  "audit.issue.detachedTextStyle": "Text layer uses local typography instead of a semantic style token",
+  "audit.issue.detachedTextStyle":
+    "Text layer uses local typography instead of a semantic style token",
   "audit.issue.stalePrintValue": "Verified print color needs review after a screen-color change",
   "audit.issue.arabicFontCoverage": "Arabic font coverage is incomplete",
   "audit.issue.arabicFontShapingReview": "Arabic shaping tables need review",
   "audit.issue.invalidLocalOverride": "Local override targets a missing template layer",
   "audit.issue.emptyGuideSection": "Guide section has no pages",
-  "audit.issue.incompatiblePageTemplate": "Page template is incompatible with the semantic page type",
+  "audit.issue.incompatiblePageTemplate":
+    "Page template is incompatible with the semantic page type",
   "audit.issue.layerOutsidePage": "Layer extends outside the page",
   "audit.issue.zeroLayerSize": "Layer has zero width or height",
   "audit.issue.hiddenRequiredSlot": "A required template layer is hidden",
