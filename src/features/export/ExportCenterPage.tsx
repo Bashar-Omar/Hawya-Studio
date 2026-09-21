@@ -23,6 +23,10 @@ import {
   type ExportFeatureRuntime,
   type ExportRequest,
 } from "@/infrastructure/export/create-export-feature-runtime";
+import {
+  DEFAULT_DELIVERY_SELECTION,
+  type DeliverySelection,
+} from "@/infrastructure/export/package-export-renderers";
 import { useI18n } from "@/i18n/I18nProvider";
 import "@/features/export/export.css";
 
@@ -95,6 +99,9 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
   const [flattenBackground, setFlattenBackground] = useState(false);
   const [backgroundColor, setBackgroundColor] = useState("#FFFFFF");
   const [fontPolicy, setFontPolicy] = useState<FontInclusionPolicy | "">("");
+  const [deliverySelection, setDeliverySelection] = useState<DeliverySelection>({
+    ...DEFAULT_DELIVERY_SELECTION,
+  });
   const [warningsAccepted, setWarningsAccepted] = useState(false);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
@@ -180,8 +187,16 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
   const warningsNeedAcceptance = (preflight?.counts.warning ?? 0) > 0;
   const isRasterFormat = format === "png" || format === "webp" || format === "jpeg";
   const rasterOptionsValid = !isRasterFormat || (rasterScaleValid && rasterWithinSafetyCap);
+  const deliverySelectionValid =
+    format !== "delivery" || Object.values(deliverySelection).some(Boolean);
   const canRun =
-    Boolean(workspace && preflight?.ok && selectionValid && rasterOptionsValid) &&
+    Boolean(
+      workspace &&
+        preflight?.ok &&
+        selectionValid &&
+        rasterOptionsValid &&
+        deliverySelectionValid,
+    ) &&
     (!warningsNeedAcceptance || warningsAccepted) &&
     !busy;
 
@@ -203,9 +218,18 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
     if (format === "tokens-json" || format === "css-variables" || format === "brand-guidelines") {
       return { format, localeMode };
     }
-    if (format === "web-guide" || format === "delivery") {
+    if (format === "web-guide") {
       if (!fontPolicy) throw new Error(t("export.fontPolicyRequired"));
       return { format, localeMode, fontPolicy };
+    }
+    if (format === "delivery") {
+      if (!fontPolicy) throw new Error(t("export.fontPolicyRequired"));
+      return {
+        format,
+        localeMode,
+        fontPolicy,
+        include: deliverySelection,
+      };
     }
     throw new Error("Print is opened through the dedicated Print View");
   };
@@ -513,6 +537,44 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
                     ) : null}
                   </div>
                 </div>
+              ) : null}
+
+              {format === "delivery" ? (
+                <fieldset className="export-delivery-tree">
+                  <legend>{t("export.deliveryContents")}</legend>
+                  <p>{t("export.deliveryContentsBody")}</p>
+                  {(
+                    [
+                      ["guidelines", "export.delivery.guidelines"],
+                      ["artwork", "export.delivery.artwork"],
+                      ["logos", "export.delivery.logos"],
+                      ["colors", "export.delivery.colors"],
+                      ["digital", "export.delivery.digital"],
+                      ["fonts", "export.delivery.fonts"],
+                      ["sourceAttachments", "export.delivery.sourceAttachments"],
+                    ] as const
+                  ).map(([key, label]) => (
+                    <label key={key}>
+                      <input
+                        type="checkbox"
+                        checked={deliverySelection[key]}
+                        onChange={(event) =>
+                          setDeliverySelection((current) => ({
+                            ...current,
+                            [key]: event.currentTarget.checked,
+                          }))
+                        }
+                      />
+                      <span>{t(label)}</span>
+                    </label>
+                  ))}
+                  {!deliverySelectionValid ? (
+                    <p className="inline-error">{t("export.deliveryRequired")}</p>
+                  ) : null}
+                  {deliverySelection.fonts && fontPolicy !== "include-confirmed" ? (
+                    <p className="export-delivery-note">{t("export.deliveryFontsPolicy")}</p>
+                  ) : null}
+                </fieldset>
               ) : null}
 
               {isPackageFormat(format) ? (
