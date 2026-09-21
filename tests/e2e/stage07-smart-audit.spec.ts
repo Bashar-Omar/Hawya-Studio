@@ -59,6 +59,7 @@ test("Smart Audit measures logo geometry, requires explicit professional-rule co
   await expect(page.getByTestId("logo-analysis")).toBeVisible();
   await expect(page.getByTestId("crop-suggestion")).toBeVisible();
   await expect(page.locator(".audit-palette__item")).toHaveCount(2);
+  await expect(page.locator(".audit-dont-example__preview img")).toHaveCount(8);
 
   const clearRule = page.locator("article.audit-rule-card").filter({ hasText: "Clear-space rule" });
   await clearRule.getByRole("button", { name: "Confirm rule" }).click();
@@ -66,6 +67,8 @@ test("Smart Audit measures logo geometry, requires explicit professional-rule co
     .locator("article.audit-rule-card")
     .filter({ hasText: "Minimum-size rule" });
   await minimumRule.getByLabel("Screen minimum (px)").fill("48");
+  await expect(page.getByTestId("minimum-size-preview")).toContainText("48px");
+  await expect(page.getByTestId("minimum-size-preview").locator("img")).toBeVisible();
   await minimumRule.getByRole("button", { name: "Confirm rule" }).click();
   await expect(page.getByText("Confirmed by user")).toHaveCount(2);
 
