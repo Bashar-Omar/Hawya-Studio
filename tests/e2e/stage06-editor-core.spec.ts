@@ -1,5 +1,16 @@
 import { expect, test, type Locator, type Page } from "@playwright/test";
 
+function captureRuntimeIssues(page: Page): string[] {
+  const issues: string[] = [];
+  page.on("console", (message) => {
+    if (message.type() === "error" || message.type() === "warning") {
+      issues.push(`console.${message.type()}: ${message.text()}`);
+    }
+  });
+  page.on("pageerror", (error) => issues.push(`pageerror: ${error.message}`));
+  return issues;
+}
+
 async function createProject(page: Page, contentLocale: "en" | "ar"): Promise<void> {
   await page.goto("/studio/new");
   await expect(page.getByLabel("Project name")).toBeVisible();
@@ -67,6 +78,7 @@ async function expectLeftNear(layer: Locator, expected: number): Promise<void> {
 test("EN editor transforms one command, undo/redo persists after reload, and drag frame pacing is sampled", async ({
   page,
 }) => {
+  const runtimeIssues = captureRuntimeIssues(page);
   await createProject(page, "en");
   await generateMinimalGuideAndOpenEditor(page);
 
@@ -138,11 +150,13 @@ test("EN editor transforms one command, undo/redo persists after reload, and dra
   expect(pacing.samples).toBeGreaterThanOrEqual(15);
   expect(pacing.median).toBeLessThan(30);
   expect(pacing.p95).toBeLessThan(60);
+  expect(runtimeIssues).toEqual([]);
 });
 
 test("Arabic editor keeps physical canvas coordinates across UI RTL and persists bidi text plus transforms", async ({
   page,
 }) => {
+  const runtimeIssues = captureRuntimeIssues(page);
   await createProject(page, "ar");
   await generateMinimalGuideAndOpenEditor(page);
 
@@ -188,4 +202,5 @@ test("Arabic editor keeps physical canvas coordinates across UI RTL and persists
   await expect(persisted).toHaveAttribute("dir", "rtl");
   await expect(persisted).toContainText("هوية عربية جديدة");
   await expectLeftNear(persisted, afterMove);
+  expect(runtimeIssues).toEqual([]);
 });
