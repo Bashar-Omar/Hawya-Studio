@@ -150,11 +150,13 @@ function auditTextLayerTokens(
   const textStyleIds = new Set(snapshot.project.brand.typography.styles.map((style) => style.id));
   const location = `page:${pageId}:layer:${layer.id}`;
 
-  if ("tokenId" in layer.typography) {
-    if (!textStyleIds.has(layer.typography.tokenId)) {
-      issues.push(
-        issue("missing-text-style-token", "blocking", location, layer.typography.tokenId),
-      );
+  const textStyleTokenId =
+    "tokenId" in layer.typography && typeof layer.typography.tokenId === "string"
+      ? layer.typography.tokenId
+      : undefined;
+  if (textStyleTokenId) {
+    if (!textStyleIds.has(textStyleTokenId)) {
+      issues.push(issue("missing-text-style-token", "blocking", location, textStyleTokenId));
     }
   } else {
     issues.push(issue("detached-text-style", "warning", location, layer.name));
