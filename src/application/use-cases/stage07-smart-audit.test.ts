@@ -139,9 +139,9 @@ describe("Stage 07 smart-rule and audit application boundaries", () => {
       new TestClock(),
     );
 
-    await expect(
-      useCase.analyze(SYNTHETIC_PROJECT_ID, SYNTHETIC_LOGO_VARIANT_ID),
-    ).rejects.toThrow("must be sanitized");
+    await expect(useCase.analyze(SYNTHETIC_PROJECT_ID, SYNTHETIC_LOGO_VARIANT_ID)).rejects.toThrow(
+      "must be sanitized",
+    );
     expect(analyzeCalls).toBe(0);
     expect(projects.saveCount).toBe(0);
   });
