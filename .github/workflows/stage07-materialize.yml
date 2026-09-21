@@ -62,51 +62,53 @@ jobs:
         run: |
           set -euo pipefail
           python - <<'PY'
+          import re
           from pathlib import Path
 
-          def replace(path: str, old: str, new: str) -> None:
+          def regex_replace(path: str, pattern: str, replacement: str) -> None:
               file = Path(path)
               content = file.read_text(encoding="utf-8")
-              if old not in content:
-                  raise SystemExit(f"Expected patch anchor missing: {path}")
-              file.write_text(content.replace(old, new), encoding="utf-8")
+              updated, count = re.subn(pattern, replacement, content, count=1, flags=re.MULTILINE)
+              if count != 1:
+                  raise SystemExit(f"Expected exactly one patch match in {path}; got {count}")
+              file.write_text(updated, encoding="utf-8")
 
-          replace(
+          regex_replace(
               "src/application/use-cases/apply-audit-quick-fix.ts",
-              'if (!layer || layer.type !== "text")\n      throw new Error("Audit quick-fix text layer does not exist");',
-              'if (layer?.type !== "text")\n      throw new Error("Audit quick-fix text layer does not exist");',
+              r'if\s*\(\s*!layer\s*\|\|\s*layer\.type\s*!==\s*"text"\s*\)\s*throw new Error\("Audit quick-fix text layer does not exist"\);',
+              'if (layer?.type !== "text")\n  throw new Error("Audit quick-fix text layer does not exist");',
           )
-          replace(
+          regex_replace(
               "src/domain/audit/audit-engine.ts",
-              'if (!asset || asset.kind !== "font") {',
+              r'if\s*\(\s*!asset\s*\|\|\s*asset\.kind\s*!==\s*"font"\s*\)\s*\{',
               'if (asset?.kind !== "font") {',
           )
-          replace(
+          regex_replace(
               "src/features/brand-system/AuditPanel.tsx",
-              '<div className="audit-counts" aria-label={t("audit.report.summary")}>',
+              r'<div\s+className="audit-counts"\s+aria-label=\{t\("audit\.report\.summary"\)\}>',
               '<div className="audit-counts" role="group" aria-label={t("audit.report.summary")}>',
           )
 
           css = Path("src/features/brand-system/brand-system.css")
           content = css.read_text(encoding="utf-8")
-          count_block = """.audit-counts span {
-            border: 1px solid var(--border);
-            border-radius: 999px;
-            padding: 5px 8px;
-            font-size: 11px;
-            font-weight: 700;
-          }
-          """
-          rule_block = """.audit-rule-card header span {
-            color: var(--text-2);
-            font-size: 11px;
-            font-weight: 700;
-          }
-          """
-          if count_block not in content or rule_block not in content:
+          count_pattern = re.compile(
+              r'\.audit-counts\s+span\s*\{[^}]*\}',
+              flags=re.MULTILINE,
+          )
+          rule_pattern = re.compile(
+              r'\.audit-rule-card\s+header\s+span\s*\{[^}]*\}',
+              flags=re.MULTILINE,
+          )
+          count_match = count_pattern.search(content)
+          rule_match = rule_pattern.search(content)
+          if count_match is None or rule_match is None:
               raise SystemExit("Expected CSS specificity patch anchors missing")
-          content = content.replace(count_block, "")
-          content = content.replace(rule_block, count_block + rule_block)
+          count_block = count_match.group(0)
+          content = content[:count_match.start()] + content[count_match.end():]
+          rule_match = rule_pattern.search(content)
+          if rule_match is None:
+              raise SystemExit("Rule span block disappeared during CSS patch")
+          content = content[:rule_match.start()] + count_block + "\n" + content[rule_match.start():]
           css.write_text(content, encoding="utf-8")
           PY
 
