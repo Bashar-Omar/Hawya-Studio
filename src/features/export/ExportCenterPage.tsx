@@ -283,11 +283,8 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
                   <p className="eyebrow">{t("export.selected")}</p>
                   <h2>{FORMAT_LABELS[format]}</h2>
                 </div>
-                <div
-                  className="export-fidelity-chips"
-                  role="group"
-                  aria-label={t("export.fidelity.title")}
-                >
+                <fieldset className="export-fidelity-chips">
+                  <legend className="sr-only">{t("export.fidelity.title")}</legend>
                   <span>
                     {fidelity.editable ? t("export.fidelity.editable") : t("export.fidelity.fixed")}
                   </span>
@@ -297,7 +294,7 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
                       : t("export.fidelity.dataOrRaster")}
                   </span>
                   {fidelity.requiresFonts ? <span>{t("export.fidelity.fonts")}</span> : null}
-                </div>
+                </fieldset>
               </div>
 
               <p>{fidelity.description}</p>
