@@ -132,6 +132,11 @@ test("Stage 08 builds the selected delivery ZIP without silently packaging fonts
 
   await page.getByRole("button", { name: /Delivery ZIP/ }).click();
   await page
+    .getByText("Editable + outlined page artwork", { exact: true })
+    .locator("..")
+    .getByRole("checkbox")
+    .uncheck();
+  await page
     .getByText("Omit font binaries", { exact: true })
     .locator("..")
     .getByRole("radio")
@@ -149,7 +154,7 @@ test("Stage 08 builds the selected delivery ZIP without silently packaging fonts
   const entries = unzipSync(new Uint8Array(await downloadedBytes(download)));
   expect(Object.keys(entries)).toContain("manifest.json");
   expect(Object.keys(entries)).toContain("Guidelines/Brand-Guidelines.md");
-  expect(Object.keys(entries).some((path) => path.startsWith("Artwork/Outlined/"))).toBe(true);
+  expect(Object.keys(entries).some((path) => path.startsWith("Artwork/"))).toBe(false);
   expect(Object.keys(entries).some((path) => path.startsWith("Fonts/"))).toBe(false);
 
   const manifestBytes = entries["manifest.json"];
@@ -159,11 +164,38 @@ test("Stage 08 builds the selected delivery ZIP without silently packaging fonts
     fontPolicy?: string;
     exportedAt?: string;
     hawyaVersion?: string;
+    include?: { artwork?: boolean };
   };
   expect(manifest.format).toBe("hawya-delivery");
   expect(manifest.fontPolicy).toBe("omit");
   expect(manifest.exportedAt).toMatch(/^\\d{4}-\\d{2}-\\d{2}T/);
   expect(manifest.hawyaVersion).toBe("0.1.0");
+  expect(manifest.include?.artwork).toBe(false);
+  expect(runtimeIssues).toEqual([]);
+});
+
+test("Stage 08 outlines a selected page with the real browser font worker", async ({ page }) => {
+  const runtimeIssues = captureRuntimeIssues(page);
+  await createExportReadyProject(page);
+
+  await page.getByRole("button", { name: /Outlined SVG/ }).click();
+  const allPages = page.getByText("All guide pages", { exact: true }).locator("..");
+  await allPages.getByRole("checkbox").uncheck();
+  const pageChoices = page.locator(".export-pages__grid input[type='checkbox']");
+  await pageChoices.first().check();
+  await acknowledgeWarningsIfPresent(page);
+
+  const generate = page.getByRole("button", { name: "Generate & download" });
+  await expect(generate).toBeEnabled();
+  const [download] = await Promise.all([
+    page.waitForEvent("download", { timeout: 10_000 }),
+    generate.click(),
+  ]);
+  expect(download.suggestedFilename()).toMatch(/-outlined\.svg$/);
+  const svg = (await downloadedBytes(download)).toString("utf8");
+  expect(svg).toContain('data-hawya-export="outlined"');
+  expect(svg).toContain("<path");
+  expect(svg).not.toMatch(/<script\b/i);
   expect(runtimeIssues).toEqual([]);
 });
 
