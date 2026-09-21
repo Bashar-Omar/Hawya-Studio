@@ -223,6 +223,6 @@ export class SvgExportRenderer implements ExportRenderer<SvgExportOptions> {
     for (const layer of sorted.filter((candidate) => !candidate.parentGroupId)) {
       content.push(await renderLayer(layer));
     }
-    return `<svg xmlns="http://www.w3.org/2000/svg" width="${scene.rendered.pageWidth}" height="${scene.rendered.pageHeight}" viewBox="0 0 ${scene.rendered.pageWidth} ${scene.rendered.pageHeight}" data-hawya-export="${this.mode}"><title>${escapeXml(page.name.en ?? page.name.ar ?? page.semanticType)}</title>${content.join("")}</svg>`;
+    return `<svg xmlns="http://www.w3.org/2000/svg" width="${scene.rendered.pageWidth}${page.canvas.unit}" height="${scene.rendered.pageHeight}${page.canvas.unit}" viewBox="0 0 ${scene.rendered.pageWidth} ${scene.rendered.pageHeight}" data-hawya-export="${this.mode}"><title>${escapeXml(page.name.en ?? page.name.ar ?? page.semanticType)}</title>${content.join("")}</svg>`;
   }
 }
