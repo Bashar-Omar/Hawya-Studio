@@ -67,8 +67,19 @@ function extensionFor(artifact: ExportArtifact): string {
   return candidate?.match(/^[a-z0-9]{1,8}$/)?.[0] ?? "bin";
 }
 
+export interface ExportEnvironment {
+  now(): string;
+  appVersion: string;
+}
+
+const DEFAULT_EXPORT_ENVIRONMENT: ExportEnvironment = {
+  now: () => new Date().toISOString(),
+  appVersion: __HAWYA_VERSION__,
+};
+
 export function createExportFeatureRuntime(
   runtime: Pick<PersistenceRuntime, "projects" | "binaries" | "archiveCodec">,
+  environment: ExportEnvironment = DEFAULT_EXPORT_ENVIRONMENT,
 ) {
   const workspace = new ExportWorkspaceQuery(runtime.projects, runtime.binaries);
   const outliner = new WorkerFontOutliner();
@@ -168,6 +179,8 @@ export function createExportFeatureRuntime(
             localeMode: request.localeMode,
             fontPolicy: request.fontPolicy,
             include: request.include,
+            exportedAt: environment.now(),
+            appVersion: environment.appVersion,
           },
           signal,
         );

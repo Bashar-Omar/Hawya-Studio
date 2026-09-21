@@ -157,9 +157,13 @@ test("Stage 08 builds the selected delivery ZIP without silently packaging fonts
   const manifest = JSON.parse(strFromU8(manifestBytes)) as {
     format?: string;
     fontPolicy?: string;
+    exportedAt?: string;
+    hawyaVersion?: string;
   };
   expect(manifest.format).toBe("hawya-delivery");
   expect(manifest.fontPolicy).toBe("omit");
+  expect(manifest.exportedAt).toMatch(/^\\d{4}-\\d{2}-\\d{2}T/);
+  expect(manifest.hawyaVersion).toBe("0.1.0");
   expect(runtimeIssues).toEqual([]);
 });
 

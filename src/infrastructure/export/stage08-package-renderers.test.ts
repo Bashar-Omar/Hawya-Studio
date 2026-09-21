@@ -131,6 +131,8 @@ describe("Stage 08 developer and package exports", () => {
           fonts: true,
           sourceAttachments: true,
         },
+        exportedAt: "2026-09-22T00:00:00.000Z",
+        appVersion: "0.1.0-test",
       },
       signal,
     );
@@ -144,6 +146,16 @@ describe("Stage 08 developer and package exports", () => {
       ),
     ).toBe(false);
     expect(includePackager.entries.some((entry) => entry.path === "manifest.json")).toBe(true);
+    const manifestEntry = includePackager.entries.find((entry) => entry.path === "manifest.json");
+    const readmeEntry = includePackager.entries.find((entry) => entry.path === "README.txt");
+    expect(manifestEntry).toBeDefined();
+    expect(readmeEntry).toBeDefined();
+    const manifestText = new TextDecoder().decode(manifestEntry?.bytes);
+    const readmeText = new TextDecoder().decode(readmeEntry?.bytes);
+    expect(manifestText).toContain('"exportedAt": "2026-09-22T00:00:00.000Z"');
+    expect(manifestText).toContain('"hawyaVersion": "0.1.0-test"');
+    expect(readmeText).toContain("Hawya Studio version: 0.1.0-test");
+    expect(readmeText).toContain("Exported at: 2026-09-22T00:00:00.000Z");
     expect(
       includePackager.entries.some((entry) => entry.path.startsWith("Artwork/Editable/page-")),
     ).toBe(true);

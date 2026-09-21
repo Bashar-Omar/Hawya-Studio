@@ -49,6 +49,8 @@ export const DEFAULT_DELIVERY_SELECTION: DeliverySelection = {
 
 export interface DeliveryExportOptions extends PackageExportOptions {
   include: DeliverySelection;
+  exportedAt: string;
+  appVersion: string;
 }
 
 function titleForPage(
@@ -317,6 +319,8 @@ export class DeliveryExportRenderer implements ExportRenderer<DeliveryExportOpti
           localeMode: options.localeMode,
           fontPolicy: options.fontPolicy,
           include: options.include,
+          exportedAt: options.exportedAt,
+          hawyaVersion: options.appVersion,
           fidelity: {
             editableSvg: EXPORT_FIDELITY_CONTRACTS["svg-editable"],
             outlinedSvg: EXPORT_FIDELITY_CONTRACTS["svg-outlined"],
@@ -331,6 +335,8 @@ export class DeliveryExportRenderer implements ExportRenderer<DeliveryExportOpti
       bytes: utf8(
         [
           `Hawya Studio delivery package — ${snapshot.project.metadata.name}`,
+          `Hawya Studio version: ${options.appVersion}`,
+          `Exported at: ${options.exportedAt}`,
           `Project schema: ${snapshot.project.schemaVersion}`,
           "",
           "Editable SVG keeps live text and therefore requires matching fonts on the receiving system.",
