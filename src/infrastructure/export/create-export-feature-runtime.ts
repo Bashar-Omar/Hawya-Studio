@@ -37,8 +37,9 @@ export type ExportRequest =
     })
   | (BaseRequest & {
       format: RasterFormat;
-      scale: 1 | 2 | 3;
+      scale: number;
       quality?: number;
+      background?: string;
       pageIds?: readonly string[];
     })
   | (BaseRequest & {
@@ -132,6 +133,7 @@ export function createExportFeatureRuntime(
             localeMode: request.localeMode,
             scale: request.scale,
             ...(request.quality !== undefined ? { quality: request.quality } : {}),
+            ...(request.background ? { background: request.background } : {}),
             ...(request.pageIds ? { pageIds: request.pageIds } : {}),
           },
           signal,
