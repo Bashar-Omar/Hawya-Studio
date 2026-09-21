@@ -86,7 +86,3 @@ export interface RenderedScene {
   layers: RenderedSceneLayer[];
 }
 
-export interface EditorClipboardPayload {
-  schema: "hawya.editor-clipboard.v1";
-  layers: Layer[];
-}
