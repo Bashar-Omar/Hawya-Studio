@@ -104,6 +104,8 @@ describe("Stage 08 SVG renderer", () => {
     const outlinedText = new TextDecoder().decode(outlined[0]?.bytes);
 
     expect(editableText).toContain('data-hawya-export="editable"');
+    expect(editableText).toContain(`width="${page.canvas.width}${page.canvas.unit}"`);
+    expect(editableText).toContain(`height="${page.canvas.height}${page.canvas.unit}"`);
     expect(editableText).toContain("<text");
     expect(editableText).toContain("Hello Hawya");
     expect(outlinedText).toContain('data-hawya-export="outlined"');
