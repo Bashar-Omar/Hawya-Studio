@@ -1,0 +1,41 @@
+name: Stage 08 format slice 2
+
+on:
+  push:
+    branches:
+      - stage-08-exports
+    paths:
+      - ".github/workflows/stage08-format-slice2.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: stage-08-exports
+          fetch-depth: 0
+      - name: Set up pnpm and Node.js
+        uses: pnpm/action-setup@v5
+        with:
+          run_install: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: package.json
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Format Stage 08 slice
+        run: |
+          pnpm exec biome format --write             src/application/ports/font-outliner.ts             src/application/ports/scene-rasterizer.ts             src/domain/export/export-scene.ts             src/infrastructure/workers/export-worker-protocol.ts             src/infrastructure/analysis/worker-font-outliner.ts             src/workers/export-raster.worker.ts             src/infrastructure/export/worker-scene-rasterizer.ts             src/infrastructure/export/export-helpers.ts             src/infrastructure/export/svg-export-renderer.ts             src/infrastructure/export/raster-export-renderer.ts             src/infrastructure/export/stage08-svg-renderer.test.ts             src/workers/font.worker.ts
+          rm .github/workflows/stage08-format-slice2.yml
+      - name: Commit formatter output
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "style: format Stage 08 SVG and raster slice"
+          git push origin HEAD:stage-08-exports
