@@ -50,7 +50,7 @@ test("Smart Audit measures logo geometry, requires explicit professional-rule co
     buffer: measuredSvg(),
   });
   await page.getByRole("button", { name: "Add variant" }).click();
-  await expect(page.locator("article.brand-row-card").getByLabel("Name")).toHaveValue("measured-logo");
+  await expect(page.locator("article.brand-row-card").getByLabel("Name")).toHaveValue(\n    "measured-logo",\n  );
 
   await page.getByRole("tab", { name: "Smart Audit" }).click();
   await expect(page.getByRole("heading", { name: "Smart Audit" })).toBeVisible();
