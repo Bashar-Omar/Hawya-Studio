@@ -18,8 +18,11 @@ import {
   type DistributionCommand,
 } from "@/editor/geometry/geometry";
 import { resolveRenderedScene } from "@/editor/scene/scene-resolver";
+import {
+  parseEditorClipboardJson,
+  type EditorClipboardPayload,
+} from "@/editor/model/editor-clipboard";
 import type {
-  EditorClipboardPayload,
   EditorSnapGuide,
   EditorTool,
   EditorViewportState,
@@ -326,8 +329,8 @@ export default function EditorPage({
               : undefined;
           if (!type) continue;
           const text = await (await item.getType(type)).text();
-          const parsed = JSON.parse(text) as EditorClipboardPayload;
-          if (parsed.schema === "hawya.editor-clipboard.v1") payload = parsed;
+          const parsed = parseEditorClipboardJson(text);
+          if (parsed) payload = parsed;
           break;
         }
       }
@@ -336,7 +339,7 @@ export default function EditorPage({
     }
     if (!payload) return;
     await run(async (active) => {
-      const ids = await active.paste(payload as EditorClipboardPayload);
+      const ids = await active.paste(payload);
       if (ids.length) setSelectionState(ids, ids.at(-1));
     });
   }, [run, session, setSelectionState]);
