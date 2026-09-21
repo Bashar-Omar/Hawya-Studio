@@ -1,0 +1,83 @@
+name: Stage 07 Materialize
+
+on:
+  push:
+    branches:
+      - stage-07-smart-engines-audit
+    paths:
+      - ".stage07/**"
+      - ".github/workflows/stage07-materialize.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@v2.1.0
+        with:
+          version: 12.4.2
+          runtime: node@24.21.0
+          cache: true
+          install: false
+
+      - name: Verify and materialize source
+        shell: bash
+        run: |
+          set -euo pipefail
+          base64 -d .stage07/payload.b64 > /tmp/stage07-source.tar.zst
+          echo "778be0852a640d35a3a5a3e1650691ecc39a59e53aa3029de264daa4a8a64874  /tmp/stage07-source.tar.zst" | sha256sum -c -
+          zstd -q -d -f /tmp/stage07-source.tar.zst -o /tmp/stage07-source.tar
+          echo "8d5b633b63f4e0be4dee55f5b641f18b00a93f33d3cea7e53653dde3ad3a67a1  /tmp/stage07-source.tar" | sha256sum -c -
+          python - <<'PY'
+          import tarfile
+          from pathlib import PurePosixPath
+          with tarfile.open("/tmp/stage07-source.tar", "r:") as archive:
+              members = archive.getmembers()
+              if not members:
+                  raise SystemExit("Stage 07 payload is empty")
+              for member in members:
+                  path = PurePosixPath(member.name)
+                  if path.is_absolute() or ".." in path.parts:
+                      raise SystemExit(f"Unsafe tar member: {member.name}")
+                  if not member.isfile():
+                      raise SystemExit(f"Unexpected non-file tar member: {member.name}")
+              print(f"Verified {len(members)} safe Stage 07 source files")
+          PY
+          tar -xf /tmp/stage07-source.tar -C .
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply canonical formatting
+        run: pnpm format
+
+      - name: Quality gate before commit
+        run: pnpm check
+
+      - name: Production build before commit
+        run: pnpm build
+
+      - name: Commit verified Stage 07 source
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .stage07
+          rm -f .github/workflows/stage07-materialize.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No materialized changes to commit"
+            exit 1
+          fi
+          git commit -m "feat: implement Stage 07 smart engines and audit"
+          git push origin HEAD:stage-07-smart-engines-audit
