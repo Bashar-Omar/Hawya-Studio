@@ -6,7 +6,6 @@ import { slugifyFilename } from "@/infrastructure/export/export-helpers";
 import type { SvgExportRenderer } from "@/infrastructure/export/svg-export-renderer";
 
 export interface RasterExportOptions {
-  format: RasterFormat;
   localeMode: TemplateLocaleMode;
   scale: number;
   quality?: number;
@@ -16,11 +15,15 @@ export interface RasterExportOptions {
 const MIME = { png: "image/png", webp: "image/webp", jpeg: "image/jpeg" } as const;
 
 export class RasterExportRenderer implements ExportRenderer<RasterExportOptions> {
-  readonly format = "png" as const;
+  readonly format: RasterFormat;
+
   constructor(
+    format: RasterFormat,
     private readonly svg: SvgExportRenderer,
     private readonly rasterizer: SceneRasterizer,
-  ) {}
+  ) {
+    this.format = format;
+  }
 
   async render(
     snapshot: ProjectSnapshot,
@@ -46,7 +49,7 @@ export class RasterExportRenderer implements ExportRenderer<RasterExportOptions>
           width: page.canvas.width,
           height: page.canvas.height,
           scale: options.scale,
-          format: options.format,
+          format: this.format,
           ...(options.quality !== undefined ? { quality: options.quality } : {}),
         },
         signal,
@@ -55,8 +58,8 @@ export class RasterExportRenderer implements ExportRenderer<RasterExportOptions>
         svgs[index]?.filename.replace(/-outlined\.svg$/, "").replace(/\.svg$/, "") ??
         `${slugifyFilename(snapshot.project.metadata.name)}-${index + 1}`;
       artifacts.push({
-        filename: `${source}.${options.format === "jpeg" ? "jpg" : options.format}`,
-        mime: MIME[options.format],
+        filename: `${source}.${this.format === "jpeg" ? "jpg" : this.format}`,
+        mime: MIME[this.format],
         bytes,
       });
     }
