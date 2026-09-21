@@ -473,3 +473,33 @@ html[dir="rtl"] .export-format-group h2 {
   color: var(--text-2);
   white-space: nowrap;
 }
+
+.export-delivery-tree {
+  display: grid;
+  gap: 9px;
+  margin: 16px 0 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+.export-delivery-tree legend {
+  padding-inline: 4px;
+  font-weight: 700;
+}
+
+.export-delivery-tree > p {
+  margin: 0 0 4px;
+  color: var(--text-2);
+}
+
+.export-delivery-tree label {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.export-delivery-note {
+  border-inline-start: 3px solid var(--warning);
+  padding-inline-start: 10px;
+}
