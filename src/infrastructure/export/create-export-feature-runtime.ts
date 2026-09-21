@@ -13,6 +13,7 @@ import { BrandArtifactRenderer } from "@/infrastructure/export/brand-artifact-re
 import { WorkerArchivePackager } from "@/infrastructure/export/worker-archive-packager";
 import {
   DeliveryExportRenderer,
+  type DeliverySelection,
   WebGuideExportRenderer,
 } from "@/infrastructure/export/package-export-renderers";
 import { ProjectArchiveExportRenderer } from "@/infrastructure/export/project-archive-export-renderer";
@@ -46,8 +47,13 @@ export type ExportRequest =
       format: "tokens-json" | "css-variables" | "brand-guidelines";
     })
   | (BaseRequest & {
-      format: "web-guide" | "delivery";
+      format: "web-guide";
       fontPolicy: FontInclusionPolicy;
+    })
+  | (BaseRequest & {
+      format: "delivery";
+      fontPolicy: FontInclusionPolicy;
+      include: DeliverySelection;
     });
 
 function requestFontPolicy(request: ExportRequest): FontInclusionPolicy | undefined {
@@ -158,7 +164,11 @@ export function createExportFeatureRuntime(
       case "delivery":
         artifacts = await delivery.render(
           active.snapshot,
-          { localeMode: request.localeMode, fontPolicy: request.fontPolicy },
+          {
+            localeMode: request.localeMode,
+            fontPolicy: request.fontPolicy,
+            include: request.include,
+          },
           signal,
         );
         break;
