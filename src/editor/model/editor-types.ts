@@ -85,4 +85,3 @@ export interface RenderedScene {
   background: Paint;
   layers: RenderedSceneLayer[];
 }
-
