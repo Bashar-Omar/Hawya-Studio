@@ -545,6 +545,40 @@ html[dir="rtl"] .brand-system-header h1 {
 .audit-check input {
   margin-block-start: 2px;
 }
+.audit-clear-space-preview {
+  display: grid;
+  gap: 7px;
+}
+.audit-clear-space-preview__stage {
+  display: flex;
+  min-block-size: 108px;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  transition: padding 140ms ease;
+}
+.audit-clear-space-preview__boundary {
+  display: flex;
+  min-block-size: 54px;
+  min-inline-size: 92px;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--surface-1);
+  padding: 8px;
+}
+.audit-clear-space-preview__boundary img {
+  display: block;
+  max-block-size: 52px;
+  max-inline-size: 112px;
+  object-fit: contain;
+}
+.audit-clear-space-preview small {
+  color: var(--text-2);
+}
 .audit-minimum-preview {
   display: grid;
   gap: 7px;
