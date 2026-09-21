@@ -6,6 +6,7 @@ import type {
   FontOutlineResult,
   FontOutliner,
 } from "@/application/ports/font-outliner";
+import { createShapeLayer, groupExtraLayers } from "@/editor/model/page-operations";
 import { SvgExportRenderer } from "@/infrastructure/export/svg-export-renderer";
 import { WebCryptoSha256Hasher } from "@/infrastructure/runtime/web-crypto-sha256-hasher";
 import {
@@ -111,4 +112,44 @@ describe("Stage 08 SVG renderer", () => {
     expect(outliner.calls.some((call) => call.text === "Hello Hawya")).toBe(true);
     expect(fixture.snapshot.project.brand.typography.fonts[0]?.id).toBe(SYNTHETIC_FONT_REF_ID);
   });
+  it("preserves grouped child transforms as nested SVG groups", async () => {
+    const fixture = await createSyntheticProjectFixture(new WebCryptoSha256Hasher());
+    const page = fixture.snapshot.project.guide.pages[SYNTHETIC_PAGE_ID];
+    if (!page) throw new Error("fixture page missing");
+
+    const firstId = "00000000-0000-4000-8000-000000000081";
+    const secondId = "00000000-0000-4000-8000-000000000082";
+    const groupId = "00000000-0000-4000-8000-000000000083";
+    page.extras.push(createShapeLayer(firstId, 100, 120), createShapeLayer(secondId, 400, 300));
+    expect(groupExtraLayers(page, [firstId, secondId], groupId)).toBe(true);
+
+    const values = new Map<string, StoredBinary>(
+      fixture.binaries.map((binary) => [
+        binary.contentHash,
+        { ...binary, byteLength: binary.bytes.byteLength },
+      ]),
+    );
+    const renderer = new SvgExportRenderer(
+      new FixtureBinaryStore(values),
+      new FixtureOutliner(),
+      "editable",
+    );
+    const [artifact] = await renderer.render(
+      fixture.snapshot,
+      { localeMode: "en", pageIds: [SYNTHETIC_PAGE_ID] },
+      new AbortController().signal,
+    );
+    const output = new TextDecoder().decode(artifact?.bytes);
+    const groupIndex = output.indexOf(`data-layer-id="${groupId}"`);
+    const firstIndex = output.indexOf(`data-layer-id="${firstId}"`);
+    const secondIndex = output.indexOf(`data-layer-id="${secondId}"`);
+
+    expect(groupIndex).toBeGreaterThan(-1);
+    expect(firstIndex).toBeGreaterThan(groupIndex);
+    expect(secondIndex).toBeGreaterThan(groupIndex);
+    expect(output).toContain(
+      `data-layer-id="${firstId}" opacity="1" transform="translate(90 60) rotate(0) scale(1 1) translate(-90 -60)"`,
+    );
+  });
+
 });
