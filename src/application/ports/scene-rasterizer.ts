@@ -4,9 +4,9 @@ export interface RasterizeSceneInput {
   svg: string;
   width: number;
   height: number;
-  scale: number;
   format: RasterFormat;
   quality?: number;
+  background?: string;
 }
 
 export interface SceneRasterizer {
