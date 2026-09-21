@@ -24,7 +24,7 @@ GuidePage + BrandSystem
 
 A transform starts by copying canonical transforms into an in-memory transient map. Every drag/resize/rotate frame updates that map and React preview only. Pointer end commits the final geometry as one labeled Immer patch history entry and performs one repository save. Undo/redo applies inverse/forward patches and persists the resulting canonical page.
 
-This is covered by a repository write-count test that sends 120 preview frames and verifies zero additional writes until commit.
+This is covered by a repository write-count test that sends 120 preview frames and verifies zero additional writes until commit. Commands that normalize to unchanged geometry also produce no history entry and no repository write.
 
 ## Coordinate and RTL rules
 
@@ -35,6 +35,14 @@ Text layers render/edit through browser-native DOM text and textarea shaping wit
 ## History
 
 Immer patches are enabled explicitly. One user command creates one labeled entry. History is session-only and bounded to 200 entries plus a 2 MiB estimated patch-memory budget. New commands clear redo history.
+
+## Clipboard boundary
+
+Internal copy/paste uses the `hawya.editor-clipboard.v1` payload. Clipboard JSON read from the browser is treated as untrusted input and runtime-validated with Zod against the canonical `layerSchema` before it can reach an editor command. Invalid or malformed clipboard data is ignored and the in-session fallback remains available.
+
+## Simple groups
+
+Stage 06 supports simple grouping with world-space appearance preserved across group/ungroup. Groups can be moved as a unit. Group resize/rotate is intentionally not enabled yet because nested transform composition does not have the golden coverage required by the Editor Engine contract. Distribution is likewise restricted to unrotated bounding boxes.
 
 ## Stage boundary
 
