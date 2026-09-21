@@ -215,6 +215,33 @@ describe("Stage 07 smart-rule and audit application boundaries", () => {
       data: { shape: "rect", fill: "#222222", radius: 0 },
     });
     page.localOverrides.push({ targetId: "template:missing-slot", transform: { x: "invalid" } });
+    snapshot.project.assetRefs.push({
+      assetId: "00000000-0000-4000-8000-000000000888",
+    });
+    snapshot.project.guide.sections.push({
+      id: "00000000-0000-4000-8000-000000000889",
+      type: "empty",
+      title: { en: "Empty section" },
+      pageIds: [],
+    });
+    page.semanticType = "not-a-cover";
+    page.extras.push({
+      id: "00000000-0000-4000-8000-000000000891",
+      name: "Missing semantic style",
+      visible: true,
+      locked: false,
+      opacity: 1,
+      transform: { x: 20, y: 80, width: 240, height: 40, rotation: 0, scaleX: 1, scaleY: 1 },
+      source: "extra",
+      type: "text",
+      content: "Missing style",
+      typography: { tokenId: "00000000-0000-4000-8000-000000000890" },
+      fill: { colorTokenId: SYNTHETIC_COLOR_ID },
+      alignment: "start",
+      verticalAlign: "top",
+      direction: "auto",
+      overflow: "visible",
+    });
 
     const report = buildAuditReport(snapshot, { has: () => true });
     const detached = report.issues.find((entry) => entry.code === "detached-color-token");
@@ -225,10 +252,28 @@ describe("Stage 07 smart-rule and audit application boundaries", () => {
       (entry) => entry.code === "layer-outside-page" && entry.location.endsWith(rotatedLayerId),
     );
     const invalidOverride = report.issues.find((entry) => entry.code === "invalid-local-override");
+    const detachedTextStyle = report.issues.find((entry) => entry.code === "detached-text-style");
+    const missingTextStyle = report.issues.find(
+      (entry) => entry.code === "missing-text-style-token",
+    );
+    const missingProjectAsset = report.issues.find(
+      (entry) => entry.code === "missing-project-asset",
+    );
+    const emptyGuideSection = report.issues.find(
+      (entry) => entry.code === "empty-guide-section",
+    );
+    const incompatibleTemplate = report.issues.find(
+      (entry) => entry.code === "incompatible-page-template",
+    );
     expect(detached?.quickFix?.type).toBe("use-color-token");
     expect(outside?.quickFix?.type).toBe("fit-layer-to-page");
     expect(rotatedOutside?.quickFix).toBeUndefined();
     expect(invalidOverride?.quickFix?.type).toBe("remove-local-override");
+    expect(detachedTextStyle?.severity).toBe("warning");
+    expect(missingTextStyle?.severity).toBe("blocking");
+    expect(missingProjectAsset?.severity).toBe("blocking");
+    expect(emptyGuideSection?.severity).toBe("warning");
+    expect(incompatibleTemplate?.severity).toBe("blocking");
 
     const projects = new MemoryProjects(snapshot);
     const quickFix = new ApplyAuditQuickFixUseCase(projects, new TestClock());
