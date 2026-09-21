@@ -46,7 +46,7 @@ interface EditorInspectorProps {
 export function EditorInspector({ layer, onTransform }: EditorInspectorProps) {
   const { t } = useI18n();
   return (
-    <section className="editor-panel editor-inspector" aria-label="Inspector">
+    <section className="editor-panel editor-inspector" aria-label={t("editor.inspector")}>
       <header className="editor-panel__header">
         <div>
           <p className="panel-kicker">{t("editor.properties")}</p>
