@@ -222,6 +222,14 @@ export function AuditPanel({
     : 0;
   const requestedScreenMinimum = numberOrUndefined(screenPx);
   const minimumPreviewPx = Math.min(220, Math.max(16, requestedScreenMinimum ?? 48));
+  const clearReferenceSize = analysis
+    ? Math.max(1, Math.min(analysis.visibleBounds.width, analysis.visibleBounds.height))
+    : 100;
+  const clearPreviewRatio =
+    clearUnit === "ratio"
+      ? Math.max(0, numberOrUndefined(clearValue) ?? 0)
+      : Math.max(0, clearPreview / clearReferenceSize);
+  const clearPreviewPadding = Math.min(56, Math.max(6, 72 * Math.min(clearPreviewRatio, 1)));
 
   return (
     <section className="brand-panel audit-panel" aria-labelledby="smart-audit-title">
@@ -393,7 +401,21 @@ export function AuditPanel({
                     </select>
                   </label>
                 </div>
-                <p>{t("audit.logo.preview", { value: clearPreview.toFixed(2) })}</p>
+                <div className="audit-clear-space-preview" data-testid="clear-space-preview">
+                  <div
+                    className="audit-clear-space-preview__stage"
+                    style={{ padding: `${clearPreviewPadding}px` }}
+                  >
+                    <div className="audit-clear-space-preview__boundary">
+                      {logoPreviewUrl ? (
+                        <img src={logoPreviewUrl} alt="" />
+                      ) : (
+                        <span>{selectedAsset?.name ?? t("audit.logo.previewUnavailable")}</span>
+                      )}
+                    </div>
+                  </div>
+                  <small>{t("audit.logo.preview", { value: clearPreview.toFixed(2) })}</small>
+                </div>
                 <Button
                   disabled={busy || !variantId || (clearReference !== "manual" && !analysis)}
                   onClick={() =>
