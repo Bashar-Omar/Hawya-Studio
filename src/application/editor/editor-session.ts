@@ -294,6 +294,7 @@ export class EditorSession {
     affectedIds: string[],
     recipe: (page: GuidePage) => void,
   ): Promise<GuidePage> {
+    const before = this.history.current();
     const next = this.history.commit(
       {
         id: this.ids.newId(),
@@ -303,6 +304,7 @@ export class EditorSession {
       },
       recipe,
     );
+    if (next === before) return next;
     await this.persist(next);
     return next;
   }
