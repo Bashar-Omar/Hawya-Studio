@@ -44,6 +44,14 @@ function internalAssetPath(
   return `${kind === "font" ? "fonts" : "assets"}/${kind}-${String(index + 1).padStart(3, "0")}.${safeExtension}`;
 }
 
+function cssFontFormat(extension: string | undefined): string | undefined {
+  if (extension === "woff2") return "woff2";
+  if (extension === "woff") return "woff";
+  if (extension === "ttf") return "truetype";
+  if (extension === "otf") return "opentype";
+  return undefined;
+}
+
 export class WebGuideExportRenderer implements ExportRenderer<PackageExportOptions> {
   readonly format = "web-guide" as const;
 
@@ -130,8 +138,9 @@ export class WebGuideExportRenderer implements ExportRenderer<PackageExportOptio
       if (!binary) throw new Error(`Font binary ${asset.contentHash} is unavailable`);
       const path = internalAssetPath("font", index, asset.extension);
       entries.push({ path, bytes: binary.bytes });
+      const format = cssFontFormat(asset.extension);
       rules.push(
-        `@font-face{font-family:${JSON.stringify(font.familyName)};src:url("./${path}") format("woff2");font-style:${font.style ?? "normal"};font-weight:${font.weight ?? 400};font-display:swap}`,
+        `@font-face{font-family:${JSON.stringify(font.familyName)};src:url("./${path}")${format ? ` format("${format}")` : ""};font-style:${font.style ?? "normal"};font-weight:${font.weight ?? 400};font-display:swap}`,
       );
     }
     return rules.join("\n");
