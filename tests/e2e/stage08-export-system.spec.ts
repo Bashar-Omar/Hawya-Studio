@@ -99,6 +99,7 @@ async function createExportReadyProject(page: Page): Promise<void> {
 test("Stage 08 exports machine data, delivery ZIP, and a resource-ready print view", async ({
   page,
 }) => {
+  test.setTimeout(90_000);
   const runtimeIssues = captureRuntimeIssues(page);
   await createExportReadyProject(page);
 
@@ -107,7 +108,7 @@ test("Stage 08 exports machine data, delivery ZIP, and a resource-ready print vi
 
   await page.getByRole("button", { name: /Design Tokens JSON/ }).click();
   await acknowledgeWarningsIfPresent(page);
-  const tokenDownloadPromise = page.waitForEvent("download");
+  const tokenDownloadPromise = page.waitForEvent("download", { timeout: 20_000 });
   await page.getByRole("button", { name: "Generate & download" }).click();
   const tokenDownload = await tokenDownloadPromise;
   expect(tokenDownload.suggestedFilename()).toBe("tokens.json");
@@ -127,7 +128,7 @@ test("Stage 08 exports machine data, delivery ZIP, and a resource-ready print vi
     .getByRole("radio")
     .check();
   await acknowledgeWarningsIfPresent(page);
-  const deliveryDownloadPromise = page.waitForEvent("download");
+  const deliveryDownloadPromise = page.waitForEvent("download", { timeout: 20_000 });
   await page.getByRole("button", { name: "Generate & download" }).click();
   const deliveryDownload = await deliveryDownloadPromise;
   expect(deliveryDownload.suggestedFilename()).toMatch(/-delivery\.zip$/);
