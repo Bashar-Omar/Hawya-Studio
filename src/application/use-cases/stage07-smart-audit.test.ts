@@ -115,6 +115,37 @@ describe("Stage 07 smart-rule and audit application boundaries", () => {
     expect(projects.saveCount).toBe(0);
   });
 
+  it("refuses to analyze an SVG asset that is not marked sanitized", async () => {
+    const source = await fixture();
+    const snapshot = structuredClone(source.snapshot);
+    const logoAsset = snapshot.assets.find(
+      (asset) => asset.id === snapshot.project.brand.logos.variants[0]?.assetId,
+    );
+    expect(logoAsset).toBeDefined();
+    if (!logoAsset) return;
+    logoAsset.security = {};
+    const projects = new MemoryProjects(snapshot);
+    let analyzeCalls = 0;
+    const analyzer: LogoAnalyzer = {
+      async analyze() {
+        analyzeCalls += 1;
+        return measuredInsight;
+      },
+    };
+    const useCase = new ManageLogoSmartRulesUseCase(
+      projects,
+      new MemoryBinaries(source.binaries),
+      analyzer,
+      new TestClock(),
+    );
+
+    await expect(
+      useCase.analyze(SYNTHETIC_PROJECT_ID, SYNTHETIC_LOGO_VARIANT_ID),
+    ).rejects.toThrow("must be sanitized");
+    expect(analyzeCalls).toBe(0);
+    expect(projects.saveCount).toBe(0);
+  });
+
   it("persists measured logo geometry without auto-verifying clear-space or minimum-size rules", async () => {
     const source = await fixture();
     const projects = new MemoryProjects(source.snapshot);
