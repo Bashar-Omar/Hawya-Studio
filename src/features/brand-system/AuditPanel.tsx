@@ -111,10 +111,12 @@ export function AuditPanel({
   const [screenPx, setScreenPx] = useState("");
   const [printMm, setPrintMm] = useState("");
   const [donts, setDonts] = useState<IncorrectUsageKind[]>([]);
+  const [logoPreviewUrl, setLogoPreviewUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const selectedVariant = variants.find((variant) => variant.id === variantId);
+  const selectedAsset = view.snapshot.assets.find((asset) => asset.id === selectedVariant?.assetId);
   const confirmedClear = view.snapshot.project.brand.logos.rules.clearSpace?.source === "user";
   const confirmedMinimum = view.snapshot.project.brand.logos.rules.minimumSize?.source === "user";
 
@@ -126,6 +128,29 @@ export function AuditPanel({
   useEffect(() => {
     setAnalysis(parseGeometry(selectedVariant));
   }, [selectedVariant]);
+
+  useEffect(() => {
+    let active = true;
+    let objectUrl: string | undefined;
+    setLogoPreviewUrl(null);
+    if (!selectedAsset) return undefined;
+    void runtime.binaries
+      .get(selectedAsset.previewBinaryKey ?? selectedAsset.binaryKey)
+      .then((binary) => {
+        if (!active || !binary) return;
+        objectUrl = URL.createObjectURL(
+          new Blob([Uint8Array.from(binary.bytes).buffer], { type: binary.mime }),
+        );
+        setLogoPreviewUrl(objectUrl);
+      })
+      .catch(() => {
+        if (active) setLogoPreviewUrl(null);
+      });
+    return () => {
+      active = false;
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [runtime.binaries, selectedAsset]);
 
   const refreshAudit = useCallback(async () => {
     const next = await runtime.projectAudit.execute(projectId);
@@ -195,6 +220,8 @@ export function AuditPanel({
         unit: clearUnit,
       })
     : 0;
+  const requestedScreenMinimum = numberOrUndefined(screenPx);
+  const minimumPreviewPx = Math.min(220, Math.max(16, requestedScreenMinimum ?? 48));
 
   return (
     <section className="brand-panel audit-panel" aria-labelledby="smart-audit-title">
@@ -368,7 +395,7 @@ export function AuditPanel({
                 </div>
                 <p>{t("audit.logo.preview", { value: clearPreview.toFixed(2) })}</p>
                 <Button
-                  disabled={busy || !variantId}
+                  disabled={busy || !variantId || (clearReference !== "manual" && !analysis)}
                   onClick={() =>
                     void run(() =>
                       runtime.logoSmartRules.confirmClearSpace(projectId, variantId, {
@@ -407,6 +434,24 @@ export function AuditPanel({
                   />
                 </label>
                 <p>{t("audit.logo.minimumNote")}</p>
+                <div className="audit-minimum-preview" data-testid="minimum-size-preview">
+                  <div className="audit-minimum-preview__stage">
+                    {logoPreviewUrl ? (
+                      <img
+                        src={logoPreviewUrl}
+                        alt=""
+                        style={{ inlineSize: `${minimumPreviewPx}px` }}
+                      />
+                    ) : (
+                      <span>{selectedAsset?.name ?? t("audit.logo.previewUnavailable")}</span>
+                    )}
+                  </div>
+                  <small>
+                    {t("audit.logo.minimumPreview", {
+                      value: requestedScreenMinimum ?? minimumPreviewPx,
+                    })}
+                  </small>
+                </div>
                 <Button
                   disabled={busy || !variantId}
                   onClick={() =>
@@ -429,18 +474,30 @@ export function AuditPanel({
               <p>{t("audit.logo.dontsBody")}</p>
               <div className="audit-check-grid">
                 {INCORRECT_USAGE_CATALOG.map((kind) => (
-                  <label key={kind} className="audit-check">
-                    <input
-                      type="checkbox"
-                      checked={donts.includes(kind)}
-                      onChange={(event) => {
-                        const checked = event.currentTarget.checked;
-                        setDonts((current) =>
-                          checked ? [...current, kind] : current.filter((item) => item !== kind),
-                        );
-                      }}
-                    />
-                    <span>{t(INCORRECT_KEYS[kind])}</span>
+                  <label key={kind} className="audit-check audit-dont-example">
+                    <span className="audit-dont-example__preview" data-kind={kind} aria-hidden="true">
+                      {logoPreviewUrl ? (
+                        <img src={logoPreviewUrl} alt="" />
+                      ) : (
+                        <span>{selectedAsset?.name ?? t("audit.logo.previewUnavailable")}</span>
+                      )}
+                      {kind === "crop-obstruct" ? (
+                        <span className="audit-dont-example__obstruction" />
+                      ) : null}
+                    </span>
+                    <span className="audit-dont-example__control">
+                      <input
+                        type="checkbox"
+                        checked={donts.includes(kind)}
+                        onChange={(event) => {
+                          const checked = event.currentTarget.checked;
+                          setDonts((current) =>
+                            checked ? [...current, kind] : current.filter((item) => item !== kind),
+                          );
+                        }}
+                      />
+                      <span>{t(INCORRECT_KEYS[kind])}</span>
+                    </span>
                   </label>
                 ))}
               </div>
