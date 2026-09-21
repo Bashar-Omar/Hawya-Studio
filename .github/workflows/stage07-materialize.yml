@@ -97,6 +97,55 @@ jobs:
           panel_content = panel_content[:match.start()] + replacement + panel_content[match.end():]
           panel.write_text(panel_content, encoding="utf-8")
 
+          regex_replace(
+              "src/application/use-cases/stage07-smart-audit.test.ts",
+              r'type\s*:\s*"shape"\s*,\s*shape\s*:\s*"rect"\s*,\s*fill\s*:\s*\{\s*type\s*:\s*"solid"\s*,\s*color\s*:\s*"#222222"\s*,\s*alpha\s*:\s*1\s*\}\s*,',
+              'type: "shape",\n      data: { shape: "rect", fill: "#222222", radius: 0 },',
+          )
+          regex_replace(
+              "src/infrastructure/analysis/browser-logo-analyzer.ts",
+              r'await\s+svgPalette\(root\)\s*,',
+              'await svgPalette(svgRoot),',
+          )
+
+          panel = Path("src/features/brand-system/AuditPanel.tsx")
+          panel_content = panel.read_text(encoding="utf-8")
+          helper_anchor = re.search(
+              r'function\s+numberOrUndefined\(value:\s*string\):\s*number\s*\|\s*undefined\s*\{.*?\n\}',
+              panel_content,
+              flags=re.MULTILINE | re.DOTALL,
+          )
+          if helper_anchor is None:
+              raise SystemExit("numberOrUndefined helper anchor missing")
+          helper = helper_anchor.group(0) + """
+          
+          function minimumSizePayload(screen: string, print: string) {
+            const screenPx = numberOrUndefined(screen);
+            const printMm = numberOrUndefined(print);
+            return {
+              ...(screenPx === undefined ? {} : { screenPx }),
+              ...(printMm === undefined ? {} : { printMm }),
+            };
+          }
+          """
+          panel_content = (
+              panel_content[:helper_anchor.start()]
+              + helper
+              + panel_content[helper_anchor.end():]
+          )
+          minimum_pattern = re.compile(
+              r'\{\s*screenPx\s*:\s*numberOrUndefined\(screenPx\)\s*,\s*printMm\s*:\s*numberOrUndefined\(printMm\)\s*,?\s*\}',
+              flags=re.MULTILINE,
+          )
+          panel_content, minimum_count = minimum_pattern.subn(
+              'minimumSizePayload(screenPx, printMm)',
+              panel_content,
+              count=1,
+          )
+          if minimum_count != 1:
+              raise SystemExit(f"Expected one minimum-size payload; got {minimum_count}")
+          panel.write_text(panel_content, encoding="utf-8")
+
           css = Path("src/features/brand-system/brand-system.css")
           content = css.read_text(encoding="utf-8")
           count_pattern = re.compile(
