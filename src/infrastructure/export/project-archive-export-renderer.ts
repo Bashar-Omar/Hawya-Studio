@@ -4,7 +4,7 @@ import type { ExportArtifact, ExportRenderer } from "@/domain/export/export-cont
 import type { ProjectSnapshot } from "@/domain/project/hawya-project";
 import { slugifyFilename } from "@/infrastructure/export/export-helpers";
 
-export interface ProjectArchiveExportOptions {}
+export type ProjectArchiveExportOptions = Record<string, never>;
 
 export class ProjectArchiveExportRenderer implements ExportRenderer<ProjectArchiveExportOptions> {
   readonly format = "hawya" as const;
