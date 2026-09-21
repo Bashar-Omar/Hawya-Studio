@@ -282,6 +282,8 @@ export const enMessages = {
   "audit.logo.minimumSize": "Minimum-size rule",
   "audit.logo.screenPx": "Screen minimum (px)",
   "audit.logo.printMm": "Print minimum (mm)",
+  "audit.logo.minimumPreview": "Screen preview · {value}px",
+  "audit.logo.previewUnavailable": "Preview unavailable",
   "audit.logo.minimumNote":
     "Enter a professional minimum you have reviewed. Hawya does not invent an authoritative size.",
   "audit.logo.donts": "Deterministic incorrect-use examples",
