@@ -545,6 +545,90 @@ html[dir="rtl"] .brand-system-header h1 {
 .audit-check input {
   margin-block-start: 2px;
 }
+.audit-minimum-preview {
+  display: grid;
+  gap: 7px;
+}
+.audit-minimum-preview__stage {
+  display: flex;
+  min-block-size: 76px;
+  align-items: center;
+  justify-content: center;
+  overflow: auto;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  padding: 10px;
+}
+.audit-minimum-preview__stage img {
+  display: block;
+  max-inline-size: none;
+  max-block-size: 72px;
+  object-fit: contain;
+}
+.audit-minimum-preview small {
+  color: var(--text-2);
+}
+.audit-dont-example {
+  display: grid;
+  gap: 7px;
+}
+.audit-dont-example__preview {
+  position: relative;
+  display: flex;
+  min-block-size: 76px;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-1);
+  padding: 9px;
+}
+.audit-dont-example__preview img {
+  display: block;
+  max-inline-size: 72%;
+  max-block-size: 54px;
+  object-fit: contain;
+  transform-origin: center;
+}
+.audit-dont-example__preview[data-kind="stretch-horizontal"] img {
+  transform: scaleX(1.35);
+}
+.audit-dont-example__preview[data-kind="stretch-vertical"] img {
+  transform: scaleY(1.35);
+}
+.audit-dont-example__preview[data-kind="rotate"] img {
+  transform: rotate(14deg);
+}
+.audit-dont-example__preview[data-kind="unapproved-color"] img {
+  filter: sepia(1) saturate(4) hue-rotate(118deg);
+}
+.audit-dont-example__preview[data-kind="drop-shadow"] img {
+  filter: drop-shadow(8px 8px 4px rgb(15 23 42 / 45%));
+}
+.audit-dont-example__preview[data-kind="low-contrast-background"] {
+  background: #d9dde7;
+}
+.audit-dont-example__preview[data-kind="low-contrast-background"] img {
+  opacity: 0.28;
+}
+.audit-dont-example__preview[data-kind="alter-opacity"] img {
+  opacity: 0.32;
+}
+.audit-dont-example__obstruction {
+  position: absolute;
+  inset-block: 0;
+  inset-inline-end: 0;
+  inline-size: 34%;
+  background: var(--surface-2);
+  opacity: 0.92;
+}
+.audit-dont-example__control {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
 .audit-counts {
   display: flex;
   flex-wrap: wrap;
