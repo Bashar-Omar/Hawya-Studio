@@ -1,0 +1,36 @@
+name: Stage 08 format slice 3
+
+on:
+  push:
+    branches: [stage-08-exports]
+    paths: [".github/workflows/stage08-format-slice3.yml"]
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: stage-08-exports
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v5
+        with:
+          run_install: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: package.json
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: |
+          pnpm exec biome format --write             src/application/ports/archive-packager.ts             src/infrastructure/export/worker-archive-packager.ts             src/workers/export-archive.worker.ts             src/infrastructure/workers/export-worker-protocol.ts             src/infrastructure/export/brand-artifact-builders.ts             src/infrastructure/export/brand-artifact-renderer.ts             src/infrastructure/export/package-export-renderers.ts             src/infrastructure/export/stage08-package-renderers.test.ts
+          rm .github/workflows/stage08-format-slice3.yml
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git diff --cached --quiet && exit 0
+          git commit -m "style: format Stage 08 package export slice"
+          git push origin HEAD:stage-08-exports
