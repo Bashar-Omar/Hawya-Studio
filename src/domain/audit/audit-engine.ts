@@ -1,6 +1,7 @@
 import type { ProjectSnapshot } from "@/domain/project/hawya-project";
 import { ASSET_WARN_BYTES } from "@/domain/assets/asset-policy";
 import { guidePageStatus } from "@/domain/guide/guide-status";
+import type { SemanticPageType } from "@/domain/guide/page-catalog";
 import { templateById } from "@/domain/templates/template-engine";
 
 export type AuditSeverity = "info" | "warning" | "blocking";
@@ -17,12 +18,17 @@ export type AuditIssueCode =
   | "missing-logo-asset"
   | "missing-font-asset"
   | "missing-layer-asset"
+  | "missing-project-asset"
   | "missing-color-token"
+  | "missing-text-style-token"
   | "detached-color-token"
+  | "detached-text-style"
   | "stale-print-value"
   | "arabic-font-coverage"
   | "arabic-font-shaping-review"
   | "invalid-local-override"
+  | "empty-guide-section"
+  | "incompatible-page-template"
   | "layer-outside-page"
   | "zero-layer-size"
   | "hidden-required-slot";
@@ -138,29 +144,44 @@ function auditTextLayerTokens(
   layer: ProjectSnapshot["project"]["guide"]["pages"][string]["extras"][number],
 ): AuditIssue[] {
   if (layer.type !== "text") return [];
-  const tokens = snapshot.project.brand.colors.tokens;
-  const tokenIds = new Set(tokens.map((token) => token.id));
+  const issues: AuditIssue[] = [];
+  const colorTokens = snapshot.project.brand.colors.tokens;
+  const colorTokenIds = new Set(colorTokens.map((token) => token.id));
+  const textStyleIds = new Set(snapshot.project.brand.typography.styles.map((style) => style.id));
   const location = `page:${pageId}:layer:${layer.id}`;
-  if ("colorTokenId" in layer.fill) {
-    return tokenIds.has(layer.fill.colorTokenId)
-      ? []
-      : [issue("missing-color-token", "blocking", location, layer.fill.colorTokenId)];
+
+  if ("tokenId" in layer.typography) {
+    if (!textStyleIds.has(layer.typography.tokenId)) {
+      issues.push(
+        issue("missing-text-style-token", "blocking", location, layer.typography.tokenId),
+      );
+    }
+  } else {
+    issues.push(issue("detached-text-style", "warning", location, layer.name));
   }
-  if (layer.fill.type !== "solid") return [];
+
+  if ("colorTokenId" in layer.fill) {
+    if (!colorTokenIds.has(layer.fill.colorTokenId)) {
+      issues.push(issue("missing-color-token", "blocking", location, layer.fill.colorTokenId));
+    }
+    return issues;
+  }
+  if (layer.fill.type !== "solid") return issues;
   const localHex = normalizeHex(layer.fill.color);
-  if (!localHex) return [];
-  const matching = tokens.find((token) => token.srgbHex.toUpperCase() === localHex);
-  return matching
-    ? [
-        issue(
-          "detached-color-token",
-          "warning",
-          location,
-          matching.name.en ?? matching.name.ar ?? matching.srgbHex,
-          { type: "use-color-token", pageId, layerId: layer.id, tokenId: matching.id },
-        ),
-      ]
-    : [];
+  if (!localHex) return issues;
+  const matching = colorTokens.find((token) => token.srgbHex.toUpperCase() === localHex);
+  if (matching) {
+    issues.push(
+      issue(
+        "detached-color-token",
+        "warning",
+        location,
+        matching.name.en ?? matching.name.ar ?? matching.srgbHex,
+        { type: "use-color-token", pageId, layerId: layer.id, tokenId: matching.id },
+      ),
+    );
+  }
+  return issues;
 }
 
 export function buildAuditReport(
@@ -171,6 +192,32 @@ export function buildAuditReport(
   const assetsById = new Map(snapshot.assets.map((asset) => [asset.id, asset] as const));
   const tokenIds = new Set(snapshot.project.brand.colors.tokens.map((token) => token.id));
   const arabicEnabled = snapshot.project.settings.enabledContentLocales.includes("ar");
+
+  for (const assetRef of snapshot.project.assetRefs) {
+    if (!assetsById.has(assetRef.assetId)) {
+      issues.push(
+        issue(
+          "missing-project-asset",
+          "blocking",
+          `project:asset-ref:${assetRef.assetId}`,
+          assetRef.assetId,
+        ),
+      );
+    }
+  }
+
+  for (const section of snapshot.project.guide.sections) {
+    if (section.pageIds.length === 0) {
+      issues.push(
+        issue(
+          "empty-guide-section",
+          "warning",
+          `guide:section:${section.id}`,
+          section.title.en ?? section.title.ar ?? section.type,
+        ),
+      );
+    }
+  }
 
   const primaryLogoId = snapshot.project.brand.logos.primaryLogoId;
   if (
@@ -280,10 +327,21 @@ export function buildAuditReport(
   for (const pageId of snapshot.project.guide.pageOrder) {
     const page = snapshot.project.guide.pages[pageId];
     if (!page) continue;
-    if (guidePageStatus(snapshot, page) === "needs-input") {
+    const template = templateById(page.templateBinding.templateId);
+    const templateCompatible =
+      template?.supportedPageTypes.includes(page.semanticType as SemanticPageType) === true;
+    if (!templateCompatible) {
+      issues.push(
+        issue(
+          "incompatible-page-template",
+          "blocking",
+          `page:${pageId}:template`,
+          page.templateBinding.templateId,
+        ),
+      );
+    } else if (guidePageStatus(snapshot, page) === "needs-input") {
       issues.push(issue("unresolved-guide-page", "warning", `page:${pageId}`, page.semanticType));
     }
-    const template = templateById(page.templateBinding.templateId);
     const validTemplateTargets = new Set(
       template?.slots.map((slot) => `template:${slot.id}`) ?? [],
     );
