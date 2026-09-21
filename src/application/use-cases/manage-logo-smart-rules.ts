@@ -36,6 +36,9 @@ export class ManageLogoSmartRulesUseCase {
     if (!variant) throw new Error("Logo variant does not exist");
     const asset = snapshot.assets.find((item) => item.id === variant.assetId);
     if (!asset) throw new Error("Logo asset does not exist in this project");
+    if (asset.mime === "image/svg+xml" && asset.security.sanitized !== true) {
+      throw new Error("Logo SVG must be sanitized before analysis");
+    }
     const binary = await this.binaries.get(asset.binaryKey);
     if (!binary) throw new Error("Logo binary is missing from local storage");
     const insight = logoGeometryInsightSchema.parse(
