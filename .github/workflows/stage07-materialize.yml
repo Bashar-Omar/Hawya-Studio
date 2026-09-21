@@ -83,11 +83,19 @@ jobs:
               r'if\s*\(\s*!asset\s*\|\|\s*asset\.kind\s*!==\s*"font"\s*\)\s*\{',
               'if (asset?.kind !== "font") {',
           )
-          regex_replace(
-              "src/features/brand-system/AuditPanel.tsx",
-              r'<div\s+className="audit-counts"\s+aria-label=\{t\("audit\.report\.summary"\)\}>',
-              '<div className="audit-counts" role="group" aria-label={t("audit.report.summary")}>',
+          panel = Path("src/features/brand-system/AuditPanel.tsx")
+          panel_content = panel.read_text(encoding="utf-8")
+          group_pattern = re.compile(
+              r'<div\s+className="audit-counts"\s+aria-label=\{t\("audit\.report\.summary"\)\}>(.*?)</div>',
+              flags=re.MULTILINE | re.DOTALL,
           )
+          match = group_pattern.search(panel_content)
+          if match is None:
+              raise SystemExit("Expected audit counts group missing")
+          items = match.group(1).replace("<span ", "<li ").replace("</span>", "</li>")
+          replacement = '<ul className="audit-counts" aria-label={t("audit.report.summary")}>' + items + "</ul>"
+          panel_content = panel_content[:match.start()] + replacement + panel_content[match.end():]
+          panel.write_text(panel_content, encoding="utf-8")
 
           css = Path("src/features/brand-system/brand-system.css")
           content = css.read_text(encoding="utf-8")
@@ -103,7 +111,7 @@ jobs:
           rule_match = rule_pattern.search(content)
           if count_match is None or rule_match is None:
               raise SystemExit("Expected CSS specificity patch anchors missing")
-          count_block = count_match.group(0)
+          count_block = count_match.group(0).replace(".audit-counts span", ".audit-counts li")
           content = content[:count_match.start()] + content[count_match.end():]
           rule_match = rule_pattern.search(content)
           if rule_match is None:
