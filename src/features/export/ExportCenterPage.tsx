@@ -126,12 +126,6 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
     };
   }, [navigate, projectId, runtime, t]);
 
-  useEffect(() => {
-    setWarningsAccepted(false);
-    setStatus(null);
-    setError(null);
-  }, [fontPolicy, format, localeMode, quality, scale, selectedPages]);
-
   const preflight = useMemo(() => {
     if (!workspace) return null;
     const policy = isPackageFormat(format) && fontPolicy ? fontPolicy : undefined;
@@ -261,7 +255,12 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
                       type="button"
                       className={item === format ? "export-format is-active" : "export-format"}
                       key={item}
-                      onClick={() => setFormat(item)}
+                      onClick={() => {
+                        setFormat(item);
+                        setWarningsAccepted(false);
+                        setStatus(null);
+                        setError(null);
+                      }}
                       aria-pressed={item === format}
                     >
                       <strong>{FORMAT_LABELS[item]}</strong>
@@ -284,7 +283,11 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
                   <p className="eyebrow">{t("export.selected")}</p>
                   <h2>{FORMAT_LABELS[format]}</h2>
                 </div>
-                <div className="export-fidelity-chips" aria-label={t("export.fidelity.title")}>
+                <div
+                  className="export-fidelity-chips"
+                  role="group"
+                  aria-label={t("export.fidelity.title")}
+                >
                   <span>
                     {fidelity.editable ? t("export.fidelity.editable") : t("export.fidelity.fixed")}
                   </span>
@@ -412,7 +415,12 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
                       type="radio"
                       name="font-policy"
                       checked={fontPolicy === "omit"}
-                      onChange={() => setFontPolicy("omit")}
+                      onChange={() => {
+                        setFontPolicy("omit");
+                        setWarningsAccepted(false);
+                        setStatus(null);
+                        setError(null);
+                      }}
                     />
                     <span>{t("export.fontPolicyOmit")}</span>
                   </label>
@@ -421,7 +429,12 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
                       type="radio"
                       name="font-policy"
                       checked={fontPolicy === "include-confirmed"}
-                      onChange={() => setFontPolicy("include-confirmed")}
+                      onChange={() => {
+                        setFontPolicy("include-confirmed");
+                        setWarningsAccepted(false);
+                        setStatus(null);
+                        setError(null);
+                      }}
                     />
                     <span>{t("export.fontPolicyInclude")}</span>
                   </label>
