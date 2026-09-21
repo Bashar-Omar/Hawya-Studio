@@ -1,9 +1,9 @@
 import type { AuditIssue, AuditReport } from "@/domain/audit/audit-engine";
-import {
-  type ExportFormat,
-  type ExportPreflightIssue,
-  type ExportPreflightResult,
-  type FontInclusionPolicy,
+import type {
+  ExportFormat,
+  ExportPreflightIssue,
+  ExportPreflightResult,
+  FontInclusionPolicy,
 } from "@/domain/export/export-contract";
 import { projectSnapshotSchema, type ProjectSnapshot } from "@/domain/project/hawya-project";
 
