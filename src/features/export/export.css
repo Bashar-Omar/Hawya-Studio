@@ -406,3 +406,70 @@ html[dir="rtl"] .export-format-group h2 {
   border: 0;
   padding: 0;
 }
+
+.export-raster-options {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.export-quality-full {
+  max-width: 480px;
+}
+
+.export-raster-background {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+}
+
+.export-raster-background legend {
+  padding-inline: 4px;
+  font-weight: 700;
+}
+
+.export-raster-background > label:first-of-type {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.export-raster-background input[type="color"] {
+  width: 64px;
+  height: 36px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface-1);
+  padding: 3px;
+}
+
+.export-pixel-preview {
+  display: grid;
+  gap: 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  padding: 12px;
+}
+
+.export-pixel-preview ul {
+  display: grid;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.export-pixel-preview li {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.export-pixel-preview code {
+  color: var(--text-2);
+  white-space: nowrap;
+}
