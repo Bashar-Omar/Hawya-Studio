@@ -6,7 +6,7 @@ import { escapeHtml, escapeXml, utf8 } from "@/infrastructure/export/export-help
 type Locale = "en" | "ar";
 
 function localized(
-  value: { en?: string; ar?: string } | undefined,
+  value: Partial<Record<Locale, string | undefined>> | undefined,
   locale: Locale,
 ): string | undefined {
   if (!value) return undefined;
