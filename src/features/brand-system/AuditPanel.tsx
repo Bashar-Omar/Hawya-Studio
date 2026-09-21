@@ -475,7 +475,11 @@ export function AuditPanel({
               <div className="audit-check-grid">
                 {INCORRECT_USAGE_CATALOG.map((kind) => (
                   <label key={kind} className="audit-check audit-dont-example">
-                    <span className="audit-dont-example__preview" data-kind={kind} aria-hidden="true">
+                    <span
+                      className="audit-dont-example__preview"
+                      data-kind={kind}
+                      aria-hidden="true"
+                    >
                       {logoPreviewUrl ? (
                         <img src={logoPreviewUrl} alt="" />
                       ) : (
