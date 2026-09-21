@@ -291,7 +291,7 @@ export function buildBrandGuidelinesMarkdown(
     "version: 1",
     `brand: ${yamlString(primaryBrandName)}`,
     `locales: ${JSON.stringify(locales)}`,
-    `projectSchemaVersion: ${yamlString(snapshot.project.schemaVersion)}`,
+    `projectSchemaVersion: ${snapshot.project.schemaVersion}`,
     "---",
     "",
     `<!-- Generated from canonical Hawya project ${snapshot.project.id}. -->`,
