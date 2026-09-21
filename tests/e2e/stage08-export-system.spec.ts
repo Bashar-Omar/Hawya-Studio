@@ -121,7 +121,11 @@ test("Stage 08 exports machine data, delivery ZIP, and a resource-ready print vi
   expect(tokenJson.assets?.length).toBeGreaterThan(0);
 
   await page.getByRole("button", { name: /Delivery ZIP/ }).click();
-  await page.getByText("Omit font binaries", { exact: true }).locator("..").getByRole("radio").check();
+  await page
+    .getByText("Omit font binaries", { exact: true })
+    .locator("..")
+    .getByRole("radio")
+    .check();
   await acknowledgeWarningsIfPresent(page);
   const deliveryDownloadPromise = page.waitForEvent("download");
   await page.getByRole("button", { name: "Generate & download" }).click();
