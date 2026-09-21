@@ -13,6 +13,7 @@ import {
 } from "@/editor/geometry/geometry";
 import { snapTransform } from "@/editor/geometry/snap-engine";
 import { EditorHistory } from "@/editor/history/editor-history";
+import { editorClipboardPayloadSchema, parseEditorClipboardJson } from "@/editor/model/editor-clipboard";
 import {
   createShapeLayer,
   groupExtraLayers,
@@ -279,6 +280,22 @@ describe("Stage 06 editor core invariants", () => {
     expect(ar.layers.find((layer) => layer.type === "text")?.type).toBe("text");
     const arText = ar.layers.find((layer) => layer.type === "text");
     if (arText?.type === "text") expect(arText.direction).toBe("rtl");
+  });
+
+  it("rejects malformed external clipboard JSON and accepts canonical layer payloads", async () => {
+    expect(parseEditorClipboardJson("not-json")).toBeUndefined();
+    expect(
+      parseEditorClipboardJson(
+        JSON.stringify({ schema: "hawya.editor-clipboard.v1", layers: [{ type: "shape" }] }),
+      ),
+    ).toBeUndefined();
+
+    const shape = createShapeLayer("00000000-0000-4000-8000-000000000301", 12, 24);
+    const json = JSON.stringify({ schema: "hawya.editor-clipboard.v1", layers: [shape] });
+    const parsed = parseEditorClipboardJson(json);
+    expect(parsed).toBeDefined();
+    expect(editorClipboardPayloadSchema.safeParse(parsed).success).toBe(true);
+    expect(parsed?.layers[0]?.id).toBe(shape.id);
   });
 
   it("persists the project snap toggle outside page history", async () => {
