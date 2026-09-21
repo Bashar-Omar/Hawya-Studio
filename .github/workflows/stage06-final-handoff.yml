@@ -1,0 +1,41 @@
+name: Stage 06 Final Handoff
+
+on:
+  push:
+    branches:
+      - handoff-stage-06-final
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout handoff branch
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Build exact final merged-main archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          MERGE_SHA="0576729a5ac0dfe1defd9e153478e257fed41082"
+          git cat-file -e "${MERGE_SHA}^{commit}"
+          git archive --format=zip --output=/tmp/Hawya-Studio-Stage-06-Complete.zip "${MERGE_SHA}"
+          unzip -t /tmp/Hawya-Studio-Stage-06-Complete.zip
+          sha256sum /tmp/Hawya-Studio-Stage-06-Complete.zip > /tmp/Hawya-Studio-Stage-06-Complete.sha256
+          mkdir -p handoff
+          cp /tmp/Hawya-Studio-Stage-06-Complete.zip handoff/
+          cp /tmp/Hawya-Studio-Stage-06-Complete.sha256 handoff/
+          cat handoff/Hawya-Studio-Stage-06-Complete.sha256
+
+      - name: Upload exact final handoff
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: hawya-stage-06-final-handoff
+          path: handoff/
+          if-no-files-found: error
+          retention-days: 1
