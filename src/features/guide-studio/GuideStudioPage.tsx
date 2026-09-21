@@ -1,9 +1,23 @@
-import { ArrowLeft, FileText, LayoutTemplate, Palette, RefreshCw, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  Download,
+  FileText,
+  LayoutTemplate,
+  Palette,
+  RefreshCw,
+  Sparkles,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { GuideStudioView } from "@/application/queries/guide-studio-query";
 import { useStudioRuntime } from "@/app/providers/studio-runtime";
-import { appRoutes, brandSystemPath, editorPath, newProjectPath } from "@/app/routes/route-config";
+import {
+  appRoutes,
+  brandSystemPath,
+  editorPath,
+  exportCenterPath,
+  newProjectPath,
+} from "@/app/routes/route-config";
 import { useRouter } from "@/app/routes/RouterProvider";
 import { AppShell } from "@/components/app/AppShell";
 import { Button } from "@/components/ui/button";
@@ -163,6 +177,10 @@ export default function GuideStudioPage({ projectId }: { projectId: ProjectId })
             <Button onClick={() => navigate(brandSystemPath(projectId))} variant="secondary">
               <Palette aria-hidden="true" size={16} />
               {t("guide.openBrand")}
+            </Button>
+            <Button onClick={() => navigate(exportCenterPath(projectId))} variant="secondary">
+              <Download aria-hidden="true" size={16} />
+              {t("guide.export")}
             </Button>
             <Button onClick={() => navigate(appRoutes.studio)} variant="ghost">
               <ArrowLeft className="directional-icon" aria-hidden="true" size={16} />

@@ -10,7 +10,7 @@ export const appRoutes = {
 } as const;
 
 export type AppRouteId = keyof typeof appRoutes;
-export type MatchedRouteId = AppRouteId | "project" | "brand" | "editor" | "not-found";
+export type MatchedRouteId =\n  | AppRouteId\n  | "project"\n  | "brand"\n  | "editor"\n  | "export"\n  | "print"\n  | "not-found";
 
 function normalizePathname(pathname: string): string {
   if (pathname === "/") return pathname;
@@ -39,6 +39,14 @@ export function editorPath(projectId: ProjectId, pageId: PageId): string {
   return `/studio/projects/${projectId}/editor/${pageId}`;
 }
 
+export function exportCenterPath(projectId: ProjectId): string {
+  return `/studio/projects/${projectId}/export`;
+}
+
+export function printPath(projectId: ProjectId): string {
+  return `/studio/projects/${projectId}/print`;
+}
+
 export function pageIdFromPathname(pathname: string): PageId | undefined {
   const parts = normalizePathname(pathname).split("/").filter(Boolean);
   if (parts[0] !== "studio" || parts[1] !== "projects" || parts[3] !== "editor") return undefined;
@@ -53,7 +61,7 @@ export function projectIdFromPathname(pathname: string): ProjectId | undefined {
   if (
     parts[1] === "projects" &&
     (parts.length === 3 ||
-      (parts.length === 4 && parts[3] === "brand") ||
+      (parts.length === 4 && ["brand", "export", "print"].includes(parts[3] ?? "")) ||
       (parts.length === 5 && parts[3] === "editor" && pageIdSchema.safeParse(parts[4]).success))
   ) {
     return parseProjectId(parts[2]);
@@ -101,6 +109,24 @@ export function matchRoute(pathname: string): MatchedRouteId {
     pageIdSchema.safeParse(parts[4]).success
   ) {
     return "editor";
+  }
+  if (
+    parts[0] === "studio" &&
+    parts[1] === "projects" &&
+    parts.length === 4 &&
+    parts[3] === "export" &&
+    parseProjectId(parts[2])
+  ) {
+    return "export";
+  }
+  if (
+    parts[0] === "studio" &&
+    parts[1] === "projects" &&
+    parts.length === 4 &&
+    parts[3] === "print" &&
+    parseProjectId(parts[2])
+  ) {
+    return "print";
   }
   return "not-found";
 }
