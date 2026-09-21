@@ -1,3 +1,4 @@
+import { EditorSessionFactory } from "@/application/editor/editor-session-factory";
 import { BrandSystemQuery } from "@/application/queries/brand-system-query";
 import { GuideStudioQuery } from "@/application/queries/guide-studio-query";
 import { AssetIngestor } from "@/application/services/asset-ingestor";
@@ -111,6 +112,7 @@ export function createPersistenceRuntime(databaseName?: string) {
     textStyles: new ManageTextStylesUseCase(projects, clock, ids),
     brandSystem: new BrandSystemQuery(projects),
     guideStudio: new GuideStudioQuery(projects),
+    editorSessions: new EditorSessionFactory(projects, clock, ids),
     generateGuide: new GenerateGuideUseCase(projects, clock, ids),
     switchGuidePageTemplate: new SwitchGuidePageTemplateUseCase(projects, clock),
     resetGuidePageTemplate: new ResetGuidePageTemplateUseCase(projects, clock),

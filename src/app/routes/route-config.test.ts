@@ -2,14 +2,17 @@ import { describe, expect, it } from "vitest";
 
 import {
   brandSystemPath,
+  editorPath,
   matchRoute,
   newProjectPath,
+  pageIdFromPathname,
   projectIdFromPathname,
   projectPath,
 } from "@/app/routes/route-config";
 import { projectIdSchema } from "@/domain/project/hawya-project";
 
 const projectId = projectIdSchema.parse("00000000-0000-4000-8000-000000000123");
+const pageId = projectIdSchema.parse("00000000-0000-4000-8000-000000000456");
 
 describe("app route matching", () => {
   it("normalizes trailing slashes without hiding unknown routes", () => {
@@ -24,10 +27,14 @@ describe("app route matching", () => {
     expect(matchRoute(newProjectPath(projectId))).toBe("newProject");
     expect(matchRoute(projectPath(projectId))).toBe("project");
     expect(matchRoute(brandSystemPath(projectId))).toBe("brand");
+    expect(matchRoute(editorPath(projectId, pageId))).toBe("editor");
     expect(projectIdFromPathname(newProjectPath(projectId))).toBe(projectId);
     expect(projectIdFromPathname(projectPath(projectId))).toBe(projectId);
     expect(projectIdFromPathname(brandSystemPath(projectId))).toBe(projectId);
+    expect(projectIdFromPathname(editorPath(projectId, pageId))).toBe(projectId);
+    expect(pageIdFromPathname(editorPath(projectId, pageId))).toBe(pageId);
     expect(matchRoute("/studio/projects/not-a-uuid")).toBe("not-found");
     expect(matchRoute("/studio/projects/not-a-uuid/brand")).toBe("not-found");
+    expect(matchRoute(`/studio/projects/${projectId}/editor/not-a-uuid`)).toBe("not-found");
   });
 });

@@ -1,7 +1,7 @@
 import { lazy, Suspense } from "react";
 
 import { NotFoundPage } from "@/app/routes/NotFoundPage";
-import { projectIdFromPathname } from "@/app/routes/route-config";
+import { pageIdFromPathname, projectIdFromPathname } from "@/app/routes/route-config";
 import { RouterProvider, useRouter } from "@/app/routes/RouterProvider";
 import { AboutPage } from "@/features/about/AboutPage";
 import { LandingPage } from "@/features/landing/LandingPage";
@@ -11,10 +11,12 @@ import { SettingsPage } from "@/features/settings/SettingsPage";
 
 const BrandSystemPage = lazy(() => import("@/features/brand-system/BrandSystemPage"));
 const GuideStudioPage = lazy(() => import("@/features/guide-studio/GuideStudioPage"));
+const EditorPage = lazy(() => import("@/features/editor/EditorPage"));
 
 function CurrentRoute() {
   const { pathname, routeId } = useRouter();
   const projectId = projectIdFromPathname(pathname);
+  const pageId = pageIdFromPathname(pathname);
 
   switch (routeId) {
     case "landing":
@@ -35,6 +37,14 @@ function CurrentRoute() {
       return projectId ? (
         <Suspense fallback={null}>
           <BrandSystemPage projectId={projectId} />
+        </Suspense>
+      ) : (
+        <NotFoundPage />
+      );
+    case "editor":
+      return projectId && pageId ? (
+        <Suspense fallback={null}>
+          <EditorPage projectId={projectId} pageId={pageId} />
         </Suspense>
       ) : (
         <NotFoundPage />

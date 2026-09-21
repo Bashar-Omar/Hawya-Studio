@@ -1,3 +1,4 @@
+import { pageIdSchema, type PageId } from "@/domain/guide/guide-document";
 import { projectIdSchema, type ProjectId } from "@/domain/project/hawya-project";
 
 export const appRoutes = {
@@ -9,7 +10,7 @@ export const appRoutes = {
 } as const;
 
 export type AppRouteId = keyof typeof appRoutes;
-export type MatchedRouteId = AppRouteId | "project" | "brand" | "not-found";
+export type MatchedRouteId = AppRouteId | "project" | "brand" | "editor" | "not-found";
 
 function normalizePathname(pathname: string): string {
   if (pathname === "/") return pathname;
@@ -34,13 +35,26 @@ export function brandSystemPath(projectId: ProjectId): string {
   return `/studio/projects/${projectId}/brand`;
 }
 
+export function editorPath(projectId: ProjectId, pageId: PageId): string {
+  return `/studio/projects/${projectId}/editor/${pageId}`;
+}
+
+export function pageIdFromPathname(pathname: string): PageId | undefined {
+  const parts = normalizePathname(pathname).split("/").filter(Boolean);
+  if (parts[0] !== "studio" || parts[1] !== "projects" || parts[3] !== "editor") return undefined;
+  const parsed = pageIdSchema.safeParse(parts[4]);
+  return parsed.success ? parsed.data : undefined;
+}
+
 export function projectIdFromPathname(pathname: string): ProjectId | undefined {
   const parts = normalizePathname(pathname).split("/").filter(Boolean);
   if (parts[0] !== "studio") return undefined;
   if (parts[1] === "new" && parts.length === 3) return parseProjectId(parts[2]);
   if (
     parts[1] === "projects" &&
-    (parts.length === 3 || (parts.length === 4 && parts[3] === "brand"))
+    (parts.length === 3 ||
+      (parts.length === 4 && parts[3] === "brand") ||
+      (parts.length === 5 && parts[3] === "editor" && pageIdSchema.safeParse(parts[4]).success))
   ) {
     return parseProjectId(parts[2]);
   }
@@ -77,6 +91,16 @@ export function matchRoute(pathname: string): MatchedRouteId {
     parseProjectId(parts[2])
   ) {
     return "brand";
+  }
+  if (
+    parts[0] === "studio" &&
+    parts[1] === "projects" &&
+    parts.length === 5 &&
+    parts[3] === "editor" &&
+    parseProjectId(parts[2]) &&
+    pageIdSchema.safeParse(parts[4]).success
+  ) {
+    return "editor";
   }
   return "not-found";
 }
