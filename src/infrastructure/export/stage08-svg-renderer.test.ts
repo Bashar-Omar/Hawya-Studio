@@ -25,7 +25,7 @@ class FixtureBinaryStore implements BinaryStore {
     return this.values.get(contentHash);
   }
   async put() {
-    throw new Error("not used");
+    return { inserted: false };
   }
   async listContentHashes() {
     return [...this.values.keys()];
