@@ -400,3 +400,9 @@ html[dir="rtl"] .export-format-group h2 {
     break-after: auto;
   }
 }
+
+.export-fidelity-chips {
+  margin: 0;
+  border: 0;
+  padding: 0;
+}
