@@ -186,5 +186,6 @@ test("Arabic editor keeps physical canvas coordinates across UI RTL and persists
   const persisted = page.locator(`[data-layer-id="${textLayerId}"]`);
   await expect(persisted).toBeVisible();
   await expect(persisted).toHaveAttribute("dir", "rtl");
+  await expect(persisted).toContainText("هوية عربية جديدة");
   await expectLeftNear(persisted, afterMove);
 });
