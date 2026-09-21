@@ -15,9 +15,9 @@ export type ExportWorkerRequest =
       svg: string;
       width: number;
       height: number;
-      scale: number;
       format: RasterFormat;
       quality?: number;
+      background?: string;
     }
   | {
       id: string;
