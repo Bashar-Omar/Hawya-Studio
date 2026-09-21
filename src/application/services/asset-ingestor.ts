@@ -84,6 +84,11 @@ export class AssetIngestor {
         width: raster.width,
         height: raster.height,
         hasAlpha: raster.hasAlpha,
+        ...(raster.visibleBounds ? { visibleBounds: raster.visibleBounds } : {}),
+        ...(raster.cropSuggestion ? { cropSuggestion: raster.cropSuggestion } : {}),
+        ...(raster.paletteCandidates?.length
+          ? { paletteCandidates: raster.paletteCandidates }
+          : {}),
         ...(raster.preview
           ? { preview: { width: raster.preview.width, height: raster.preview.height } }
           : {}),

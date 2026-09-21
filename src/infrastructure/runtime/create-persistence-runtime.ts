@@ -1,12 +1,15 @@
 import { EditorSessionFactory } from "@/application/editor/editor-session-factory";
 import { BrandSystemQuery } from "@/application/queries/brand-system-query";
+import { ProjectAuditQuery } from "@/application/queries/project-audit-query";
 import { GuideStudioQuery } from "@/application/queries/guide-studio-query";
 import { AssetIngestor } from "@/application/services/asset-ingestor";
+import { ApplyAuditQuickFixUseCase } from "@/application/use-cases/apply-audit-quick-fix";
 import { DeleteAssetUseCase } from "@/application/use-cases/delete-asset";
 import { ImportAssetUseCase } from "@/application/use-cases/import-asset";
 import { ImportFontUseCase } from "@/application/use-cases/import-font";
 import { LoadProjectFontsUseCase } from "@/application/use-cases/load-project-fonts";
 import { ManageColorTokensUseCase } from "@/application/use-cases/manage-color-tokens";
+import { ManageLogoSmartRulesUseCase } from "@/application/use-cases/manage-logo-smart-rules";
 import { ManageLogoVariantsUseCase } from "@/application/use-cases/manage-logo-variants";
 import { ManageTextStylesUseCase } from "@/application/use-cases/manage-text-styles";
 import { ReplaceAssetUseCase } from "@/application/use-cases/replace-asset";
@@ -33,6 +36,7 @@ import { FflateProjectArchiveCodec } from "@/infrastructure/archive/fflate-proje
 import { IndexedDbBinaryStore } from "@/infrastructure/binary-store/indexeddb-binary-store";
 import { ColorJsColorEngine } from "@/infrastructure/analysis/color-js-color-engine";
 import { WorkerFontAnalyzer } from "@/infrastructure/analysis/worker-font-analyzer";
+import { BrowserLogoAnalyzer } from "@/infrastructure/analysis/browser-logo-analyzer";
 import { WorkerRasterAnalyzer } from "@/infrastructure/analysis/worker-raster-analyzer";
 import { BrowserFontRegistry } from "@/infrastructure/fonts/browser-font-registry";
 import { DomPurifySvgSanitizer } from "@/infrastructure/sanitization/dompurify-svg-sanitizer";
@@ -60,6 +64,7 @@ export function createPersistenceRuntime(databaseName?: string) {
   const svgSanitizer = new DomPurifySvgSanitizer();
   const fontAnalyzer = new WorkerFontAnalyzer();
   const rasterAnalyzer = new WorkerRasterAnalyzer();
+  const logoAnalyzer = new BrowserLogoAnalyzer(rasterAnalyzer);
   const fontRegistry = new BrowserFontRegistry();
   const colorEngine = new ColorJsColorEngine();
   const assetIngestor = new AssetIngestor(
@@ -106,11 +111,14 @@ export function createPersistenceRuntime(databaseName?: string) {
     updateAssetTags: new UpdateAssetTagsUseCase(projects, clock),
     deleteAsset: new DeleteAssetUseCase(projects, garbageCollectBinaries, clock),
     logoVariants: new ManageLogoVariantsUseCase(projects, clock, ids),
+    logoSmartRules: new ManageLogoSmartRulesUseCase(projects, binaries, logoAnalyzer, clock),
     colorTokens: new ManageColorTokensUseCase(projects, colorEngine, clock, ids),
     importFont: new ImportFontUseCase(importAsset, projects, binaries, fontRegistry, clock, ids),
     loadProjectFonts: new LoadProjectFontsUseCase(projects, binaries, fontRegistry),
     textStyles: new ManageTextStylesUseCase(projects, clock, ids),
     brandSystem: new BrandSystemQuery(projects),
+    projectAudit: new ProjectAuditQuery(projects, binaries, colorEngine),
+    applyAuditQuickFix: new ApplyAuditQuickFixUseCase(projects, clock),
     guideStudio: new GuideStudioQuery(projects),
     editorSessions: new EditorSessionFactory(projects, clock, ids),
     generateGuide: new GenerateGuideUseCase(projects, clock, ids),
