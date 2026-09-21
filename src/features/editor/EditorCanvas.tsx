@@ -27,6 +27,7 @@ import {
   moveableResizeToDocument,
   moveableRotateToDocument,
 } from "@/infrastructure/editor/moveable-transform-adapter";
+import { useI18n } from "@/i18n/I18nProvider";
 
 interface EditorCanvasProps {
   scene: RenderedScene;
@@ -127,6 +128,7 @@ function eventHasAltKey(inputEvent: unknown): boolean {
 }
 
 export function EditorCanvas(props: EditorCanvasProps) {
+  const { t } = useI18n();
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const pageRef = useRef<HTMLDivElement | null>(null);
   const layerElements = useRef(new Map<SceneLayerId, HTMLElement>());
@@ -267,7 +269,7 @@ export function EditorCanvas(props: EditorCanvasProps) {
               }}
             />
           ) : (
-            <div className="editor-missing-asset">Asset</div>
+            <div className="editor-missing-asset">{t("editor.assetMissing")}</div>
           )}
         </div>
       );
