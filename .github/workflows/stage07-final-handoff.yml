@@ -1,0 +1,55 @@
+name: Stage 07 final handoff
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Package merged Stage 07 snapshot
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Archive exact merged main commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          MERGE_SHA="d6e46f76dd0f151dcfbbc8f639edb4a6e169ef4b"
+          git cat-file -e "${MERGE_SHA}^{commit}"
+          git archive --format=zip --output=Hawya-Studio-Stage-07-Complete.zip "${MERGE_SHA}"
+          unzip -t Hawya-Studio-Stage-07-Complete.zip
+          sha256sum Hawya-Studio-Stage-07-Complete.zip > Hawya-Studio-Stage-07-Complete.zip.sha256
+          FILE_COUNT="$(unzip -Z1 Hawya-Studio-Stage-07-Complete.zip | grep -v '/$' | wc -l | tr -d ' ')"
+          if unzip -Z1 Hawya-Studio-Stage-07-Complete.zip | grep -Eq '(^|/)(node_modules|dist|coverage|test-results|playwright-report|\.stage07)(/|$)|materializer|bootstrap'; then
+            echo "Forbidden generated/transport artifact found in handoff ZIP" >&2
+            exit 1
+          fi
+          {
+            echo "Hawya Studio Stage 07 final handoff verification"
+            echo "Source merged commit: ${MERGE_SHA}"
+            echo "File count: ${FILE_COUNT}"
+            echo "unzip -t: PASS"
+            echo "Forbidden artifact scan: PASS"
+            echo -n "SHA-256: "
+            cut -d' ' -f1 Hawya-Studio-Stage-07-Complete.zip.sha256
+          } > STAGE-07-HANDOFF-VERIFY.txt
+          cat STAGE-07-HANDOFF-VERIFY.txt
+
+      - name: Upload final handoff
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: hawya-stage-07-final-handoff
+          path: |
+            Hawya-Studio-Stage-07-Complete.zip
+            Hawya-Studio-Stage-07-Complete.zip.sha256
+            STAGE-07-HANDOFF-VERIFY.txt
+          if-no-files-found: error
+          retention-days: 3
