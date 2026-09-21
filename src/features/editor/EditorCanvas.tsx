@@ -467,7 +467,7 @@ export function EditorCanvas(props: EditorCanvasProps) {
           target={moveableTarget}
           container={pageRef.current}
           draggable
-          resizable={selectedUnlockedIds.length === 1}
+          resizable={selectedUnlockedIds.length === 1 && primaryLayer.type !== "group"}
           rotatable={selectedUnlockedIds.length === 1 && primaryLayer.type !== "group"}
           origin={false}
           keepRatio={false}
