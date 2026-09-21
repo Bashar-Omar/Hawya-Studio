@@ -7,9 +7,7 @@ import type {
   FontOutliner,
 } from "@/application/ports/font-outliner";
 import type { TemplateLocaleMode } from "@/domain/templates/template-definition";
-import {
-  buildBrandGuidelinesMarkdown,
-} from "@/infrastructure/export/brand-artifact-builders";
+import { buildBrandGuidelinesMarkdown } from "@/infrastructure/export/brand-artifact-builders";
 import { SvgExportRenderer } from "@/infrastructure/export/svg-export-renderer";
 import { WebCryptoSha256Hasher } from "@/infrastructure/runtime/web-crypto-sha256-hasher";
 import {
@@ -169,9 +167,7 @@ describe("Stage 08 locale semantic goldens", () => {
       expect(editableSvg).toContain(
         `width="${page.canvas.width}${page.canvas.unit}" height="${page.canvas.height}${page.canvas.unit}"`,
       );
-      expect(editableSvg).toContain(
-        `viewBox="0 0 ${page.canvas.width} ${page.canvas.height}"`,
-      );
+      expect(editableSvg).toContain(`viewBox="0 0 ${page.canvas.width} ${page.canvas.height}"`);
       expect(editableSvg).toContain(`data-layer-id="${layerId}"`);
       expect(editableSvg).toContain(`direction="${golden.direction}"`);
       expect(editableSvg).toContain(golden.text);
@@ -192,9 +188,11 @@ describe("Stage 08 locale semantic goldens", () => {
         expect(markdown).toContain(heading);
       }
       expect(markdown).toContain("format: hawya-brand-guidelines");
-      expect(markdown).toContain(`locales: ${JSON.stringify(
-        golden.localeMode === "bilingual" ? ["en", "ar"] : [golden.localeMode],
-      )}`);
+      expect(markdown).toContain(
+        `locales: ${JSON.stringify(
+          golden.localeMode === "bilingual" ? ["en", "ar"] : [golden.localeMode],
+        )}`,
+      );
     });
   }
 });
