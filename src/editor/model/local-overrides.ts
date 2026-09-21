@@ -52,6 +52,7 @@ export function upsertEditorOverride(
     ...(existing?.success ? existing.data : {}),
     ...patch,
   };
+  if (existing?.success && JSON.stringify(existing.data) === JSON.stringify(value)) return;
   if (index >= 0) page.localOverrides[index] = value;
   else page.localOverrides.push(value);
 }
