@@ -1,0 +1,70 @@
+import { describe, expect, it } from "vitest";
+
+import type { BinaryStore, StoredBinary } from "@/application/ports/binary-store";
+import type { FontOutlineOptions, FontOutlineResult, FontOutliner } from "@/application/ports/font-outliner";
+import { SvgExportRenderer } from "@/infrastructure/export/svg-export-renderer";
+import { WebCryptoSha256Hasher } from "@/infrastructure/runtime/web-crypto-sha256-hasher";
+import { createSyntheticProjectFixture, SYNTHETIC_COLOR_ID, SYNTHETIC_FONT_REF_ID, SYNTHETIC_PAGE_ID, SYNTHETIC_TEXT_STYLE_ID } from "../../../tests/fixtures/stage02/synthetic-project";
+
+class FixtureBinaryStore implements BinaryStore {
+  constructor(private readonly values: ReadonlyMap<string, StoredBinary>) {}
+  async has(contentHash: string) { return this.values.has(contentHash); }
+  async get(contentHash: string) { return this.values.get(contentHash); }
+  async put() { throw new Error("not used"); }
+  async listContentHashes() { return [...this.values.keys()]; }
+  async delete() { throw new Error("not used"); }
+}
+
+class FixtureOutliner implements FontOutliner {
+  calls: Array<{ text: string; options: FontOutlineOptions }> = [];
+  async outline(_bytes: Uint8Array, text: string, options: FontOutlineOptions): Promise<FontOutlineResult> {
+    this.calls.push({ text, options });
+    return { glyphs: [{ pathData: "M0 0L500 0L500 500Z", x: 0, y: 0 }], unitsPerEm: 1000, ascent: 800, descent: -200, advanceWidth: 500 };
+  }
+}
+
+describe("Stage 08 SVG renderer", () => {
+  it("renders editable live text and outlined glyph paths from the same immutable scene", async () => {
+    const fixture = await createSyntheticProjectFixture(new WebCryptoSha256Hasher());
+    const page = fixture.snapshot.project.guide.pages[SYNTHETIC_PAGE_ID];
+    if (!page) throw new Error("fixture page missing");
+    page.extras.push({
+      id: "00000000-0000-4000-8000-000000000080",
+      name: "Export sample",
+      source: "extra",
+      type: "text",
+      visible: true,
+      locked: false,
+      opacity: 1,
+      transform: { x: 100, y: 120, width: 500, height: 160, rotation: 0, scaleX: 1, scaleY: 1 },
+      content: "Hello Hawya",
+      typography: { tokenId: SYNTHETIC_TEXT_STYLE_ID },
+      fill: { colorTokenId: SYNTHETIC_COLOR_ID },
+      alignment: "start",
+      verticalAlign: "top",
+      direction: "ltr",
+      language: "en",
+      overflow: "clip",
+    });
+    const values = new Map<string, StoredBinary>(
+      fixture.binaries.map((binary) => [binary.contentHash, { ...binary, byteLength: binary.bytes.byteLength }]),
+    );
+    const outliner = new FixtureOutliner();
+    const renderer = new SvgExportRenderer(new FixtureBinaryStore(values), outliner);
+    const signal = new AbortController().signal;
+
+    const editable = await renderer.render(fixture.snapshot, { mode: "editable", localeMode: "en", pageIds: [SYNTHETIC_PAGE_ID] }, signal);
+    const outlined = await renderer.render(fixture.snapshot, { mode: "outlined", localeMode: "en", pageIds: [SYNTHETIC_PAGE_ID] }, signal);
+    const editableText = new TextDecoder().decode(editable[0]?.bytes);
+    const outlinedText = new TextDecoder().decode(outlined[0]?.bytes);
+
+    expect(editableText).toContain('data-hawya-export="editable"');
+    expect(editableText).toContain("<text");
+    expect(editableText).toContain("Hello Hawya");
+    expect(outlinedText).toContain('data-hawya-export="outlined"');
+    expect(outlinedText).toContain("<path");
+    expect(outlinedText).not.toContain(">Hello Hawya<");
+    expect(outliner.calls.some((call) => call.text === "Hello Hawya")).toBe(true);
+    expect(fixture.snapshot.project.brand.typography.fonts[0]?.id).toBe(SYNTHETIC_FONT_REF_ID);
+  });
+});
