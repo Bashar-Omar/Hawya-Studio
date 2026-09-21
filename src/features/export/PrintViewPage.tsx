@@ -277,7 +277,7 @@ export default function PrintViewPage({ projectId }: { projectId: ProjectId }) {
     return () => {
       active = false;
     };
-  }, [assetUrls, fontFamilies, scenes, workspace]);
+  }, [scenes, workspace]);
 
   if (error) {
     return (
