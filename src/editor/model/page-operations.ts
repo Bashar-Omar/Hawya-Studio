@@ -8,6 +8,18 @@ function extraIndex(page: GuidePage, sceneId: SceneLayerId): number {
   return page.extras.findIndex((layer) => layer.id === sceneId);
 }
 
+function transformsEqual(a: LayerTransform, b: LayerTransform): boolean {
+  return (
+    a.x === b.x &&
+    a.y === b.y &&
+    a.width === b.width &&
+    a.height === b.height &&
+    a.rotation === b.rotation &&
+    a.scaleX === b.scaleX &&
+    a.scaleY === b.scaleY
+  );
+}
+
 export function applySceneTransform(
   page: GuidePage,
   sceneId: SceneLayerId,
@@ -17,7 +29,7 @@ export function applySceneTransform(
   const index = extraIndex(page, sceneId);
   if (index >= 0) {
     const layer = page.extras[index];
-    if (layer) layer.transform = normalized;
+    if (layer && !transformsEqual(layer.transform, normalized)) layer.transform = normalized;
     return;
   }
   if (templateSlotIdFromSceneId(sceneId))
