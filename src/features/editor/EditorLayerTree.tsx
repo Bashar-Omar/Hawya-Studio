@@ -22,7 +22,7 @@ export function EditorLayerTree({
   const { t } = useI18n();
   const selected = new Set(selectedIds);
   return (
-    <section className="editor-panel editor-layer-tree" aria-label="Layers">
+    <section className="editor-panel editor-layer-tree" aria-label={t("editor.layers")}>
       <header className="editor-panel__header">
         <div>
           <p className="panel-kicker">{t("editor.scene")}</p>
