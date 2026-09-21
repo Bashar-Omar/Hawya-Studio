@@ -1,4 +1,4 @@
-import { ArrowLeft, Boxes, Image, Palette, Type } from "lucide-react";
+import { ArrowLeft, Boxes, Image, Palette, ShieldCheck, Type } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import type { BrandSystemView } from "@/application/queries/brand-system-query";
@@ -9,13 +9,14 @@ import { AppShell } from "@/components/app/AppShell";
 import { Button } from "@/components/ui/button";
 import type { ProjectId } from "@/domain/project/hawya-project";
 import { AssetLibraryPanel } from "@/features/brand-system/AssetLibraryPanel";
+import { AuditPanel } from "@/features/brand-system/AuditPanel";
 import { ColorPanel } from "@/features/brand-system/ColorPanel";
 import { LogoPanel } from "@/features/brand-system/LogoPanel";
 import { TypographyPanel } from "@/features/brand-system/TypographyPanel";
 import "@/features/brand-system/brand-system.css";
 import { useI18n } from "@/i18n/I18nProvider";
 
-type BrandTab = "assets" | "logos" | "colors" | "typography";
+type BrandTab = "assets" | "logos" | "colors" | "typography" | "audit";
 
 export default function BrandSystemPage({ projectId }: { projectId: ProjectId }) {
   const runtime = useStudioRuntime();
@@ -84,6 +85,7 @@ export default function BrandSystemPage({ projectId }: { projectId: ProjectId })
     { id: "logos", icon: Image, label: t("brand.tab.logos") },
     { id: "colors", icon: Palette, label: t("brand.tab.colors") },
     { id: "typography", icon: Type, label: t("brand.tab.typography") },
+    { id: "audit", icon: ShieldCheck, label: t("brand.tab.audit") },
   ];
 
   return (
@@ -148,6 +150,9 @@ export default function BrandSystemPage({ projectId }: { projectId: ProjectId })
         ) : null}
         {tab === "typography" ? (
           <TypographyPanel projectId={projectId} view={view} onRefresh={refresh} />
+        ) : null}
+        {tab === "audit" ? (
+          <AuditPanel projectId={projectId} view={view} onRefresh={refresh} />
         ) : null}
       </div>
     </AppShell>

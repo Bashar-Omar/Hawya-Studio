@@ -9,6 +9,9 @@ export interface RasterAnalysisResult {
   width: number;
   height: number;
   hasAlpha: boolean;
+  visibleBounds?: { x: number; y: number; width: number; height: number };
+  cropSuggestion?: { x: number; y: number; width: number; height: number };
+  paletteCandidates?: string[];
   preview?: RasterPreview;
 }
 
