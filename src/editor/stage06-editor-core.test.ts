@@ -13,7 +13,10 @@ import {
 } from "@/editor/geometry/geometry";
 import { snapTransform } from "@/editor/geometry/snap-engine";
 import { EditorHistory } from "@/editor/history/editor-history";
-import { editorClipboardPayloadSchema, parseEditorClipboardJson } from "@/editor/model/editor-clipboard";
+import {
+  editorClipboardPayloadSchema,
+  parseEditorClipboardJson,
+} from "@/editor/model/editor-clipboard";
 import {
   createShapeLayer,
   groupExtraLayers,
