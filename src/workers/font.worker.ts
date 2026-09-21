@@ -142,12 +142,24 @@ function requireOutlineFont(value: unknown): OutlineFont {
   };
 }
 
+const outlineFonts = new Map<string, OutlineFont>();
+
+function outlineFont(
+  request: Extract<ExportWorkerRequest, { type: "outline-font" }>,
+): OutlineFont {
+  const cached = outlineFonts.get(request.fontKey);
+  if (cached) return cached;
+  if (!request.bytes) throw new Error("Font binary is unavailable for the requested outline font");
+  const font = requireOutlineFont(fontkit.create(new Uint8Array(request.bytes)));
+  outlineFonts.set(request.fontKey, font);
+  return font;
+}
+
 function outline(
-  bytes: Uint8Array,
+  font: OutlineFont,
   text: string,
   request: Extract<ExportWorkerRequest, { type: "outline-font" }>,
 ): FontOutlineResult {
-  const font = requireOutlineFont(fontkit.create(bytes));
   const run = font.layout(text, request.options.features);
   if (run.glyphs.length !== run.positions.length)
     throw new Error("Font layout returned mismatched glyph positions");
@@ -237,7 +249,7 @@ self.onmessage = (event: MessageEvent<AnalysisWorkerRequest | ExportWorkerReques
       response = {
         id: request.id,
         type: "font-outline-result",
-        result: outline(new Uint8Array(request.bytes), request.text, request),
+        result: outline(outlineFont(request), request.text, request),
       };
     } catch (error) {
       response = {

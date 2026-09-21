@@ -189,7 +189,11 @@ export function createExportFeatureRuntime(
     ];
   };
 
-  return { workspace, execute, files };
+  const dispose = () => {
+    outliner.dispose();
+  };
+
+  return { workspace, execute, files, dispose };
 }
 
 export type ExportFeatureRuntime = ReturnType<typeof createExportFeatureRuntime>;

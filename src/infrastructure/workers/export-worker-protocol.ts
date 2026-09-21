@@ -5,7 +5,8 @@ export type ExportWorkerRequest =
   | {
       id: string;
       type: "outline-font";
-      bytes: ArrayBuffer;
+      fontKey: string;
+      bytes?: ArrayBuffer;
       text: string;
       options: FontOutlineOptions;
     }

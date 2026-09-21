@@ -133,6 +133,7 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
     return () => {
       active = false;
       abortRef.current?.abort();
+      feature.dispose();
       featureRef.current = null;
     };
   }, [navigate, projectId, runtime, t]);

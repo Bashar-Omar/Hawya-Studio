@@ -1,5 +1,5 @@
-import { readFile } from "node:fs/promises";
 import { readdirSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -94,25 +94,26 @@ async function createExportReadyProject(page: Page): Promise<void> {
       name: "Your brand guide is generated from reusable semantic content.",
     }),
   ).toBeVisible();
-}
-
-test("Stage 08 exports machine data, delivery ZIP, and a resource-ready print view", async ({
-  page,
-}) => {
-  test.setTimeout(90_000);
-  const runtimeIssues = captureRuntimeIssues(page);
-  await createExportReadyProject(page);
 
   await page.getByRole("button", { name: "Export" }).click();
   await expect(page.getByRole("heading", { name: "Export Center" })).toBeVisible();
+}
+
+test("Stage 08 exports stable machine-readable brand tokens", async ({ page }) => {
+  const runtimeIssues = captureRuntimeIssues(page);
+  await createExportReadyProject(page);
 
   await page.getByRole("button", { name: /Design Tokens JSON/ }).click();
   await acknowledgeWarningsIfPresent(page);
-  const tokenDownloadPromise = page.waitForEvent("download", { timeout: 20_000 });
-  await page.getByRole("button", { name: "Generate & download" }).click();
-  const tokenDownload = await tokenDownloadPromise;
-  expect(tokenDownload.suggestedFilename()).toBe("tokens.json");
-  const tokenJson = JSON.parse((await downloadedBytes(tokenDownload)).toString("utf8")) as {
+  const generate = page.getByRole("button", { name: "Generate & download" });
+  await expect(generate).toBeEnabled();
+
+  const [download] = await Promise.all([
+    page.waitForEvent("download", { timeout: 10_000 }),
+    generate.click(),
+  ]);
+  expect(download.suggestedFilename()).toBe("tokens.json");
+  const tokenJson = JSON.parse((await downloadedBytes(download)).toString("utf8")) as {
     format?: string;
     locales?: { enabled?: string[] };
     assets?: unknown[];
@@ -120,6 +121,14 @@ test("Stage 08 exports machine data, delivery ZIP, and a resource-ready print vi
   expect(tokenJson.format).toBe("hawya-brand-tokens");
   expect(tokenJson.locales?.enabled).toEqual(["en", "ar"]);
   expect(tokenJson.assets?.length).toBeGreaterThan(0);
+  expect(runtimeIssues).toEqual([]);
+});
+
+test("Stage 08 builds the selected delivery ZIP without silently packaging fonts", async ({
+  page,
+}) => {
+  const runtimeIssues = captureRuntimeIssues(page);
+  await createExportReadyProject(page);
 
   await page.getByRole("button", { name: /Delivery ZIP/ }).click();
   await page
@@ -128,28 +137,47 @@ test("Stage 08 exports machine data, delivery ZIP, and a resource-ready print vi
     .getByRole("radio")
     .check();
   await acknowledgeWarningsIfPresent(page);
-  const deliveryDownloadPromise = page.waitForEvent("download", { timeout: 20_000 });
-  await page.getByRole("button", { name: "Generate & download" }).click();
-  const deliveryDownload = await deliveryDownloadPromise;
-  expect(deliveryDownload.suggestedFilename()).toMatch(/-delivery\.zip$/);
-  const deliveryEntries = unzipSync(new Uint8Array(await downloadedBytes(deliveryDownload)));
-  expect(Object.keys(deliveryEntries)).toContain("manifest.json");
-  expect(Object.keys(deliveryEntries)).toContain("Guidelines/Brand-Guidelines.md");
-  expect(Object.keys(deliveryEntries).some((path) => path.startsWith("Artwork/Outlined/"))).toBe(
-    true,
-  );
-  const manifestBytes = deliveryEntries["manifest.json"];
+  const generate = page.getByRole("button", { name: "Generate & download" });
+  await expect(generate).toBeEnabled();
+
+  const [download] = await Promise.all([
+    page.waitForEvent("download", { timeout: 15_000 }),
+    generate.click(),
+  ]);
+  expect(download.suggestedFilename()).toMatch(/-delivery\.zip$/);
+
+  const entries = unzipSync(new Uint8Array(await downloadedBytes(download)));
+  expect(Object.keys(entries)).toContain("manifest.json");
+  expect(Object.keys(entries)).toContain("Guidelines/Brand-Guidelines.md");
+  expect(Object.keys(entries).some((path) => path.startsWith("Artwork/Outlined/"))).toBe(true);
+  expect(Object.keys(entries).some((path) => path.startsWith("Fonts/"))).toBe(false);
+
+  const manifestBytes = entries["manifest.json"];
   if (!manifestBytes) throw new Error("Delivery manifest missing");
-  const manifest = JSON.parse(strFromU8(manifestBytes)) as { format?: string };
+  const manifest = JSON.parse(strFromU8(manifestBytes)) as {
+    format?: string;
+    fontPolicy?: string;
+  };
   expect(manifest.format).toBe("hawya-delivery");
+  expect(manifest.fontPolicy).toBe("omit");
+  expect(runtimeIssues).toEqual([]);
+});
+
+test("Stage 08 print view becomes resource-ready without application chrome", async ({ page }) => {
+  const runtimeIssues = captureRuntimeIssues(page);
+  await createExportReadyProject(page);
 
   await page.getByRole("button", { name: /Browser Print \/ PDF/ }).click();
   await acknowledgeWarningsIfPresent(page);
-  await page.getByRole("button", { name: "Open Print View" }).click();
-  await expect(page.locator(".hawya-print-view")).toHaveAttribute("data-print-ready", "true");
+  const openPrint = page.getByRole("button", { name: "Open Print View" });
+  await expect(openPrint).toBeEnabled();
+  await openPrint.click();
+
+  await expect(page.locator(".hawya-print-view")).toHaveAttribute("data-print-ready", "true", {
+    timeout: 10_000,
+  });
   await expect(page.locator(".hawya-print-sheet")).not.toHaveCount(0);
   await expect(page.locator(".app-shell")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Print / Save as PDF" })).toBeEnabled();
-
   expect(runtimeIssues).toEqual([]);
 });
