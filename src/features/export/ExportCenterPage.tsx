@@ -14,6 +14,7 @@ import {
   type ExportFormat,
   type FontInclusionPolicy,
 } from "@/domain/export/export-contract";
+import { rasterPixelDimensions } from "@/domain/export/raster-dimensions";
 import { localizedValue } from "@/domain/guide/page-content";
 import type { ProjectId } from "@/domain/project/hawya-project";
 import type { TemplateLocaleMode } from "@/domain/templates/template-definition";
@@ -88,8 +89,11 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
   const [format, setFormat] = useState<ExportFormat>("hawya");
   const [localeMode, setLocaleMode] = useState<TemplateLocaleMode>("en");
   const [selectedPages, setSelectedPages] = useState<string[]>([]);
-  const [scale, setScale] = useState<1 | 2 | 3>(2);
+  const [scalePreset, setScalePreset] = useState<"1" | "2" | "3" | "custom">("2");
+  const [customScale, setCustomScale] = useState(4);
   const [quality, setQuality] = useState(0.92);
+  const [flattenBackground, setFlattenBackground] = useState(false);
+  const [backgroundColor, setBackgroundColor] = useState("#FFFFFF");
   const [fontPolicy, setFontPolicy] = useState<FontInclusionPolicy | "">("");
   const [warningsAccepted, setWarningsAccepted] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -150,11 +154,34 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
       .reduce((sum, asset) => sum + asset.byteLength, 0);
   }, [workspace]);
 
+  const rasterScale = scalePreset === "custom" ? customScale : Number(scalePreset);
+  const rasterTargets = useMemo(() => {
+    if (!workspace || !["png", "webp", "jpeg"].includes(format)) return [];
+    return selectedPages.flatMap((pageId) => {
+      const page = workspace.snapshot.project.guide.pages[pageId];
+      if (!page) return [];
+      const dimensions = rasterPixelDimensions(
+        page.canvas.width,
+        page.canvas.height,
+        page.canvas.unit,
+        rasterScale,
+      );
+      return [{ pageId, page, dimensions }];
+    });
+  }, [format, rasterScale, selectedPages, workspace]);
+  const rasterScaleValid =
+    Number.isFinite(rasterScale) && rasterScale >= 0.25 && rasterScale <= 8;
+  const rasterWithinSafetyCap = rasterTargets.every(
+    (target) => target.dimensions.pixels <= 100_000_000,
+  );
+
   const pageSelectionRequired = PAGE_FORMATS.has(format);
   const selectionValid = !pageSelectionRequired || selectedPages.length > 0;
   const warningsNeedAcceptance = (preflight?.counts.warning ?? 0) > 0;
+  const isRasterFormat = format === "png" || format === "webp" || format === "jpeg";
+  const rasterOptionsValid = !isRasterFormat || (rasterScaleValid && rasterWithinSafetyCap);
   const canRun =
-    Boolean(workspace && preflight?.ok && selectionValid) &&
+    Boolean(workspace && preflight?.ok && selectionValid && rasterOptionsValid) &&
     (!warningsNeedAcceptance || warningsAccepted) &&
     !busy;
 
@@ -167,8 +194,9 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
       return {
         format,
         localeMode,
-        scale,
+        scale: rasterScale,
         quality,
+        ...(format === "jpeg" || flattenBackground ? { background: backgroundColor } : {}),
         pageIds: selectedPages,
       };
     }
@@ -371,22 +399,58 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
                 </fieldset>
               ) : null}
 
-              {format === "png" || format === "webp" || format === "jpeg" ? (
-                <div className="export-option-grid">
-                  <label className="field-stack">
-                    <span className="field-label">{t("export.scale")}</span>
-                    <select
-                      className="text-input"
-                      value={scale}
-                      onChange={(event) => setScale(Number(event.currentTarget.value) as 1 | 2 | 3)}
-                    >
-                      <option value={1}>1×</option>
-                      <option value={2}>2×</option>
-                      <option value={3}>3×</option>
-                    </select>
-                  </label>
-                  {format !== "png" ? (
+              {isRasterFormat ? (
+                <div className="export-raster-options">
+                  <div className="export-option-grid">
                     <label className="field-stack">
+                      <span className="field-label">{t("export.scale")}</span>
+                      <select
+                        className="text-input"
+                        value={scalePreset}
+                        onChange={(event) =>
+                          setScalePreset(
+                            event.currentTarget.value as "1" | "2" | "3" | "custom",
+                          )
+                        }
+                      >
+                        <option value="1">1×</option>
+                        <option value="2">2×</option>
+                        <option value="3">3×</option>
+                        <option value="custom">{t("export.scaleCustom")}</option>
+                      </select>
+                    </label>
+                    {scalePreset === "custom" ? (
+                      <label className="field-stack">
+                        <span className="field-label">{t("export.scaleCustomValue")}</span>
+                        <input
+                          className="text-input"
+                          type="number"
+                          min="0.25"
+                          max="8"
+                          step="0.25"
+                          value={customScale}
+                          onChange={(event) => setCustomScale(Number(event.currentTarget.value))}
+                        />
+                      </label>
+                    ) : format !== "png" ? (
+                      <label className="field-stack">
+                        <span className="field-label">
+                          {t("export.quality")} · {Math.round(quality * 100)}%
+                        </span>
+                        <input
+                          type="range"
+                          min="0.5"
+                          max="1"
+                          step="0.01"
+                          value={quality}
+                          onChange={(event) => setQuality(Number(event.currentTarget.value))}
+                        />
+                      </label>
+                    ) : null}
+                  </div>
+
+                  {scalePreset === "custom" && format !== "png" ? (
+                    <label className="field-stack export-quality-full">
                       <span className="field-label">
                         {t("export.quality")} · {Math.round(quality * 100)}%
                       </span>
@@ -400,6 +464,54 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
                       />
                     </label>
                   ) : null}
+
+                  <fieldset className="export-raster-background">
+                    <legend>{t("export.background")}</legend>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={format === "jpeg" || flattenBackground}
+                        disabled={format === "jpeg"}
+                        onChange={(event) => setFlattenBackground(event.currentTarget.checked)}
+                      />
+                      <span>
+                        {format === "jpeg"
+                          ? t("export.backgroundJpegRequired")
+                          : t("export.backgroundFlatten")}
+                      </span>
+                    </label>
+                    {(format === "jpeg" || flattenBackground) ? (
+                      <label className="field-stack">
+                        <span className="field-label">{t("export.backgroundColor")}</span>
+                        <input
+                          type="color"
+                          value={backgroundColor}
+                          onChange={(event) => setBackgroundColor(event.currentTarget.value)}
+                        />
+                      </label>
+                    ) : null}
+                  </fieldset>
+
+                  <div className="export-pixel-preview">
+                    <strong>{t("export.pixelPreview")}</strong>
+                    {rasterScaleValid ? (
+                      <ul>
+                        {rasterTargets.map(({ pageId, page, dimensions }) => (
+                          <li key={pageId}>
+                            <span>{localizedValue(page.name, locale)}</span>
+                            <code>
+                              {dimensions.width} × {dimensions.height} px
+                            </code>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="inline-error">{t("export.scaleInvalid")}</p>
+                    )}
+                    {!rasterWithinSafetyCap ? (
+                      <p className="inline-error">{t("export.rasterTooLarge")}</p>
+                    ) : null}
+                  </div>
                 </div>
               ) : null}
 
