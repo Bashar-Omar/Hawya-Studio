@@ -12,7 +12,10 @@ import {
   buildCssVariables,
   buildDesignTokensJson,
 } from "@/infrastructure/export/brand-artifact-builders";
-import { DeliveryExportRenderer, WebGuideExportRenderer } from "@/infrastructure/export/package-export-renderers";
+import {
+  DeliveryExportRenderer,
+  WebGuideExportRenderer,
+} from "@/infrastructure/export/package-export-renderers";
 import { SvgExportRenderer } from "@/infrastructure/export/svg-export-renderer";
 import { WebCryptoSha256Hasher } from "@/infrastructure/runtime/web-crypto-sha256-hasher";
 import { createSyntheticProjectFixture } from "../../../tests/fixtures/stage02/synthetic-project";
@@ -42,9 +45,7 @@ class FixtureOutliner implements FontOutliner {
     _signal: AbortSignal,
   ): Promise<FontOutlineResult> {
     return {
-      glyphs: text
-        ? [{ pathData: "M0 0L500 0L500 500Z", x: 0, y: 0 }]
-        : [],
+      glyphs: text ? [{ pathData: "M0 0L500 0L500 500Z", x: 0, y: 0 }] : [],
       unitsPerEm: 1000,
       ascent: 800,
       descent: -200,
@@ -97,11 +98,7 @@ describe("Stage 08 developer and package exports", () => {
     const signal = new AbortController().signal;
 
     const web = new WebGuideExportRenderer(omitPackager, outlined, binaries);
-    await web.render(
-      fixture.snapshot,
-      { localeMode: "bilingual", fontPolicy: "omit" },
-      signal,
-    );
+    await web.render(fixture.snapshot, { localeMode: "bilingual", fontPolicy: "omit" }, signal);
 
     expect(omitPackager.entries.some((entry) => entry.path === "index.html")).toBe(true);
     expect(omitPackager.entries.some((entry) => entry.path.startsWith("pages/page-"))).toBe(true);
@@ -112,12 +109,7 @@ describe("Stage 08 developer and package exports", () => {
       ),
     ).toBe(true);
 
-    const delivery = new DeliveryExportRenderer(
-      includePackager,
-      editable,
-      outlined,
-      binaries,
-    );
+    const delivery = new DeliveryExportRenderer(includePackager, editable, outlined, binaries);
     await delivery.render(
       fixture.snapshot,
       { localeMode: "en", fontPolicy: "include-confirmed" },

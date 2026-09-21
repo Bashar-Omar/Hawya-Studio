@@ -25,9 +25,12 @@ export class WorkerArchivePackager implements ArchivePackager {
         return;
       }
 
-      const worker = new Worker(new URL("../../workers/export-archive.worker.ts", import.meta.url), {
-        type: "module",
-      });
+      const worker = new Worker(
+        new URL("../../workers/export-archive.worker.ts", import.meta.url),
+        {
+          type: "module",
+        },
+      );
       const id = crypto.randomUUID();
       const payload = entries.map((entry) => ({
         path: entry.path,
@@ -57,7 +60,9 @@ export class WorkerArchivePackager implements ArchivePackager {
         } else {
           reject(
             new Error(
-              event.data.type === "error" ? event.data.message : "Unexpected archive worker response",
+              event.data.type === "error"
+                ? event.data.message
+                : "Unexpected archive worker response",
             ),
           );
         }

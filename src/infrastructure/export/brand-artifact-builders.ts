@@ -76,9 +76,7 @@ export function buildDesignTokensJson(snapshot: ProjectSnapshot): Uint8Array {
         name: snapshot.project.brand.identity.brandName,
         colors,
         typography,
-        ...(snapshot.project.brand.digital
-          ? { digital: snapshot.project.brand.digital }
-          : {}),
+        ...(snapshot.project.brand.digital ? { digital: snapshot.project.brand.digital } : {}),
       },
     }),
   );
@@ -88,10 +86,7 @@ export function buildCssVariables(snapshot: ProjectSnapshot): Uint8Array {
   const fontsById = new Map(
     snapshot.project.brand.typography.fonts.map((font) => [font.id, font] as const),
   );
-  const lines = [
-    "/* Hawya Studio digital tokens · sRGB / screen values only */",
-    ":root {",
-  ];
+  const lines = ["/* Hawya Studio digital tokens · sRGB / screen values only */", ":root {"];
 
   for (const token of [...snapshot.project.brand.colors.tokens].sort((left, right) =>
     left.id.localeCompare(right.id),
@@ -99,9 +94,7 @@ export function buildCssVariables(snapshot: ProjectSnapshot): Uint8Array {
     lines.push(
       `  --hawya-color-${token.role}-${suffix(token.id)}: ${token.srgbHex.toUpperCase()};`,
     );
-    lines.push(
-      `  --hawya-color-${token.role}-${suffix(token.id)}-alpha: ${token.alpha};`,
-    );
+    lines.push(`  --hawya-color-${token.role}-${suffix(token.id)}-alpha: ${token.alpha};`);
   }
 
   for (const style of [...snapshot.project.brand.typography.styles].sort((left, right) =>
@@ -109,15 +102,11 @@ export function buildCssVariables(snapshot: ProjectSnapshot): Uint8Array {
   )) {
     const font = fontsById.get(style.fontRefId);
     const key = `${style.role}-${suffix(style.id)}`;
-    lines.push(
-      `  --hawya-type-${key}-family: ${cssQuoted(font?.familyName ?? "sans-serif")};`,
-    );
+    lines.push(`  --hawya-type-${key}-family: ${cssQuoted(font?.familyName ?? "sans-serif")};`);
     lines.push(`  --hawya-type-${key}-size: ${style.fontSize}px;`);
     lines.push(`  --hawya-type-${key}-line-height: ${style.lineHeight}px;`);
     lines.push(`  --hawya-type-${key}-letter-spacing: ${style.letterSpacing}px;`);
-    lines.push(
-      `  --hawya-type-${key}-weight: ${style.fontWeight ?? font?.weight ?? 400};`,
-    );
+    lines.push(`  --hawya-type-${key}-weight: ${style.fontWeight ?? font?.weight ?? 400};`);
   }
 
   lines.push("}", "");
@@ -182,7 +171,8 @@ function markdownForLocale(snapshot: ProjectSnapshot, locale: Locale): string {
   if (rules.clearSpace || rules.minimumSize || rules.incorrectUsage.length) {
     lines.push("### Logo rules", "");
     if (rules.clearSpace) lines.push(`- Clear space rule source: **${rules.clearSpace.source}**`);
-    if (rules.minimumSize) lines.push(`- Minimum size rule source: **${rules.minimumSize.source}**`);
+    if (rules.minimumSize)
+      lines.push(`- Minimum size rule source: **${rules.minimumSize.source}**`);
     if (rules.incorrectUsage.length) {
       lines.push(`- Incorrect-use rules: **${rules.incorrectUsage.length}**`);
     }

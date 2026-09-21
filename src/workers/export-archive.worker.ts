@@ -1,7 +1,10 @@
 /// <reference lib="webworker" />
 import { zipSync } from "fflate";
 
-import type { ExportWorkerRequest, ExportWorkerResponse } from "@/infrastructure/workers/export-worker-protocol";
+import type {
+  ExportWorkerRequest,
+  ExportWorkerResponse,
+} from "@/infrastructure/workers/export-worker-protocol";
 
 const SAFE_PATH = /^(?!\/)(?!.*(?:^|\/)\.\.(?:\/|$))[A-Za-z0-9][A-Za-z0-9._/-]{0,239}$/;
 
@@ -19,7 +22,8 @@ self.onmessage = (event: MessageEvent<ExportWorkerRequest>) => {
 
   let response: ExportWorkerResponse;
   try {
-    if (request.entries.length > 2_000) throw new Error("Export package exceeds the entry safety limit");
+    if (request.entries.length > 2_000)
+      throw new Error("Export package exceeds the entry safety limit");
     const files: Record<string, Uint8Array> = {};
     let totalBytes = 0;
     for (const entry of request.entries) {
@@ -27,7 +31,8 @@ self.onmessage = (event: MessageEvent<ExportWorkerRequest>) => {
       if (files[path]) throw new Error(`Duplicate archive path: ${path}`);
       const bytes = new Uint8Array(entry.bytes);
       totalBytes += bytes.byteLength;
-      if (totalBytes > 500 * 1024 * 1024) throw new Error("Export package exceeds the 500 MB safety limit");
+      if (totalBytes > 500 * 1024 * 1024)
+        throw new Error("Export package exceeds the 500 MB safety limit");
       files[path] = bytes;
     }
     const bytes = zipSync(files, {
