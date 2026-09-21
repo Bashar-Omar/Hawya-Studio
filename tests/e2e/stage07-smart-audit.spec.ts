@@ -87,8 +87,8 @@ test("Smart Audit measures logo geometry, requires explicit professional-rule co
   await page.getByRole("button", { name: "Generate guide" }).click();
   await page.getByRole("button", { name: "Edit page" }).click();
   await page.getByRole("button", { name: "Add rectangle (R)" }).click();
-  await page.getByLabel("X").fill("-120");
-  await page.getByLabel("X").press("Enter");
+  await page.getByLabel("X", { exact: true }).fill("-120");
+  await page.getByLabel("X", { exact: true }).press("Enter");
   await page.getByRole("button", { name: "Back to guide" }).click();
   await page.getByRole("button", { name: "Open Brand System" }).click();
   await page.getByRole("tab", { name: "Smart Audit" }).click();
