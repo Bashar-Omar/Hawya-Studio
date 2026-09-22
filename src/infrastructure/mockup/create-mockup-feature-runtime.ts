@@ -115,11 +115,14 @@ export function createMockupFeatureRuntime(runtime: Pick<PersistenceRuntime, "bi
     outliner.dispose();
   };
 
+  const renderSupported = supportsMockupWorker();
+
   return {
     render,
     download,
     dispose,
-    smartSupported: SMART_MOCKUP_PROTOTYPE_ENABLED && supportsMockupWorker(),
+    renderSupported,
+    smartSupported: SMART_MOCKUP_PROTOTYPE_ENABLED && renderSupported,
   };
 }
 
