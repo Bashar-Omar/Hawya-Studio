@@ -178,7 +178,18 @@ function warpWebGl(
     gl.uniform1i(textureLocation, 0);
 
     const inverse = invertMatrix3(homographyFromUnitSquare(surface.corners));
-    gl.uniformMatrix3fv(inverseLocation, false, new Float32Array(inverse));
+    const inverseColumnMajor = new Float32Array([
+      inverse[0],
+      inverse[3],
+      inverse[6],
+      inverse[1],
+      inverse[4],
+      inverse[7],
+      inverse[2],
+      inverse[5],
+      inverse[8],
+    ]);
+    gl.uniformMatrix3fv(inverseLocation, false, inverseColumnMajor);
     gl.viewport(0, 0, width, height);
     gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
