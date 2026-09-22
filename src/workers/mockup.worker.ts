@@ -146,7 +146,8 @@ function warpWebGl(
   `;
   const program = linkProgram(gl, vertexSource, fragmentSource);
   try {
-    gl.useProgram(program);
+    const activateProgram = gl.useProgram.bind(gl);
+    activateProgram(program);
     const positionLocation = gl.getAttribLocation(program, "a_position");
     const inverseLocation = gl.getUniformLocation(program, "u_inverse");
     const textureLocation = gl.getUniformLocation(program, "u_texture");
