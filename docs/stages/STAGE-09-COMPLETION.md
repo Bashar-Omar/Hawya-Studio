@@ -4,7 +4,8 @@ Date: 2026-09-22
 Stage: 09 — Mockups & Applications  
 PR: #20  
 Product-code verification head: `bb6eaab4d83565642861efc4705f75d60b57fcd2`  
-Product-code verification run: `35743901850`
+Product-code verification run: `35743901850`  
+Documentation-head verification: `f111802bdd6a76b4f3d87ed9495cdaab86311205` / run `35744275580`
 
 ## Result
 
@@ -191,13 +192,15 @@ Startup/bundle profiling, representative-scale stress testing, PWA/offline harde
 - No PSD Smart Objects, PSD parsing, displacement maps, generative backgrounds or photorealistic material simulation.
 - No remote AI/rendering service is required.
 
-## Final closure requirement
+## Final handoff gates
 
-This report records the green product-code gate. Stage 09 is only formally closed after:
+The product-code gate and documentation-head gate are green. The remaining release mechanics are intentionally performed after this report is committed:
 
-1. this documentation/README head passes CI;
-2. PR #20 is marked ready and squash-merged;
-3. CI on the exact merged `main` SHA is green;
-4. the downloadable Stage 09 ZIP is generated from that exact merged SHA and independently verified.
+1. mark PR #20 ready and squash-merge it with expected-head protection;
+2. verify CI on the exact merged `main` SHA;
+3. generate the downloadable Stage 09 ZIP from that exact merged SHA;
+4. independently verify checksum, archive integrity, tracked entries and critical Git blobs.
 
-After those gates, Stage 10 — Performance, PWA, Offline & Accessibility Hardening — is next.
+The exact merged SHA and handoff checksum are recorded in the external Stage 09 handoff verification file produced from GitHub after merge.
+
+Stage 10 — Performance, PWA, Offline & Accessibility Hardening — is next after the verified handoff.

@@ -4,7 +4,7 @@
 
 Hawya Studio is a free, open-source, local-first Brand System Production Studio for brand designers. It is designed to turn structured identity inputs into reusable brand systems, editable guidelines, assets, and honest export formats without requiring an account, paid API, cloud database, or subscription.
 
-> Current status: **Stage 09 — Mockups & Applications complete pending final merge/handoff gates**. Stage 10 Performance, PWA, Offline & Accessibility Hardening is next according to the Project Pack.
+> Current status: **Stage 09 — Mockups & Applications complete**. Stage 10 Performance, PWA, Offline & Accessibility Hardening is next according to the Project Pack.
 
 ## Non-negotiable guarantees
 
