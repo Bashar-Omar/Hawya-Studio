@@ -609,12 +609,10 @@ export default function MockupStudioPage({ projectId }: { projectId: ProjectId }
                           min="0"
                           max="100"
                           value={Math.round(activeSurface.opacity * 100)}
-                          onChange={(event) =>
-                            updateActiveSurface((surface) => ({
-                              ...surface,
-                              opacity: clamp(Number(event.currentTarget.value) / 100, 0, 1),
-                            }))
-                          }
+                          onChange={(event) => {
+                            const opacity = clamp(Number(event.currentTarget.value) / 100, 0, 1);
+                            updateActiveSurface((surface) => ({ ...surface, opacity }));
+                          }}
                         />
                       </label>
                       <label className="field-stack">
@@ -622,15 +620,13 @@ export default function MockupStudioPage({ projectId }: { projectId: ProjectId }
                         <select
                           className="text-input"
                           value={activeSurface.blendMode}
-                          onChange={(event) =>
-                            updateActiveSurface((surface) => ({
-                              ...surface,
-                              blendMode: event.currentTarget.value as
-                                | "normal"
-                                | "multiply"
-                                | "screen",
-                            }))
-                          }
+                          onChange={(event) => {
+                            const blendMode = event.currentTarget.value as
+                              | "normal"
+                              | "multiply"
+                              | "screen";
+                            updateActiveSurface((surface) => ({ ...surface, blendMode }));
+                          }}
                         >
                           <option value="normal">normal</option>
                           <option value="multiply">multiply</option>
@@ -645,12 +641,14 @@ export default function MockupStudioPage({ projectId }: { projectId: ProjectId }
                           min="0"
                           max="100"
                           value={Math.round(activeSurface.shadowStrength * 100)}
-                          onChange={(event) =>
-                            updateActiveSurface((surface) => ({
-                              ...surface,
-                              shadowStrength: clamp(Number(event.currentTarget.value) / 100, 0, 1),
-                            }))
-                          }
+                          onChange={(event) => {
+                            const shadowStrength = clamp(
+                              Number(event.currentTarget.value) / 100,
+                              0,
+                              1,
+                            );
+                            updateActiveSurface((surface) => ({ ...surface, shadowStrength }));
+                          }}
                         />
                       </label>
                       <label className="field-stack">
@@ -661,16 +659,14 @@ export default function MockupStudioPage({ projectId }: { projectId: ProjectId }
                           min="0"
                           max="100"
                           value={Math.round(activeSurface.highlightStrength * 100)}
-                          onChange={(event) =>
-                            updateActiveSurface((surface) => ({
-                              ...surface,
-                              highlightStrength: clamp(
-                                Number(event.currentTarget.value) / 100,
-                                0,
-                                1,
-                              ),
-                            }))
-                          }
+                          onChange={(event) => {
+                            const highlightStrength = clamp(
+                              Number(event.currentTarget.value) / 100,
+                              0,
+                              1,
+                            );
+                            updateActiveSurface((surface) => ({ ...surface, highlightStrength }));
+                          }}
                         />
                       </label>
                     </div>
@@ -692,16 +688,12 @@ export default function MockupStudioPage({ projectId }: { projectId: ProjectId }
                                   max="100"
                                   step="0.1"
                                   value={percent(activeSurface.corners[corner][axis])}
-                                  onChange={(event) =>
+                                  onChange={(event) => {
+                                    const value = Number(event.currentTarget.value);
                                     updateActiveSurface((surface) =>
-                                      surfaceWithCorner(
-                                        surface,
-                                        corner,
-                                        axis,
-                                        Number(event.currentTarget.value),
-                                      ),
-                                    )
-                                  }
+                                      surfaceWithCorner(surface, corner, axis, value),
+                                    );
+                                  }}
                                 />
                               </label>
                             ))}
