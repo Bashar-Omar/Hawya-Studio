@@ -36,6 +36,7 @@ export class ManageMockupPresetsUseCase {
   async create(projectId: ProjectId, input: CreateMockupPresetInput): Promise<MockupPreset> {
     const snapshot = await this.requireProject(projectId);
     this.assertBackground(snapshot, input.backgroundAssetId);
+    this.assertSurface(snapshot, input.surface);
     const now = this.clock.now();
     const preset = mockupPresetSchema.parse({
       id: this.ids.newId(),
@@ -57,6 +58,7 @@ export class ManageMockupPresetsUseCase {
   ): Promise<MockupPreset> {
     const snapshot = await this.requireProject(projectId);
     this.assertBackground(snapshot, input.backgroundAssetId);
+    this.assertSurface(snapshot, input.surface);
     const existing = snapshot.project.mockups.presets.find((preset) => preset.id === presetId);
     if (!existing) throw new Error("Mockup preset does not exist");
     const now = this.clock.now();
@@ -92,6 +94,21 @@ export class ManageMockupPresetsUseCase {
     const snapshot = await this.projects.get(projectId);
     if (!snapshot) throw new Error(`Project ${projectId} does not exist`);
     return snapshot;
+  }
+
+  private assertSurface(snapshot: ProjectSnapshot, surface: MockupSurface | undefined): void {
+    if (!surface) return;
+    if (surface.artwork.kind === "asset") {
+      const artwork = snapshot.assets.find((asset) => asset.id === surface.artwork.assetId);
+      if (!artwork) throw new Error("Mockup artwork asset does not exist");
+      if (!["logo", "image", "vector", "icon", "illustration"].includes(artwork.kind)) {
+        throw new Error("Selected asset cannot be used as mockup artwork");
+      }
+      return;
+    }
+    if (!snapshot.project.guide.pages[surface.artwork.pageId]) {
+      throw new Error("Mockup artwork guide page does not exist");
+    }
   }
 
   private assertBackground(snapshot: ProjectSnapshot, assetId: AssetId): void {
