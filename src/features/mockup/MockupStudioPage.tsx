@@ -313,7 +313,7 @@ export default function MockupStudioPage({ projectId }: { projectId: ProjectId }
     });
   };
 
-  const railPanel = (
+  const railPanel = view ? (
     <div className="mockup-rail">
       <p className="panel-kicker">{t("mockup.presets")}</p>
       <h2>{view.snapshot.project.metadata.name}</h2>
@@ -331,7 +331,7 @@ export default function MockupStudioPage({ projectId }: { projectId: ProjectId }
         ))}
       </div>
     </div>
-  );
+  ) : null;
 
   if (!view) {
     return (
@@ -344,6 +344,13 @@ export default function MockupStudioPage({ projectId }: { projectId: ProjectId }
   }
 
   const artworkAssets = view.artworkAssets.filter((asset) => asset.id !== draft?.backgroundAssetId);
+  const activeSurface = draft?.surface;
+
+  const updateActiveSurface = (update: (surface: MockupSurface) => MockupSurface) => {
+    setDraft((current) =>
+      current?.surface ? { ...current, surface: update(current.surface) } : current,
+    );
+  };
 
   return (
     <AppShell
@@ -407,15 +414,15 @@ export default function MockupStudioPage({ projectId }: { projectId: ProjectId }
                 ) : (
                   <p>{t("mockup.assetMissing")}</p>
                 )}
-                {draft.surface
+                {activeSurface
                   ? CORNERS.map((corner) => (
                       <button
                         type="button"
                         className="mockup-corner"
                         key={corner}
                         style={{
-                          left: `${draft.surface?.corners[corner].x * 100}%`,
-                          top: `${draft.surface?.corners[corner].y * 100}%`,
+                          left: `${activeSurface.corners[corner].x * 100}%`,
+                          top: `${activeSurface.corners[corner].y * 100}%`,
                         }}
                         aria-label={t(CORNER_LABEL_KEYS[corner])}
                         onPointerDown={(event) => {
@@ -560,26 +567,23 @@ export default function MockupStudioPage({ projectId }: { projectId: ProjectId }
                 ) : null}
                 <p className="field-help">{t("mockup.smartScope")}</p>
 
-                {draft.surface ? (
+                {activeSurface ? (
                   <div className="mockup-smart-controls">
                     <label className="field-stack">
                       <span className="field-label">{t("mockup.artwork")}</span>
                       <select
                         className="text-input"
-                        value={artworkValue(draft.surface)}
+                        value={artworkValue(activeSurface)}
                         onChange={(event) => {
                           const [kind, id] = event.currentTarget.value.split(":");
                           if (!id) return;
-                          setDraft({
-                            ...draft,
-                            surface: {
-                              ...draft.surface!,
-                              artwork:
-                                kind === "page"
-                                  ? { kind: "page", pageId: id }
-                                  : { kind: "asset", assetId: id },
-                            },
-                          });
+                          updateActiveSurface((surface) => ({
+                            ...surface,
+                            artwork:
+                              kind === "page"
+                                ? { kind: "page", pageId: id }
+                                : { kind: "asset", assetId: id },
+                          }));
                         }}
                       >
                         {artworkAssets.map((asset) => (
@@ -604,15 +608,12 @@ export default function MockupStudioPage({ projectId }: { projectId: ProjectId }
                           type="number"
                           min="0"
                           max="100"
-                          value={Math.round(draft.surface.opacity * 100)}
+                          value={Math.round(activeSurface.opacity * 100)}
                           onChange={(event) =>
-                            setDraft({
-                              ...draft,
-                              surface: {
-                                ...draft.surface!,
-                                opacity: clamp(Number(event.currentTarget.value) / 100, 0, 1),
-                              },
-                            })
+                            updateActiveSurface((surface) => ({
+                              ...surface,
+                              opacity: clamp(Number(event.currentTarget.value) / 100, 0, 1),
+                            }))
                           }
                         />
                       </label>
@@ -620,18 +621,15 @@ export default function MockupStudioPage({ projectId }: { projectId: ProjectId }
                         <span className="field-label">{t("mockup.blend")}</span>
                         <select
                           className="text-input"
-                          value={draft.surface.blendMode}
+                          value={activeSurface.blendMode}
                           onChange={(event) =>
-                            setDraft({
-                              ...draft,
-                              surface: {
-                                ...draft.surface!,
-                                blendMode: event.currentTarget.value as
-                                  | "normal"
-                                  | "multiply"
-                                  | "screen",
-                              },
-                            })
+                            updateActiveSurface((surface) => ({
+                              ...surface,
+                              blendMode: event.currentTarget.value as
+                                | "normal"
+                                | "multiply"
+                                | "screen",
+                            }))
                           }
                         >
                           <option value="normal">normal</option>
@@ -646,19 +644,12 @@ export default function MockupStudioPage({ projectId }: { projectId: ProjectId }
                           type="number"
                           min="0"
                           max="100"
-                          value={Math.round(draft.surface.shadowStrength * 100)}
+                          value={Math.round(activeSurface.shadowStrength * 100)}
                           onChange={(event) =>
-                            setDraft({
-                              ...draft,
-                              surface: {
-                                ...draft.surface!,
-                                shadowStrength: clamp(
-                                  Number(event.currentTarget.value) / 100,
-                                  0,
-                                  1,
-                                ),
-                              },
-                            })
+                            updateActiveSurface((surface) => ({
+                              ...surface,
+                              shadowStrength: clamp(Number(event.currentTarget.value) / 100, 0, 1),
+                            }))
                           }
                         />
                       </label>
@@ -669,19 +660,12 @@ export default function MockupStudioPage({ projectId }: { projectId: ProjectId }
                           type="number"
                           min="0"
                           max="100"
-                          value={Math.round(draft.surface.highlightStrength * 100)}
+                          value={Math.round(activeSurface.highlightStrength * 100)}
                           onChange={(event) =>
-                            setDraft({
-                              ...draft,
-                              surface: {
-                                ...draft.surface!,
-                                highlightStrength: clamp(
-                                  Number(event.currentTarget.value) / 100,
-                                  0,
-                                  1,
-                                ),
-                              },
-                            })
+                            updateActiveSurface((surface) => ({
+                              ...surface,
+                              highlightStrength: clamp(Number(event.currentTarget.value) / 100, 0, 1),
+                            }))
                           }
                         />
                       </label>
@@ -703,17 +687,16 @@ export default function MockupStudioPage({ projectId }: { projectId: ProjectId }
                                   min="0"
                                   max="100"
                                   step="0.1"
-                                  value={percent(draft.surface!.corners[corner][axis])}
+                                  value={percent(activeSurface.corners[corner][axis])}
                                   onChange={(event) =>
-                                    setDraft({
-                                      ...draft,
-                                      surface: surfaceWithCorner(
-                                        draft.surface!,
+                                    updateActiveSurface((surface) =>
+                                      surfaceWithCorner(
+                                        surface,
                                         corner,
                                         axis,
                                         Number(event.currentTarget.value),
                                       ),
-                                    })
+                                    )
                                   }
                                 />
                               </label>
