@@ -145,6 +145,19 @@ export function runExportPreflight(input: ExportPreflightInput): ExportPreflight
 
   if (needsRenderedFonts || needsPackagedFonts) {
     const assets = new Map(input.snapshot.assets.map((asset) => [asset.id, asset] as const));
+    const fonts = new Map(
+      input.snapshot.project.brand.typography.fonts.map((font) => [font.id, font] as const),
+    );
+    for (const style of input.snapshot.project.brand.typography.styles) {
+      if (!fonts.has(style.fontRefId)) {
+        pushUnique(issues, {
+          code: "font-reference-missing",
+          severity: "blocking",
+          location: `brand:text-style:${style.id}`,
+          detail: style.name,
+        });
+      }
+    }
     for (const font of input.snapshot.project.brand.typography.fonts) {
       const asset = assets.get(font.assetId);
       if (!asset) continue;

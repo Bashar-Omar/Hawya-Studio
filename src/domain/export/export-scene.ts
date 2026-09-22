@@ -29,6 +29,7 @@ function tokenByRole(
   layer: RenderedTextLayer,
 ): TextStyleToken | undefined {
   const styles = snapshot.project.brand.typography.styles;
+  const fallback = styles.find((style) => style.role === "body") ?? styles[0];
   if (layer.source === "extra") {
     const source = layer.id;
     const extra = snapshot.project.guide.pageOrder
@@ -43,15 +44,18 @@ function tokenByRole(
   if (layer.name === "brand.name" || layer.name === "page.title") {
     return (
       styles.find((style) => style.role === "display") ??
-      styles.find((style) => style.role === "h1")
+      styles.find((style) => style.role === "h1") ??
+      fallback
     );
   }
   if (layer.name.includes("title") || layer.name.includes("heading")) {
     return (
-      styles.find((style) => style.role === "h2") ?? styles.find((style) => style.role === "h1")
+      styles.find((style) => style.role === "h2") ??
+      styles.find((style) => style.role === "h1") ??
+      fallback
     );
   }
-  return styles.find((style) => style.role === "body") ?? styles[0];
+  return fallback;
 }
 
 function resolveStyle(snapshot: ProjectSnapshot, layer: RenderedTextLayer): ExportTextStyle {

@@ -61,6 +61,27 @@ describe("Stage 08 export preflight", () => {
     expect(omitFonts.issues.some((issue) => issue.code === "font-policy-required")).toBe(false);
   });
 
+  it("blocks rendered output when a text style references an unknown font", async () => {
+    const fixture = await createSyntheticProjectFixture(new WebCryptoSha256Hasher());
+    const style = fixture.snapshot.project.brand.typography.styles[0];
+    if (!style) throw new Error("synthetic text style missing");
+    style.fontRefId = "00000000-0000-4000-8000-000000000098";
+    const hashes = new Set(fixture.binaries.map((binary) => binary.contentHash));
+    const audit = buildAuditReport(fixture.snapshot, { has: (hash) => hashes.has(hash) });
+
+    const result = runExportPreflight({
+      snapshot: fixture.snapshot,
+      audit,
+      availableBinaryHashes: hashes,
+      format: "svg-outlined",
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.issues).toContainEqual(
+      expect.objectContaining({ code: "font-reference-missing", severity: "blocking" }),
+    );
+  });
+
   it("promotes missing text-style coverage to a blocker for outlined/raster/print output", async () => {
     const fixture = await createSyntheticProjectFixture(new WebCryptoSha256Hasher());
     fixture.snapshot.project.brand.typography.styles = [];
