@@ -1,10 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  homographyFromUnitSquare,
-  invertMatrix3,
-  projectPoint,
-} from "@/domain/mockup/homography";
+import { homographyFromUnitSquare, invertMatrix3, projectPoint } from "@/domain/mockup/homography";
 import { isValidPlanarQuad, type MockupQuad } from "@/domain/mockup/mockup";
 
 const rectangle: MockupQuad = {
