@@ -22,7 +22,7 @@ export class DeleteAssetUseCase {
     const references = countAssetReferences(snapshot, assetId);
     // One reference is the top-level assetRefs ownership entry itself.
     if (references > 1) {
-      throw new Error("Asset is still used by the brand system or guide");
+      throw new Error("Asset is still referenced by this project");
     }
     const now = this.clock.now();
     const next = projectSnapshotSchema.parse({
