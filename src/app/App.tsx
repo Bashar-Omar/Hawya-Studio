@@ -13,6 +13,7 @@ const BrandSystemPage = lazy(() => import("@/features/brand-system/BrandSystemPa
 const GuideStudioPage = lazy(() => import("@/features/guide-studio/GuideStudioPage"));
 const EditorPage = lazy(() => import("@/features/editor/EditorPage"));
 const ExportCenterPage = lazy(() => import("@/features/export/ExportCenterPage"));
+const MockupStudioPage = lazy(() => import("@/features/mockup/MockupStudioPage"));
 const PrintViewPage = lazy(() => import("@/features/export/PrintViewPage"));
 
 function CurrentRoute() {
@@ -55,6 +56,14 @@ function CurrentRoute() {
       return projectId ? (
         <Suspense fallback={null}>
           <ExportCenterPage projectId={projectId} />
+        </Suspense>
+      ) : (
+        <NotFoundPage />
+      );
+    case "mockups":
+      return projectId ? (
+        <Suspense fallback={null}>
+          <MockupStudioPage projectId={projectId} />
         </Suspense>
       ) : (
         <NotFoundPage />
