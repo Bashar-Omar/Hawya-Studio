@@ -1,8 +1,4 @@
-import {
-  isValidPlanarQuad,
-  type MockupPoint,
-  type MockupQuad,
-} from "@/domain/mockup/mockup";
+import { isValidPlanarQuad, type MockupPoint, type MockupQuad } from "@/domain/mockup/mockup";
 
 export type Matrix3 = readonly [
   number,
