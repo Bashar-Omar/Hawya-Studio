@@ -145,6 +145,11 @@ test("Stage 08 builds the selected delivery ZIP without silently packaging fonts
     .locator(".export-delivery-tree label")
     .filter({ hasText: "Editable + outlined page artwork" });
   await artworkChoice.click();
+  await expect(page).toHaveURL(exportUrl);
+  await expect(page.getByRole("heading", { name: "Export Center" })).toBeVisible();
+  expect(runtimeIssues).toEqual([]);
+  await expect(page.locator(".export-delivery-tree")).toBeVisible();
+  await expect(page.locator(".export-font-policy")).toBeVisible();
   const omitFontsChoice = page
     .locator(".export-font-policy label")
     .filter({ hasText: "Omit font binaries" });
