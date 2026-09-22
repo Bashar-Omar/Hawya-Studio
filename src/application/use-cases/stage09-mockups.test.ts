@@ -72,11 +72,7 @@ async function projectsWithRasterBackground(): Promise<MemoryProjects> {
 }
 
 function useCase(projects: ProjectRepository) {
-  return new ManageMockupPresetsUseCase(
-    projects,
-    new TestClock(),
-    new FixedIds(),
-  );
+  return new ManageMockupPresetsUseCase(projects, new TestClock(), new FixedIds());
 }
 
 describe("Stage 09 mockup preset application boundary", () => {
