@@ -29,7 +29,9 @@ async function finishProject(page: Page): Promise<void> {
     mimeType: "image/png",
     buffer: ARTWORK_PNG,
   });
-  await expect(page.locator("article.asset-card").filter({ hasText: "mockup-artwork" })).toBeVisible();
+  await expect(
+    page.locator("article.asset-card").filter({ hasText: "mockup-artwork" }),
+  ).toBeVisible();
 
   await page.getByRole("button", { name: "Guide shell" }).click();
   await expect(
@@ -113,7 +115,9 @@ test("Stage 09 persists a reusable smart mockup and physical corner geometry", a
 
 test("Stage 09 renders/downloads PNG and RTL does not mirror mockup coordinates", async () => {
   const firstCorner = page.locator(".mockup-corner").first();
-  const physicalLeftBefore = await firstCorner.evaluate((element) => (element as HTMLElement).style.left);
+  const physicalLeftBefore = await firstCorner.evaluate(
+    (element) => (element as HTMLElement).style.left,
+  );
   expect(physicalLeftBefore).toBe("25%");
 
   const previewButton = page.getByRole("button", { name: "Render preview" });
@@ -133,7 +137,9 @@ test("Stage 09 renders/downloads PNG and RTL does not mirror mockup coordinates"
 
   await page.getByRole("button", { name: "Language" }).click();
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-  const physicalLeftAfter = await firstCorner.evaluate((element) => (element as HTMLElement).style.left);
+  const physicalLeftAfter = await firstCorner.evaluate(
+    (element) => (element as HTMLElement).style.left,
+  );
   expect(physicalLeftAfter).toBe("25%");
   expect(runtimeIssues).toEqual([]);
 });
