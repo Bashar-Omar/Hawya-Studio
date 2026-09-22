@@ -1,5 +1,5 @@
 import type { AssetId } from "@/domain/assets/asset";
-import type { ContentDirection, Paint } from "@/domain/common/primitives";
+import type { ContentDirection, NormalizedRect, Paint } from "@/domain/common/primitives";
 import type { Layer } from "@/domain/guide/guide-document";
 
 export type LayerTransform = Layer["transform"];
@@ -49,6 +49,7 @@ export interface RenderedImageLayer extends RenderedSceneLayerBase {
   type: "image";
   assetId: AssetId;
   fit: "cover" | "contain" | "fill";
+  crop?: NormalizedRect;
   cornerRadius?: number;
 }
 

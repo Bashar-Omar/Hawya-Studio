@@ -2,6 +2,7 @@ import type { Clock } from "@/application/ports/clock";
 import type { IdGenerator } from "@/application/ports/id-generator";
 import type { ProjectRepository } from "@/application/ports/project-repository";
 import type { AssetId } from "@/domain/assets/asset";
+import type { NormalizedRect } from "@/domain/common/primitives";
 import type { GuidePage, Layer, PageId } from "@/domain/guide/guide-document";
 import {
   projectSnapshotSchema,
@@ -18,6 +19,7 @@ import {
   deleteSceneLayers,
   duplicateExtraLayers,
   groupExtraLayers,
+  setSceneImagePresentation,
   setSceneLocked,
   setSceneText,
   setSceneVisibility,
@@ -164,6 +166,16 @@ export class EditorSession {
 
   async updateText(sceneId: SceneLayerId, text: string): Promise<GuidePage> {
     return this.commit("Edit text", [sceneId], (page) => setSceneText(page, sceneId, text));
+  }
+
+  async setImagePresentation(
+    sceneId: SceneLayerId,
+    fit: "cover" | "contain" | "fill",
+    crop?: NormalizedRect,
+  ): Promise<GuidePage> {
+    return this.commit("Edit image crop", [sceneId], (page) =>
+      setSceneImagePresentation(page, sceneId, fit, crop),
+    );
   }
 
   async setVisible(sceneId: SceneLayerId, visible: boolean): Promise<GuidePage> {

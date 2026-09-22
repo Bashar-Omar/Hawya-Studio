@@ -1,4 +1,5 @@
 import type { AssetId } from "@/domain/assets/asset";
+import type { NormalizedRect } from "@/domain/common/primitives";
 import type { GuidePage, Layer } from "@/domain/guide/guide-document";
 import { upsertEditorOverride, templateSlotIdFromSceneId } from "@/editor/model/local-overrides";
 import type { LayerTransform, SceneLayerId } from "@/editor/model/editor-types";
@@ -64,6 +65,21 @@ export function setSceneText(page: GuidePage, sceneId: SceneLayerId, text: strin
     return;
   }
   if (templateSlotIdFromSceneId(sceneId)) upsertEditorOverride(page, sceneId, { text });
+}
+
+export function setSceneImagePresentation(
+  page: GuidePage,
+  sceneId: SceneLayerId,
+  fit: "cover" | "contain" | "fill",
+  crop?: NormalizedRect,
+): void {
+  const index = extraIndex(page, sceneId);
+  if (index < 0) return;
+  const layer = page.extras[index];
+  if (layer?.type !== "image") return;
+  layer.fit = fit;
+  if (crop) layer.crop = crop;
+  else delete layer.crop;
 }
 
 export function addExtraLayer(page: GuidePage, layer: Layer): void {
