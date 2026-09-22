@@ -141,16 +141,14 @@ test("Stage 08 exports stable machine-readable brand tokens", async () => {
 
 test("Stage 08 builds the selected delivery ZIP without silently packaging fonts", async () => {
   await page.getByRole("button", { name: /Delivery ZIP/ }).click();
-  await page
+  const artworkChoice = page
     .getByText("Editable + outlined page artwork", { exact: true })
-    .locator("..")
-    .getByRole("checkbox")
-    .uncheck();
-  await page
-    .getByText("Omit font binaries", { exact: true })
-    .locator("..")
-    .getByRole("radio")
-    .check();
+    .locator("..");
+  await artworkChoice.getByText("Editable + outlined page artwork", { exact: true }).click();
+  await expect(artworkChoice.getByRole("checkbox")).not.toBeChecked();
+  const omitFontsChoice = page.getByText("Omit font binaries", { exact: true }).locator("..");
+  await omitFontsChoice.getByText("Omit font binaries", { exact: true }).click();
+  await expect(omitFontsChoice.getByRole("radio")).toBeChecked();
   await acknowledgeWarningsIfPresent(page);
   const generate = page.getByRole("button", { name: "Generate & download" });
   await expect(generate).toBeEnabled();
@@ -187,9 +185,11 @@ test("Stage 08 builds the selected delivery ZIP without silently packaging fonts
 test("Stage 08 outlines a selected page with the real browser font worker", async () => {
   await page.getByRole("button", { name: /Outlined SVG/ }).click();
   const allPages = page.getByText("All guide pages", { exact: true }).locator("..");
-  await allPages.getByRole("checkbox").uncheck();
-  const pageChoices = page.locator(".export-pages__grid input[type='checkbox']");
-  await pageChoices.first().check();
+  await allPages.getByText("All guide pages", { exact: true }).click();
+  await expect(allPages.getByRole("checkbox")).not.toBeChecked();
+  const firstPageChoice = page.locator(".export-pages__grid label").first();
+  await firstPageChoice.click();
+  await expect(firstPageChoice.getByRole("checkbox")).toBeChecked();
   await acknowledgeWarningsIfPresent(page);
 
   const generate = page.getByRole("button", { name: "Generate & download" });
