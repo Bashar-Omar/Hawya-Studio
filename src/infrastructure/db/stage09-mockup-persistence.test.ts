@@ -37,10 +37,7 @@ describe("Stage 09 mockup persistence", () => {
       ...fixture.snapshot,
       project: {
         ...fixture.snapshot.project,
-        assetRefs: [
-          ...fixture.snapshot.project.assetRefs,
-          { assetId: MOCKUP_ASSET_ID },
-        ],
+        assetRefs: [...fixture.snapshot.project.assetRefs, { assetId: MOCKUP_ASSET_ID }],
         mockups: {
           presets: [
             {
