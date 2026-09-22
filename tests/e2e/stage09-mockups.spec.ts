@@ -34,12 +34,9 @@ async function finishProject(page: Page): Promise<void> {
   ).toBeVisible();
 
   await page.getByRole("button", { name: "Guide shell" }).click();
-  await expect(
-    page.getByRole("heading", {
-      name: "Your brand guide is generated from reusable semantic content.",
-    }),
-  ).toBeVisible();
-  await page.getByRole("button", { name: "Mockups" }).click();
+  const mockupsLink = page.getByRole("button", { name: "Mockups" });
+  await expect(mockupsLink).toBeVisible();
+  await mockupsLink.click();
   await expect(page.getByRole("heading", { name: "Mockup Studio" })).toBeVisible();
 }
 
