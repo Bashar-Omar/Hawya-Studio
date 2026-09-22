@@ -51,7 +51,6 @@ describe("FflateProjectArchiveCodec", () => {
     }
   });
 
-
   it("round-trips a non-empty Stage 09 mockup preset through .hawya", async () => {
     const hasher = new WebCryptoSha256Hasher();
     const fixture = await createSyntheticProjectFixture(hasher);
