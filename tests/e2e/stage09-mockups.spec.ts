@@ -50,7 +50,9 @@ test("Stage 09 persists and renders a reusable smart mockup without mirroring ph
     mimeType: "image/png",
     buffer: ARTWORK_PNG,
   });
-  await expect(page.locator("article.asset-card").filter({ hasText: "mockup-artwork" })).toBeVisible();
+  await expect(
+    page.locator("article.asset-card").filter({ hasText: "mockup-artwork" }),
+  ).toBeVisible();
 
   await page.getByRole("button", { name: "Guide shell" }).click();
   await expect(
@@ -89,14 +91,18 @@ test("Stage 09 persists and renders a reusable smart mockup without mirroring ph
 
   await page.reload();
   await expect(page.getByRole("heading", { name: "Mockup Studio" })).toBeVisible();
-  await expect(page.getByRole("group", { name: "Smart planar surface" }).getByRole("checkbox")).toBeChecked();
+  await expect(
+    page.getByRole("group", { name: "Smart planar surface" }).getByRole("checkbox"),
+  ).toBeChecked();
   await expect(page.getByRole("group", { name: "Top-left corner" }).getByLabel("X %")).toHaveValue(
     "25",
   );
 
   const firstCorner = page.locator(".mockup-corner").first();
   await expect(firstCorner).toHaveCSS("left", /.+/);
-  const physicalLeftBefore = await firstCorner.evaluate((element) => (element as HTMLElement).style.left);
+  const physicalLeftBefore = await firstCorner.evaluate(
+    (element) => (element as HTMLElement).style.left,
+  );
   expect(physicalLeftBefore).toBe("25%");
 
   const previewButton = page.getByRole("button", { name: "Render preview" });
@@ -116,7 +122,9 @@ test("Stage 09 persists and renders a reusable smart mockup without mirroring ph
 
   await page.getByRole("button", { name: "Language" }).click();
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-  const physicalLeftAfter = await firstCorner.evaluate((element) => (element as HTMLElement).style.left);
+  const physicalLeftAfter = await firstCorner.evaluate(
+    (element) => (element as HTMLElement).style.left,
+  );
   expect(physicalLeftAfter).toBe("25%");
   expect(runtimeIssues).toEqual([]);
 });
