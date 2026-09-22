@@ -3,13 +3,7 @@ import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import {
-  expect,
-  test,
-  type BrowserContext,
-  type Download,
-  type Page,
-} from "@playwright/test";
+import { expect, test, type BrowserContext, type Download, type Page } from "@playwright/test";
 import { strFromU8, unzipSync } from "fflate";
 
 function safeSvg(): Buffer {
@@ -124,7 +118,6 @@ test.afterAll(async () => {
 });
 
 test("Stage 08 exports stable machine-readable brand tokens", async () => {
-
   await page.getByRole("button", { name: /Design Tokens JSON/ }).click();
   await acknowledgeWarningsIfPresent(page);
   const generate = page.getByRole("button", { name: "Generate & download" });
@@ -147,7 +140,6 @@ test("Stage 08 exports stable machine-readable brand tokens", async () => {
 });
 
 test("Stage 08 builds the selected delivery ZIP without silently packaging fonts", async () => {
-
   await page.getByRole("button", { name: /Delivery ZIP/ }).click();
   await page
     .getByText("Editable + outlined page artwork", { exact: true })
@@ -193,7 +185,6 @@ test("Stage 08 builds the selected delivery ZIP without silently packaging fonts
 });
 
 test("Stage 08 outlines a selected page with the real browser font worker", async () => {
-
   await page.getByRole("button", { name: /Outlined SVG/ }).click();
   const allPages = page.getByText("All guide pages", { exact: true }).locator("..");
   await allPages.getByRole("checkbox").uncheck();
@@ -216,7 +207,6 @@ test("Stage 08 outlines a selected page with the real browser font worker", asyn
 });
 
 test("Stage 08 print view becomes resource-ready without application chrome", async () => {
-
   await page.getByRole("button", { name: /Browser Print \/ PDF/ }).click();
   await acknowledgeWarningsIfPresent(page);
   const openPrint = page.getByRole("button", { name: "Open Print View" });
