@@ -69,9 +69,7 @@ export class ManageMockupPresetsUseCase {
     });
     await this.persist(
       snapshot,
-      snapshot.project.mockups.presets.map((preset) =>
-        preset.id === presetId ? updated : preset,
-      ),
+      snapshot.project.mockups.presets.map((preset) => (preset.id === presetId ? updated : preset)),
       now,
     );
     return updated;
