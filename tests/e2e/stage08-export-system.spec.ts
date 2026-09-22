@@ -145,10 +145,7 @@ test("Stage 08 builds the selected delivery ZIP without silently packaging fonts
     .locator(".export-delivery-tree label")
     .filter({ hasText: "Editable + outlined page artwork" });
   await artworkChoice.click();
-  const diagnosticBody = (await page.locator("body").innerText()).slice(0, 4000);
-  throw new Error(
-    `STAGE08_DELIVERY_DIAGNOSTIC url=${page.url()} issues=${JSON.stringify(runtimeIssues)} body=${JSON.stringify(diagnosticBody)}`,
-  );
+  expect(runtimeIssues).toEqual([]);
   const omitFontsChoice = page
     .locator(".export-font-policy label")
     .filter({ hasText: "Omit font binaries" });

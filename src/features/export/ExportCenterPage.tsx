@@ -400,13 +400,14 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
                           <input
                             type="checkbox"
                             checked={selectedPages.includes(pageId)}
-                            onChange={(event) =>
+                            onChange={(event) => {
+                              const checked = event.currentTarget.checked;
                               setSelectedPages((current) =>
-                                event.currentTarget.checked
+                                checked
                                   ? [...current, pageId]
                                   : current.filter((id) => id !== pageId),
-                              )
-                            }
+                              );
+                            }}
                           />
                           <span>{localizedValue(page.name, locale)}</span>
                         </label>
@@ -552,12 +553,13 @@ export default function ExportCenterPage({ projectId }: { projectId: ProjectId }
                       <input
                         type="checkbox"
                         checked={deliverySelection[key]}
-                        onChange={(event) =>
+                        onChange={(event) => {
+                          const checked = event.currentTarget.checked;
                           setDeliverySelection((current) => ({
                             ...current,
-                            [key]: event.currentTarget.checked,
-                          }))
-                        }
+                            [key]: checked,
+                          }));
+                        }}
                       />
                       <span>{t(label)}</span>
                     </label>
