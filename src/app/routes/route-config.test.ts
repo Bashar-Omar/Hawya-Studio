@@ -5,6 +5,7 @@ import {
   editorPath,
   exportCenterPath,
   matchRoute,
+  mockupStudioPath,
   printPath,
   newProjectPath,
   pageIdFromPathname,
@@ -31,17 +32,20 @@ describe("app route matching", () => {
     expect(matchRoute(brandSystemPath(projectId))).toBe("brand");
     expect(matchRoute(editorPath(projectId, pageId))).toBe("editor");
     expect(matchRoute(exportCenterPath(projectId))).toBe("export");
+    expect(matchRoute(mockupStudioPath(projectId))).toBe("mockups");
     expect(matchRoute(printPath(projectId))).toBe("print");
     expect(projectIdFromPathname(newProjectPath(projectId))).toBe(projectId);
     expect(projectIdFromPathname(projectPath(projectId))).toBe(projectId);
     expect(projectIdFromPathname(brandSystemPath(projectId))).toBe(projectId);
     expect(projectIdFromPathname(editorPath(projectId, pageId))).toBe(projectId);
     expect(projectIdFromPathname(exportCenterPath(projectId))).toBe(projectId);
+    expect(projectIdFromPathname(mockupStudioPath(projectId))).toBe(projectId);
     expect(projectIdFromPathname(printPath(projectId))).toBe(projectId);
     expect(pageIdFromPathname(editorPath(projectId, pageId))).toBe(pageId);
     expect(matchRoute("/studio/projects/not-a-uuid")).toBe("not-found");
     expect(matchRoute("/studio/projects/not-a-uuid/brand")).toBe("not-found");
     expect(matchRoute("/studio/projects/not-a-uuid/export")).toBe("not-found");
+    expect(matchRoute("/studio/projects/not-a-uuid/mockups")).toBe("not-found");
     expect(matchRoute("/studio/projects/not-a-uuid/print")).toBe("not-found");
     expect(matchRoute(`/studio/projects/${projectId}/editor/not-a-uuid`)).toBe("not-found");
   });
