@@ -12,6 +12,36 @@ import {
 } from "@playwright/test";
 import { strFromU8, unzipSync } from "fflate";
 
+function safeSvg(): Buffer {
+  return Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80"><rect x="10" y="10" width="100" height="60" rx="12" fill="#112233"/><circle cx="60" cy="40" r="16" fill="#F2C14E"/></svg>',
+  );
+}
+
+function arabicFontPath(): string {
+  const entry = fileURLToPath(
+    import.meta.resolve("@fontsource-variable/noto-sans-arabic/index.css"),
+  );
+  const filesDirectory = join(dirname(entry), "files");
+  const candidate = readdirSync(filesDirectory).find(
+    (name) => name.endsWith(".woff2") && name.includes("arabic") && name.includes("wght"),
+  );
+  if (!candidate) throw new Error("Arabic WOFF2 fixture was not found");
+  return join(filesDirectory, candidate);
+}
+
+async function downloadedBytes(download: Download): Promise<Buffer> {
+  const path = await download.path();
+  if (!path) throw new Error("Playwright download path is unavailable");
+  return readFile(path);
+}
+
+async function acknowledgeWarningsIfPresent(page: Page): Promise<void> {
+  const acknowledgement = page.getByText("I reviewed these warnings and want to continue.");
+  if (await acknowledgement.isVisible().catch(() => false)) {
+    await acknowledgement.locator("..").getByRole("checkbox").check();
+  }
+}
 
 async function createExportReadyProject(page: Page): Promise<void> {
   await page.goto("/studio/new");
@@ -156,7 +186,7 @@ test("Stage 08 builds the selected delivery ZIP without silently packaging fonts
   };
   expect(manifest.format).toBe("hawya-delivery");
   expect(manifest.fontPolicy).toBe("omit");
-  expect(manifest.exportedAt).toMatch(/^\\d{4}-\\d{2}-\\d{2}T/);
+  expect(manifest.exportedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
   expect(manifest.hawyaVersion).toBe("0.1.0");
   expect(manifest.include?.artwork).toBe(false);
   expect(runtimeIssues).toEqual([]);
