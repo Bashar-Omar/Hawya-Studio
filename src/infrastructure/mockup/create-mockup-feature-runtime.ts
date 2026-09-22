@@ -63,7 +63,7 @@ export function createMockupFeatureRuntime(
     const artifacts = await pageRaster.render(
       snapshot,
       {
-        localeMode: inferGuideLocaleMode(snapshot.project),
+        localeMode: inferGuideLocaleMode(snapshot),
         scale: 1,
         pageIds: [artwork.pageId],
       },

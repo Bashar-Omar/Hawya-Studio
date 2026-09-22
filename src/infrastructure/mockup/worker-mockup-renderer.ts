@@ -91,7 +91,14 @@ export class WorkerMockupRenderer implements MockupRenderer {
         reject(new Error("Mockup render exceeded the safety time limit"));
       }, MOCKUP_RENDER_TIMEOUT_MS);
 
-      this.pending.set(id, { resolve, reject, onProgress, timer, signal, onAbort });
+      this.pending.set(id, {
+        resolve,
+        reject,
+        ...(onProgress ? { onProgress } : {}),
+        timer,
+        signal,
+        onAbort,
+      });
       signal.addEventListener("abort", onAbort, { once: true });
 
       const background = Uint8Array.from(input.background.bytes).buffer;
