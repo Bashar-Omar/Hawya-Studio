@@ -16,13 +16,49 @@ export const mockupPointSchema = z.object({
 });
 export type MockupPoint = z.infer<typeof mockupPointSchema>;
 
-export const mockupQuadSchema = z.object({
+const rawMockupQuadSchema = z.object({
   topLeft: mockupPointSchema,
   topRight: mockupPointSchema,
   bottomRight: mockupPointSchema,
   bottomLeft: mockupPointSchema,
 });
-export type MockupQuad = z.infer<typeof mockupQuadSchema>;
+export type MockupQuad = z.infer<typeof rawMockupQuadSchema>;
+
+const QUAD_EPSILON = 1e-8;
+
+function quadCross(a: MockupPoint, b: MockupPoint, c: MockupPoint): number {
+  return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+}
+
+function quadSegmentsIntersect(
+  a: MockupPoint,
+  b: MockupPoint,
+  c: MockupPoint,
+  d: MockupPoint,
+): boolean {
+  const abC = quadCross(a, b, c);
+  const abD = quadCross(a, b, d);
+  const cdA = quadCross(c, d, a);
+  const cdB = quadCross(c, d, b);
+  return abC * abD < -QUAD_EPSILON && cdA * cdB < -QUAD_EPSILON;
+}
+
+export function isValidPlanarQuad(quad: MockupQuad): boolean {
+  const points = [quad.topLeft, quad.topRight, quad.bottomRight, quad.bottomLeft] as const;
+  if (quadSegmentsIntersect(points[0], points[1], points[2], points[3])) return false;
+  if (quadSegmentsIntersect(points[1], points[2], points[3], points[0])) return false;
+  const turns = points.map((point, index) =>
+    quadCross(point, points[(index + 1) % 4]!, points[(index + 2) % 4]!),
+  );
+  const hasPositive = turns.some((value) => value > QUAD_EPSILON);
+  const hasNegative = turns.some((value) => value < -QUAD_EPSILON);
+  return !(hasPositive && hasNegative) && turns.every((value) => Math.abs(value) > QUAD_EPSILON);
+}
+
+export const mockupQuadSchema = rawMockupQuadSchema.refine(
+  isValidPlanarQuad,
+  "Mockup surface must be a non-degenerate convex quad",
+);
 
 export const mockupArtworkSourceSchema = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("asset"), assetId: assetIdSchema }),
