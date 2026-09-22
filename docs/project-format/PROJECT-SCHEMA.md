@@ -10,6 +10,7 @@ type HawyaProject = {
   settings: ProjectSettings;
   brand: BrandSystem;
   guide: GuideDocument;
+  mockups: MockupCollection;
   assetRefs: ProjectAssetRef[];
   templatePackRefs: TemplatePackRef[];
   revisions: RevisionSummary[];
@@ -52,8 +53,49 @@ type ProjectSettings = {
 };
 ```
 
+## Mockups — schema v2
+
+Stage 09 adds reusable local application/mockup presets to the canonical project aggregate:
+
+```ts
+type MockupCollection = {
+  presets: MockupPreset[];
+};
+
+type MockupPreset = {
+  id: UUID;
+  name: string;
+  backgroundAssetId: AssetId;
+  crop: NormalizedRect;
+  surface?: MockupSurface;
+  createdAt: ISODateTime;
+  updatedAt: ISODateTime;
+};
+
+type MockupSurface = {
+  corners: {
+    topLeft: {x:number; y:number};
+    topRight: {x:number; y:number};
+    bottomRight: {x:number; y:number};
+    bottomLeft: {x:number; y:number};
+  };
+  artwork:
+    | {kind:'asset'; assetId:AssetId}
+    | {kind:'page'; pageId:PageId};
+  opacity: number;
+  blendMode: 'normal'|'multiply'|'screen';
+  shadowStrength: number;
+  highlightStrength: number;
+};
+```
+
+The crop and corner coordinates are normalized to `0..1`. Smart-surface corners are validated as a non-degenerate convex quad. Backgrounds reference raster image/mockup assets. Artwork can reference a canonical project asset or guide page. These references participate in normal asset deletion/reference safety and survive reload plus `.hawya` transfer.
+
+Canvas/mockup coordinates are physical: `x = 0` always means the physical left edge. Switching the Hawya UI to RTL must not mirror stored crop or surface geometry.
+
 ## Invariants
 
+- Current canonical project schema is **v2**.
 - IDs are UUIDs generated with `crypto.randomUUID()` through an injected `IdGenerator` port.
 - timestamps are ISO 8601 UTC strings from an injected Clock.
 - `schemaVersion` changes only when archive/domain migrations are required.
