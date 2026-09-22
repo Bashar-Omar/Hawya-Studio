@@ -47,9 +47,12 @@ export function isValidPlanarQuad(quad: MockupQuad): boolean {
   const points = [quad.topLeft, quad.topRight, quad.bottomRight, quad.bottomLeft] as const;
   if (quadSegmentsIntersect(points[0], points[1], points[2], points[3])) return false;
   if (quadSegmentsIntersect(points[1], points[2], points[3], points[0])) return false;
-  const turns = points.map((point, index) =>
-    quadCross(point, points[(index + 1) % 4]!, points[(index + 2) % 4]!),
-  );
+  const turns = [
+    quadCross(points[0], points[1], points[2]),
+    quadCross(points[1], points[2], points[3]),
+    quadCross(points[2], points[3], points[0]),
+    quadCross(points[3], points[0], points[1]),
+  ];
   const hasPositive = turns.some((value) => value > QUAD_EPSILON);
   const hasNegative = turns.some((value) => value < -QUAD_EPSILON);
   return !(hasPositive && hasNegative) && turns.every((value) => Math.abs(value) > QUAD_EPSILON);
