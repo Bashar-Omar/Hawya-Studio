@@ -88,6 +88,8 @@ export class WorkerMockupRenderer implements MockupRenderer {
       const timer = window.setTimeout(() => {
         const pending = this.pending.get(id);
         if (pending) this.cleanup(id, pending);
+        this.worker?.terminate();
+        this.worker = null;
         reject(new Error("Mockup render exceeded the safety time limit"));
       }, MOCKUP_RENDER_TIMEOUT_MS);
 
