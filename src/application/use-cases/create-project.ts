@@ -88,6 +88,7 @@ export class CreateProjectUseCase {
           visualLanguage: {},
         },
         guide: { sections: [], pageOrder: [], pages: {} },
+        mockups: { presets: [] },
         assetRefs: [],
         templatePackRefs: [],
         revisions: [],
