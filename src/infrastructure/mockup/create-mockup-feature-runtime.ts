@@ -23,9 +23,7 @@ function slug(value: string): string {
   );
 }
 
-export function createMockupFeatureRuntime(
-  runtime: Pick<PersistenceRuntime, "binaries">,
-) {
+export function createMockupFeatureRuntime(runtime: Pick<PersistenceRuntime, "binaries">) {
   const renderer = new WorkerMockupRenderer();
   const outliner = new WorkerFontOutliner();
   const rasterizer = new WorkerSceneRasterizer();
@@ -33,10 +31,7 @@ export function createMockupFeatureRuntime(
   const pageRaster = new RasterExportRenderer("png", outlinedSvg, rasterizer);
   const files = new BrowserArtifactFiles();
 
-  const assetSource = async (
-    snapshot: ProjectSnapshot,
-    assetId: string,
-  ) => {
+  const assetSource = async (snapshot: ProjectSnapshot, assetId: string) => {
     const asset = snapshot.assets.find((candidate) => candidate.id === assetId);
     if (!asset) throw new Error("Mockup source asset is missing");
     if (asset.mime === "image/svg+xml" && asset.security.sanitized !== true) {
@@ -102,7 +97,11 @@ export function createMockupFeatureRuntime(
     );
   };
 
-  const download = (snapshot: ProjectSnapshot, preset: MockupPreset, result: MockupRenderResult) => {
+  const download = (
+    snapshot: ProjectSnapshot,
+    preset: MockupPreset,
+    result: MockupRenderResult,
+  ) => {
     files.download({
       filename: `${slug(snapshot.project.metadata.slug)}-${slug(preset.name)}-mockup.png`,
       mime: result.mime,

@@ -1,6 +1,10 @@
 /// <reference lib="webworker" />
 
-import { homographyFromUnitSquare, invertMatrix3 } from "@/domain/mockup/homography";
+import {
+  homographyFromUnitSquare,
+  invertMatrix3,
+  type Matrix3,
+} from "@/domain/mockup/homography";
 import type { MockupPoint, MockupSurface } from "@/domain/mockup/mockup";
 import {
   MOCKUP_WORKER_PROTOCOL_VERSION,
@@ -10,7 +14,9 @@ import {
 
 const MAX_MOCKUP_PIXELS = 40_000_000;
 const FALLBACK_GRID = 20;
+const MAX_DECODED_BITMAPS = 8;
 const cancelled = new Set<string>();
+const bitmapCache = new Map<string, ImageBitmap>();
 
 function post(response: MockupWorkerResponse, transfers: Transferable[] = []): void {
   self.postMessage(response, transfers);
@@ -45,8 +51,28 @@ function outputSize(
   return { width, height };
 }
 
-async function decode(source: { bytes: ArrayBuffer; mime: string }): Promise<ImageBitmap> {
-  return createImageBitmap(new Blob([source.bytes], { type: source.mime }));
+function touchBitmap(key: string, bitmap: ImageBitmap): ImageBitmap {
+  bitmapCache.delete(key);
+  bitmapCache.set(key, bitmap);
+  while (bitmapCache.size > MAX_DECODED_BITMAPS) {
+    const oldestKey = bitmapCache.keys().next().value as string | undefined;
+    if (!oldestKey) break;
+    const oldest = bitmapCache.get(oldestKey);
+    bitmapCache.delete(oldestKey);
+    oldest?.close();
+  }
+  return bitmap;
+}
+
+async function decode(source: {
+  key: string;
+  bytes: ArrayBuffer;
+  mime: string;
+}): Promise<ImageBitmap> {
+  const cached = bitmapCache.get(source.key);
+  if (cached) return touchBitmap(source.key, cached);
+  const decoded = await createImageBitmap(new Blob([source.bytes], { type: source.mime }));
+  return touchBitmap(source.key, decoded);
 }
 
 function compileShader(
@@ -171,13 +197,12 @@ function warpWebGl(
 }
 
 function mapQuadPoint(
-  surface: MockupSurface,
+  matrix: Matrix3,
   u: number,
   v: number,
   width: number,
   height: number,
 ): MockupPoint {
-  const matrix = homographyFromUnitSquare(surface.corners);
   const denominator = matrix[6] * u + matrix[7] * v + matrix[8];
   return {
     x: ((matrix[0] * u + matrix[1] * v + matrix[2]) / denominator) * width,
@@ -205,16 +230,12 @@ function drawTriangle(
   const a = (d0.x * (y1 - y2) + d1.x * (y2 - y0) + d2.x * (y0 - y1)) / denominator;
   const c = (d0.x * (x2 - x1) + d1.x * (x0 - x2) + d2.x * (x1 - x0)) / denominator;
   const e =
-    (d0.x * (x1 * y2 - x2 * y1) +
-      d1.x * (x2 * y0 - x0 * y2) +
-      d2.x * (x0 * y1 - x1 * y0)) /
+    (d0.x * (x1 * y2 - x2 * y1) + d1.x * (x2 * y0 - x0 * y2) + d2.x * (x0 * y1 - x1 * y0)) /
     denominator;
   const b = (d0.y * (y1 - y2) + d1.y * (y2 - y0) + d2.y * (y0 - y1)) / denominator;
   const d = (d0.y * (x2 - x1) + d1.y * (x0 - x2) + d2.y * (x1 - x0)) / denominator;
   const f =
-    (d0.y * (x1 * y2 - x2 * y1) +
-      d1.y * (x2 * y0 - x0 * y2) +
-      d2.y * (x0 * y1 - x1 * y0)) /
+    (d0.y * (x1 * y2 - x2 * y1) + d1.y * (x2 * y0 - x0 * y2) + d2.y * (x0 * y1 - x1 * y0)) /
     denominator;
 
   context.save();
@@ -240,6 +261,7 @@ function warpCanvas(
   const context = canvas.getContext("2d");
   if (!context) throw new Error("2D mockup context is unavailable");
 
+  const matrix = homographyFromUnitSquare(surface.corners);
   for (let row = 0; row < FALLBACK_GRID; row += 1) {
     const v0 = row / FALLBACK_GRID;
     const v1 = (row + 1) / FALLBACK_GRID;
@@ -250,10 +272,10 @@ function warpCanvas(
       const s10 = { x: u1, y: v0 };
       const s11 = { x: u1, y: v1 };
       const s01 = { x: u0, y: v1 };
-      const d00 = mapQuadPoint(surface, u0, v0, width, height);
-      const d10 = mapQuadPoint(surface, u1, v0, width, height);
-      const d11 = mapQuadPoint(surface, u1, v1, width, height);
-      const d01 = mapQuadPoint(surface, u0, v1, width, height);
+      const d00 = mapQuadPoint(matrix, u0, v0, width, height);
+      const d10 = mapQuadPoint(matrix, u1, v0, width, height);
+      const d11 = mapQuadPoint(matrix, u1, v1, width, height);
+      const d01 = mapQuadPoint(matrix, u0, v1, width, height);
       drawTriangle(context, artwork, [s00, s10, s11], [d00, d10, d11]);
       drawTriangle(context, artwork, [s00, s11, s01], [d00, d11, d01]);
     }
@@ -379,8 +401,7 @@ async function render(
       engine,
     };
   } finally {
-    background.close();
-    artwork?.close();
+    // Decoded bitmaps are content-addressed and kept in the worker's bounded LRU cache.
   }
 }
 
