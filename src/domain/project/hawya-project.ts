@@ -134,25 +134,21 @@ export const projectSnapshotSchema = z
         });
       }
 
-      if (preset.surface?.artwork.kind === "asset") {
-        const artworkAsset = snapshot.assets.find(
-          (asset) => asset.id === preset.surface?.artwork.assetId,
-        );
+      const artwork = preset.surface?.artwork;
+      if (artwork?.kind === "asset") {
+        const artworkAsset = snapshot.assets.find((asset) => asset.id === artwork.assetId);
         if (!artworkAsset) {
           context.addIssue({
             code: "custom",
             path: ["project", "mockups", "presets", preset.id, "surface", "artwork"],
-            message: `Mockup preset references missing artwork asset ${preset.surface.artwork.assetId}`,
+            message: `Mockup preset references missing artwork asset ${artwork.assetId}`,
           });
         }
-      } else if (
-        preset.surface?.artwork.kind === "page" &&
-        !snapshot.project.guide.pages[preset.surface.artwork.pageId]
-      ) {
+      } else if (artwork?.kind === "page" && !snapshot.project.guide.pages[artwork.pageId]) {
         context.addIssue({
           code: "custom",
           path: ["project", "mockups", "presets", preset.id, "surface", "artwork"],
-          message: `Mockup preset references missing guide page ${preset.surface.artwork.pageId}`,
+          message: `Mockup preset references missing guide page ${artwork.pageId}`,
         });
       }
     }

@@ -98,15 +98,16 @@ export class ManageMockupPresetsUseCase {
 
   private assertSurface(snapshot: ProjectSnapshot, surface: MockupSurface | undefined): void {
     if (!surface) return;
-    if (surface.artwork.kind === "asset") {
-      const artwork = snapshot.assets.find((asset) => asset.id === surface.artwork.assetId);
+    const artworkSource = surface.artwork;
+    if (artworkSource.kind === "asset") {
+      const artwork = snapshot.assets.find((asset) => asset.id === artworkSource.assetId);
       if (!artwork) throw new Error("Mockup artwork asset does not exist");
       if (!["logo", "image", "vector", "icon", "illustration"].includes(artwork.kind)) {
         throw new Error("Selected asset cannot be used as mockup artwork");
       }
       return;
     }
-    if (!snapshot.project.guide.pages[surface.artwork.pageId]) {
+    if (!snapshot.project.guide.pages[artworkSource.pageId]) {
       throw new Error("Mockup artwork guide page does not exist");
     }
   }

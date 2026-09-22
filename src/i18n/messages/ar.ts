@@ -443,6 +443,9 @@ export const arMessages: MessageCatalog = {
   "editor.selectHint": "اختر طبقة لفحص أبعادها وموقعها.",
   "editor.numericHint":
     "تُحفظ القيم الرقمية عند Enter أو مغادرة الحقل، وتظل القيم الوسيطة كما هي أثناء الكتابة.",
+  "editor.imagePlacement": "موضع الصورة",
+  "editor.imageFit": "ملاءمة الصورة",
+  "editor.resetCrop": "إعادة ضبط القص",
   "editor.shortcuts": "اختصارات لوحة المفاتيح",
   "editor.shortcutsSearch": "ابحث في الاختصارات",
   "editor.keyboard": "لوحة المفاتيح",

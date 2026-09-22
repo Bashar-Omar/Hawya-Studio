@@ -456,6 +456,9 @@ export const enMessages = {
   "editor.selectHint": "Select a layer to inspect its geometry.",
   "editor.numericHint":
     "Numeric values commit on Enter or blur. Intermediate values stay untouched while typing.",
+  "editor.imagePlacement": "Image placement",
+  "editor.imageFit": "Image fit",
+  "editor.resetCrop": "Reset crop",
   "editor.shortcuts": "Shortcuts",
   "editor.shortcutsSearch": "Search shortcuts",
   "editor.keyboard": "Keyboard",
