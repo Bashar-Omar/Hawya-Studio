@@ -664,7 +664,11 @@ export default function MockupStudioPage({ projectId }: { projectId: ProjectId }
                           onChange={(event) =>
                             updateActiveSurface((surface) => ({
                               ...surface,
-                              highlightStrength: clamp(Number(event.currentTarget.value) / 100, 0, 1),
+                              highlightStrength: clamp(
+                                Number(event.currentTarget.value) / 100,
+                                0,
+                                1,
+                              ),
                             }))
                           }
                         />
