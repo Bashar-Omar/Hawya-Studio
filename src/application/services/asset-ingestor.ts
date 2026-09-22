@@ -15,7 +15,7 @@ export interface AssetSource {
   bytes: Uint8Array;
   filename: string;
   declaredMime: string;
-  intendedKind?: Extract<AssetKind, "logo" | "vector" | "image" | "font">;
+  intendedKind?: Extract<AssetKind, "logo" | "vector" | "image" | "font" | "mockup">;
 }
 
 export interface PreparedAssetContent {
@@ -51,6 +51,9 @@ export class AssetIngestor {
     validateDeclaredAssetType(detected, source.filename, source.declaredMime);
     if (source.intendedKind === "font" && detected.defaultKind !== "font") {
       throw new Error("Selected file is not a supported font");
+    }
+    if (source.intendedKind === "mockup" && detected.defaultKind !== "image") {
+      throw new Error("Mockup backgrounds must be PNG, JPEG or WebP raster images");
     }
     if (source.intendedKind && source.intendedKind !== "font" && detected.defaultKind === "font") {
       throw new Error("Font files cannot be used as image/vector assets");
