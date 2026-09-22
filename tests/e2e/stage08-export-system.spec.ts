@@ -193,10 +193,24 @@ test("Stage 08 outlines a selected page with the real browser font worker", asyn
 
   const generate = page.getByRole("button", { name: "Generate & download" });
   await expect(generate).toBeEnabled();
-  const [download] = await Promise.all([
-    page.waitForEvent("download", { timeout: 10_000 }),
-    generate.click(),
-  ]);
+  const downloadPromise = page
+    .waitForEvent("download", { timeout: 15_000 })
+    .then((download) => ({ kind: "download" as const, download }));
+  const errorPromise = page
+    .getByRole("alert")
+    .waitFor({ state: "visible", timeout: 15_000 })
+    .then(async () => ({
+      kind: "error" as const,
+      message: await page.getByRole("alert").innerText(),
+    }));
+  await generate.click();
+  const outcome = await Promise.race([downloadPromise, errorPromise]);
+  if (outcome.kind === "error") {
+    throw new Error(
+      `Outlined SVG export failed: ${outcome.message}; runtime issues: ${JSON.stringify(runtimeIssues)}`,
+    );
+  }
+  const download = outcome.download;
   expect(download.suggestedFilename()).toMatch(/-outlined\.svg$/);
   const svg = (await downloadedBytes(download)).toString("utf8");
   expect(svg).toContain('data-hawya-export="outlined"');
