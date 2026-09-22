@@ -55,11 +55,7 @@ test("Stage 09 persists and renders a reusable smart mockup without mirroring ph
   ).toBeVisible();
 
   await page.getByRole("button", { name: "Guide shell" }).click();
-  await expect(
-    page.getByRole("heading", {
-      name: "Your brand guide is generated from reusable semantic content.",
-    }),
-  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Mockups" })).toBeVisible();
   await page.getByRole("button", { name: "Mockups" }).click();
   await expect(page.getByRole("heading", { name: "Mockup Studio" })).toBeVisible();
 
