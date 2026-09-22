@@ -68,7 +68,7 @@ test.afterAll(async () => {
   await sharedContext.close();
 });
 
-test("Stage 09 persists a reusable smart mockup and physical corner geometry", async () => {
+test("Stage 09 creates and persists a reusable cropped standard mockup", async () => {
   await page.locator('input[type="file"][accept=".png,.jpg,.jpeg,.webp"]').setInputFiles({
     name: "desk-scene.png",
     mimeType: "image/png",
@@ -80,7 +80,13 @@ test("Stage 09 persists a reusable smart mockup and physical corner geometry", a
   await page.getByLabel("Crop Y %").fill("10");
   await page.getByLabel("Crop width %").fill("80");
   await page.getByLabel("Crop height %").fill("80");
+  await page.getByRole("button", { name: "Save preset" }).click();
 
+  await expect(page.locator(".mockup-preset-link.is-active")).toContainText("Standard");
+  expect(runtimeIssues).toEqual([]);
+});
+
+test("Stage 09 adds and persists smart physical corner geometry", async () => {
   const smartGroup = page.getByRole("group", { name: "Smart planar surface" });
   const smartToggle = smartGroup.getByRole("checkbox");
   await expect(smartToggle).toBeEnabled();
