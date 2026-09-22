@@ -84,7 +84,10 @@ function labelForPage(view: MockupStudioView, pageId: string, locale: "en" | "ar
   return page ? localizedValue(page.name, locale) : pageId;
 }
 
-function defaultSurface(view: MockupStudioView, backgroundAssetId: string): MockupSurface | undefined {
+function defaultSurface(
+  view: MockupStudioView,
+  backgroundAssetId: string,
+): MockupSurface | undefined {
   const asset = view.artworkAssets.find((candidate) => candidate.id !== backgroundAssetId);
   if (asset) {
     return {
@@ -168,7 +171,9 @@ export default function MockupStudioPage({ projectId }: { projectId: ProjectId }
   useEffect(() => {
     let disposed = false;
     let url: string | null = null;
-    const asset = view?.snapshot.assets.find((candidate) => candidate.id === draft?.backgroundAssetId);
+    const asset = view?.snapshot.assets.find(
+      (candidate) => candidate.id === draft?.backgroundAssetId,
+    );
     if (!asset) {
       setBackgroundUrl(null);
       return;
