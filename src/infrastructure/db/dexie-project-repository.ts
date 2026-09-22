@@ -1,6 +1,7 @@
 import type { ProjectListItem, ProjectRepository } from "@/application/ports/project-repository";
 import type { GuidePage, PageId } from "@/domain/guide/guide-document";
 import { StorageError } from "@/domain/project/errors";
+import { migrateProjectSnapshot } from "@/domain/project/migrations";
 import {
   type ProjectId,
   type ProjectSnapshot,
@@ -38,6 +39,7 @@ export class DexieProjectRepository implements ProjectRepository {
       assetRefs: project.assetRefs,
       templatePackRefs: project.templatePackRefs,
       revisions: project.revisions,
+      mockups: project.mockups,
       ...(project.metadata.lastOpenedAt ? { lastOpenedAt: project.metadata.lastOpenedAt } : {}),
     };
 
@@ -128,19 +130,20 @@ export class DexieProjectRepository implements ProjectRepository {
           assetRefs: projectRow.assetRefs,
           templatePackRefs: projectRow.templatePackRefs,
           revisions: projectRow.revisions,
+          ...(projectRow.mockups ? { mockups: projectRow.mockups } : {}),
         },
         assets: assetRows.map((row) => row.asset),
       };
 
-      const parsed = projectSnapshotSchema.safeParse(snapshot);
-      if (!parsed.success) {
+      try {
+        return migrateProjectSnapshot(snapshot);
+      } catch (error) {
         throw new StorageError(
           "corrupt-persisted-data",
-          `Project ${projectId} failed canonical validation after reload`,
-          parsed.error,
+          `Project ${projectId} failed canonical validation or migration after reload`,
+          error,
         );
       }
-      return parsed.data;
     } catch (error) {
       throw asStorageError(`Failed to load project ${projectId}`, error);
     }
