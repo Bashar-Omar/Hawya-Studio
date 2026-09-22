@@ -1,10 +1,6 @@
 /// <reference lib="webworker" />
 
-import {
-  homographyFromUnitSquare,
-  invertMatrix3,
-  type Matrix3,
-} from "@/domain/mockup/homography";
+import { homographyFromUnitSquare, invertMatrix3, type Matrix3 } from "@/domain/mockup/homography";
 import type { MockupPoint, MockupSurface } from "@/domain/mockup/mockup";
 import {
   MOCKUP_WORKER_PROTOCOL_VERSION,
