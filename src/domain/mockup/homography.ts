@@ -76,17 +76,7 @@ export function homographyFromUnitSquare(quad: MockupQuad): Matrix3 {
 
   const g = (sx * dy2 - dx2 * sy) / denominator;
   const h = (dx1 * sy - sx * dy1) / denominator;
-  return [
-    x1 - x0 + g * x1,
-    x3 - x0 + h * x3,
-    x0,
-    y1 - y0 + g * y1,
-    y3 - y0 + h * y3,
-    y0,
-    g,
-    h,
-    1,
-  ];
+  return [x1 - x0 + g * x1, x3 - x0 + h * x3, x0, y1 - y0 + g * y1, y3 - y0 + h * y3, y0, g, h, 1];
 }
 
 export function invertMatrix3(matrix: Matrix3): Matrix3 {
@@ -103,17 +93,7 @@ export function invertMatrix3(matrix: Matrix3): Matrix3 {
   const determinant = a * A + b * B + c * C;
   if (Math.abs(determinant) <= EPSILON) throw new Error("Mockup homography is singular");
   const inv = 1 / determinant;
-  return [
-    A * inv,
-    D * inv,
-    G * inv,
-    B * inv,
-    E * inv,
-    H * inv,
-    C * inv,
-    F * inv,
-    I * inv,
-  ];
+  return [A * inv, D * inv, G * inv, B * inv, E * inv, H * inv, C * inv, F * inv, I * inv];
 }
 
 export function projectPoint(matrix: Matrix3, point: MockupPoint): MockupPoint {
