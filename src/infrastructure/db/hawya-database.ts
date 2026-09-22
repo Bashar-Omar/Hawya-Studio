@@ -3,6 +3,7 @@ import Dexie, { type Table } from "dexie";
 import type { Asset, AssetKind, ContentHash } from "@/domain/assets/asset";
 import type { BrandSystem } from "@/domain/brand/brand-system";
 import type { GuidePage, GuideSection, PageId } from "@/domain/guide/guide-document";
+import type { MockupCollection } from "@/domain/mockup/mockup";
 import type {
   ProjectId,
   ProjectMetadata,
@@ -29,6 +30,7 @@ export interface ProjectRow {
   assetRefs: ProjectAssetRef[];
   templatePackRefs: TemplatePackRef[];
   revisions: RevisionSummary[];
+  mockups?: MockupCollection;
 }
 
 export interface BrandSystemRow {
