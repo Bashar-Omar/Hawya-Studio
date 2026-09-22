@@ -6,7 +6,7 @@ This is the initial Dexie mapping target; adjust indexes only with measured quer
 projects
   key: id
   indexes: name, updatedAt, lastOpenedAt
-  value: lightweight ProjectMetadata + settings summary
+  value: ProjectMetadata + settings + guide ordering/sections + refs/revisions + unindexed mockup collection
 
 brandSystems
   key: projectId
@@ -41,3 +41,12 @@ Project save affecting brand/pages/assets metadata runs one Dexie transaction ac
 
 ## Delete
 Project deletion is two-phase from user perspective: remove project records then garbage-collect unreferenced binaries after reference scan. Never delete shared hash binary before scan.
+
+
+## Stage 09 schema-v2 persistence note
+
+Reusable mockup presets are canonical project data but do not require new query indexes. Stage 09 therefore adds the validated `mockups` collection to the existing project row without changing the Dexie database/index version.
+
+Repository save writes `project.mockups` in the same project transaction as other structured project fields. Repository read reassembles the aggregate and runs the normal sequential project migration/validation pipeline, so persisted v1 rows receive an empty v2 mockup collection before use.
+
+Mockup background/artwork binaries remain ordinary content-addressed asset binaries; presets store only stable asset/page references and normalized geometry, never Blob URLs or browser object handles.

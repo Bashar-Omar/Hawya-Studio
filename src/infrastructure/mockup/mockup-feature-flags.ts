@@ -1,0 +1,1 @@
+export const SMART_MOCKUP_PROTOTYPE_ENABLED = import.meta.env.VITE_HAWYA_SMART_MOCKUPS !== "0";

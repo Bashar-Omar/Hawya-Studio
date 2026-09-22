@@ -16,6 +16,7 @@ export type MatchedRouteId =
   | "brand"
   | "editor"
   | "export"
+  | "mockups"
   | "print"
   | "not-found";
 
@@ -50,6 +51,10 @@ export function exportCenterPath(projectId: ProjectId): string {
   return `/studio/projects/${projectId}/export`;
 }
 
+export function mockupStudioPath(projectId: ProjectId): string {
+  return `/studio/projects/${projectId}/mockups`;
+}
+
 export function printPath(projectId: ProjectId): string {
   return `/studio/projects/${projectId}/print`;
 }
@@ -68,7 +73,7 @@ export function projectIdFromPathname(pathname: string): ProjectId | undefined {
   if (
     parts[1] === "projects" &&
     (parts.length === 3 ||
-      (parts.length === 4 && ["brand", "export", "print"].includes(parts[3] ?? "")) ||
+      (parts.length === 4 && ["brand", "export", "mockups", "print"].includes(parts[3] ?? "")) ||
       (parts.length === 5 && parts[3] === "editor" && pageIdSchema.safeParse(parts[4]).success))
   ) {
     return parseProjectId(parts[2]);
@@ -125,6 +130,15 @@ export function matchRoute(pathname: string): MatchedRouteId {
     parseProjectId(parts[2])
   ) {
     return "export";
+  }
+  if (
+    parts[0] === "studio" &&
+    parts[1] === "projects" &&
+    parts.length === 4 &&
+    parts[3] === "mockups" &&
+    parseProjectId(parts[2])
+  ) {
+    return "mockups";
   }
   if (
     parts[0] === "studio" &&

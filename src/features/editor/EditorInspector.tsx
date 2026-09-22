@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 
+import type { NormalizedRect } from "@/domain/common/primitives";
 import type { LayerTransform, RenderedSceneLayer } from "@/editor/model/editor-types";
 import { useI18n } from "@/i18n/I18nProvider";
 
@@ -41,9 +42,10 @@ function NumericField({ label, value, onCommit }: NumericFieldProps) {
 interface EditorInspectorProps {
   layer?: RenderedSceneLayer;
   onTransform: (transform: LayerTransform) => void;
+  onImagePresentation: (fit: "cover" | "contain" | "fill", crop?: NormalizedRect) => void;
 }
 
-export function EditorInspector({ layer, onTransform }: EditorInspectorProps) {
+export function EditorInspector({ layer, onTransform, onImagePresentation }: EditorInspectorProps) {
   const { t } = useI18n();
   return (
     <section className="editor-panel editor-inspector" aria-label={t("editor.inspector")}>
@@ -92,6 +94,61 @@ export function EditorInspector({ layer, onTransform }: EditorInspectorProps) {
               onCommit={(rotation) => onTransform({ ...layer.transform, rotation })}
             />
           </div>
+          {layer.type === "image" ? (
+            <fieldset className="editor-image-crop">
+              <legend>{t("editor.imagePlacement")}</legend>
+              <label className="field-stack">
+                <span className="field-label">{t("editor.imageFit")}</span>
+                <select
+                  className="text-input"
+                  value={layer.fit}
+                  onChange={(event) =>
+                    onImagePresentation(
+                      event.currentTarget.value as "cover" | "contain" | "fill",
+                      layer.crop,
+                    )
+                  }
+                >
+                  <option value="contain">contain</option>
+                  <option value="cover">cover</option>
+                  <option value="fill">fill</option>
+                </select>
+              </label>
+              <div className="editor-inspector__grid">
+                {(["x", "y", "width", "height"] as const).map((key) => (
+                  <NumericField
+                    key={key}
+                    label={`crop ${key}`}
+                    value={Math.round(
+                      (layer.crop?.[key] ?? (key === "width" || key === "height" ? 1 : 0)) * 100,
+                    )}
+                    onCommit={(value) => {
+                      const current = layer.crop ?? { x: 0, y: 0, width: 1, height: 1 };
+                      const next = {
+                        ...current,
+                        [key]: Math.max(0, Math.min(100, value)) / 100,
+                      };
+                      if (
+                        next.width <= 0 ||
+                        next.height <= 0 ||
+                        next.x + next.width > 1 ||
+                        next.y + next.height > 1
+                      )
+                        return;
+                      onImagePresentation(layer.fit, next);
+                    }}
+                  />
+                ))}
+              </div>
+              <button
+                type="button"
+                className="button button--ghost button--sm"
+                onClick={() => onImagePresentation(layer.fit)}
+              >
+                {t("editor.resetCrop")}
+              </button>
+            </fieldset>
+          ) : null}
           <p className="editor-inspector__note">{t("editor.numericHint")}</p>
         </>
       )}

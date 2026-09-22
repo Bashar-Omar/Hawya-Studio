@@ -9,6 +9,7 @@ import {
   uuidSchema,
 } from "@/domain/common/primitives";
 import { guideDocumentSchema } from "@/domain/guide/guide-document";
+import { mockupCollectionSchema } from "@/domain/mockup/mockup";
 import { templatePackRefSchema } from "@/domain/templates/template-ref";
 import { CURRENT_PROJECT_SCHEMA_VERSION } from "@/domain/project/schema-version";
 
@@ -60,6 +61,7 @@ export const hawyaProjectSchema = z.object({
   settings: projectSettingsSchema,
   brand: brandSystemSchema,
   guide: guideDocumentSchema,
+  mockups: mockupCollectionSchema,
   assetRefs: z.array(projectAssetRefSchema),
   templatePackRefs: z.array(templatePackRefSchema),
   revisions: z.array(revisionSummarySchema),
@@ -107,6 +109,46 @@ export const projectSnapshotSchema = z
           code: "custom",
           path: ["project", "assetRefs"],
           message: `Project references missing asset ${assetId}`,
+        });
+      }
+    }
+
+    for (const preset of snapshot.project.mockups.presets) {
+      const background = snapshot.assets.find((asset) => asset.id === preset.backgroundAssetId);
+      if (!background) {
+        context.addIssue({
+          code: "custom",
+          path: ["project", "mockups", "presets", preset.id, "backgroundAssetId"],
+          message: `Mockup preset references missing background asset ${preset.backgroundAssetId}`,
+        });
+      } else if (
+        !(
+          (background.kind === "mockup" || background.kind === "image") &&
+          background.mime !== "image/svg+xml"
+        )
+      ) {
+        context.addIssue({
+          code: "custom",
+          path: ["project", "mockups", "presets", preset.id, "backgroundAssetId"],
+          message: "Mockup preset background must be a raster mockup/image asset",
+        });
+      }
+
+      const artwork = preset.surface?.artwork;
+      if (artwork?.kind === "asset") {
+        const artworkAsset = snapshot.assets.find((asset) => asset.id === artwork.assetId);
+        if (!artworkAsset) {
+          context.addIssue({
+            code: "custom",
+            path: ["project", "mockups", "presets", preset.id, "surface", "artwork"],
+            message: `Mockup preset references missing artwork asset ${artwork.assetId}`,
+          });
+        }
+      } else if (artwork?.kind === "page" && !snapshot.project.guide.pages[artwork.pageId]) {
+        context.addIssue({
+          code: "custom",
+          path: ["project", "mockups", "presets", preset.id, "surface", "artwork"],
+          message: `Mockup preset references missing guide page ${artwork.pageId}`,
         });
       }
     }

@@ -8,7 +8,7 @@ import type { Asset, AssetKind } from "@/domain/assets/asset";
 import type { ProjectId } from "@/domain/project/hawya-project";
 import { useI18n } from "@/i18n/I18nProvider";
 
-const FILTER_KINDS: Array<"all" | AssetKind> = ["all", "logo", "vector", "image", "font"];
+const FILTER_KINDS: Array<"all" | AssetKind> = ["all", "logo", "vector", "image", "mockup", "font"];
 
 function AssetCard({
   asset,
@@ -52,7 +52,9 @@ function AssetCard({
             ? "vector"
             : asset.kind === "font"
               ? "font"
-              : "image";
+              : asset.kind === "mockup"
+                ? "mockup"
+                : "image";
       const source = await runtime.assetFiles.read(file, intendedKind);
       await runtime.replaceAsset.execute(projectId, asset.id, source);
       await onRefresh();

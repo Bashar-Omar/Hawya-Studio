@@ -1,5 +1,6 @@
 import type { BinaryPayload } from "@/application/ports/binary-store";
 import type { ContentHasher } from "@/application/ports/content-hasher";
+import { CURRENT_PROJECT_SCHEMA_VERSION } from "@/domain/project/schema-version";
 import { type ProjectSnapshot, projectSnapshotSchema } from "@/domain/project/hawya-project";
 
 export const SYNTHETIC_PROJECT_ID = "00000000-0000-4000-8000-000000000001";
@@ -33,7 +34,7 @@ export async function createSyntheticProjectFixture(
 
   const snapshot = projectSnapshotSchema.parse({
     project: {
-      schemaVersion: 1,
+      schemaVersion: CURRENT_PROJECT_SCHEMA_VERSION,
       id: SYNTHETIC_PROJECT_ID,
       metadata: {
         name: "Synthetic Identity",
@@ -144,6 +145,7 @@ export async function createSyntheticProjectFixture(
           },
         },
       },
+      mockups: { presets: [] },
       assetRefs: [
         { assetId: SYNTHETIC_LOGO_ASSET_ID },
         { assetId: SYNTHETIC_DUPLICATE_ASSET_ID },

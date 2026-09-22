@@ -2,6 +2,7 @@ import {
   ArrowLeft,
   Download,
   FileText,
+  Images,
   LayoutTemplate,
   Palette,
   RefreshCw,
@@ -16,6 +17,7 @@ import {
   brandSystemPath,
   editorPath,
   exportCenterPath,
+  mockupStudioPath,
   newProjectPath,
 } from "@/app/routes/route-config";
 import { useRouter } from "@/app/routes/RouterProvider";
@@ -177,6 +179,10 @@ export default function GuideStudioPage({ projectId }: { projectId: ProjectId })
             <Button onClick={() => navigate(brandSystemPath(projectId))} variant="secondary">
               <Palette aria-hidden="true" size={16} />
               {t("guide.openBrand")}
+            </Button>
+            <Button onClick={() => navigate(mockupStudioPath(projectId))} variant="secondary">
+              <Images aria-hidden="true" size={16} />
+              {t("guide.mockups")}
             </Button>
             <Button onClick={() => navigate(exportCenterPath(projectId))} variant="secondary">
               <Download aria-hidden="true" size={16} />

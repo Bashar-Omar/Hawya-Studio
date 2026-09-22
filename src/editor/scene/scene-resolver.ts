@@ -162,6 +162,7 @@ function extraLayer(snapshot: ProjectSnapshot, layer: Layer, index: number): Ren
       type: "image",
       assetId: layer.assetId,
       fit: layer.fit,
+      ...(layer.crop ? { crop: layer.crop } : {}),
       ...(layer.cornerRadius !== undefined ? { cornerRadius: layer.cornerRadius } : {}),
     };
   }

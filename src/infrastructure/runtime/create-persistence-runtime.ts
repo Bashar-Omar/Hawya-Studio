@@ -2,6 +2,7 @@ import { EditorSessionFactory } from "@/application/editor/editor-session-factor
 import { BrandSystemQuery } from "@/application/queries/brand-system-query";
 import { ProjectAuditQuery } from "@/application/queries/project-audit-query";
 import { GuideStudioQuery } from "@/application/queries/guide-studio-query";
+import { MockupStudioQuery } from "@/application/queries/mockup-studio-query";
 import { AssetIngestor } from "@/application/services/asset-ingestor";
 import { ApplyAuditQuickFixUseCase } from "@/application/use-cases/apply-audit-quick-fix";
 import { DeleteAssetUseCase } from "@/application/use-cases/delete-asset";
@@ -11,6 +12,7 @@ import { LoadProjectFontsUseCase } from "@/application/use-cases/load-project-fo
 import { ManageColorTokensUseCase } from "@/application/use-cases/manage-color-tokens";
 import { ManageLogoSmartRulesUseCase } from "@/application/use-cases/manage-logo-smart-rules";
 import { ManageLogoVariantsUseCase } from "@/application/use-cases/manage-logo-variants";
+import { ManageMockupPresetsUseCase } from "@/application/use-cases/manage-mockup-presets";
 import { ManageTextStylesUseCase } from "@/application/use-cases/manage-text-styles";
 import { ReplaceAssetUseCase } from "@/application/use-cases/replace-asset";
 import { UpdateAssetTagsUseCase } from "@/application/use-cases/update-asset-tags";
@@ -120,6 +122,8 @@ export function createPersistenceRuntime(databaseName?: string) {
     projectAudit: new ProjectAuditQuery(projects, binaries, colorEngine),
     applyAuditQuickFix: new ApplyAuditQuickFixUseCase(projects, clock),
     guideStudio: new GuideStudioQuery(projects),
+    mockupStudio: new MockupStudioQuery(projects),
+    mockupPresets: new ManageMockupPresetsUseCase(projects, clock, ids),
     editorSessions: new EditorSessionFactory(projects, clock, ids),
     generateGuide: new GenerateGuideUseCase(projects, clock, ids),
     switchGuidePageTemplate: new SwitchGuidePageTemplateUseCase(projects, clock),

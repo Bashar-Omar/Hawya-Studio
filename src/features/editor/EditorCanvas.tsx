@@ -264,8 +264,23 @@ export function EditorCanvas(props: EditorCanvasProps) {
               draggable={false}
               className="editor-asset-content"
               style={{
-                objectFit: layer.type === "image" ? layer.fit : "contain",
+                objectFit:
+                  layer.type === "image" && !layer.crop
+                    ? layer.fit
+                    : layer.type === "image"
+                      ? "fill"
+                      : "contain",
                 borderRadius: layer.type === "image" ? layer.cornerRadius : undefined,
+                ...(layer.type === "image" && layer.crop
+                  ? {
+                      position: "absolute",
+                      width: `${100 / layer.crop.width}%`,
+                      height: `${100 / layer.crop.height}%`,
+                      maxWidth: "none",
+                      left: `${(-layer.crop.x / layer.crop.width) * 100}%`,
+                      top: `${(-layer.crop.y / layer.crop.height) * 100}%`,
+                    }
+                  : {}),
               }}
             />
           ) : (

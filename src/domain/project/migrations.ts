@@ -8,7 +8,31 @@ export interface ProjectMigration {
   migrate(input: unknown): unknown;
 }
 
-const migrations: readonly ProjectMigration[] = [];
+function asRecord(input: unknown, label: string): Record<string, unknown> {
+  if (typeof input !== "object" || input === null || Array.isArray(input)) {
+    throw new MigrationError(`${label} is invalid`, -1, CURRENT_PROJECT_SCHEMA_VERSION);
+  }
+  return input as Record<string, unknown>;
+}
+
+const migrations: readonly ProjectMigration[] = [
+  {
+    from: 1,
+    to: 2,
+    migrate(input) {
+      const root = asRecord(input, "Project snapshot");
+      const project = asRecord(root.project, "Project");
+      return {
+        ...root,
+        project: {
+          ...project,
+          schemaVersion: 2,
+          mockups: { presets: [] },
+        },
+      };
+    },
+  },
+];
 
 function readSchemaVersion(input: unknown): number | undefined {
   if (typeof input !== "object" || input === null || !("project" in input)) {
