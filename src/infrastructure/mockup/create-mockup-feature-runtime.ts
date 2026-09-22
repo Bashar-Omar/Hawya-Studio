@@ -7,6 +7,7 @@ import { BrowserArtifactFiles } from "@/infrastructure/file-system/browser-artif
 import { RasterExportRenderer } from "@/infrastructure/export/raster-export-renderer";
 import { SvgExportRenderer } from "@/infrastructure/export/svg-export-renderer";
 import { WorkerSceneRasterizer } from "@/infrastructure/export/worker-scene-rasterizer";
+import { SMART_MOCKUP_PROTOTYPE_ENABLED } from "@/infrastructure/mockup/mockup-feature-flags";
 import {
   supportsMockupWorker,
   WorkerMockupRenderer,
@@ -118,7 +119,7 @@ export function createMockupFeatureRuntime(runtime: Pick<PersistenceRuntime, "bi
     render,
     download,
     dispose,
-    smartSupported: supportsMockupWorker(),
+    smartSupported: SMART_MOCKUP_PROTOTYPE_ENABLED && supportsMockupWorker(),
   };
 }
 
