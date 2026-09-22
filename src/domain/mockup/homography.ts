@@ -1,4 +1,8 @@
-import type { MockupPoint, MockupQuad } from "@/domain/mockup/mockup";
+import {
+  isValidPlanarQuad,
+  type MockupPoint,
+  type MockupQuad,
+} from "@/domain/mockup/mockup";
 
 export type Matrix3 = readonly [
   number,
@@ -13,40 +17,6 @@ export type Matrix3 = readonly [
 ];
 
 const EPSILON = 1e-8;
-
-function cross(a: MockupPoint, b: MockupPoint, c: MockupPoint): number {
-  return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
-}
-
-function segmentsIntersect(
-  a: MockupPoint,
-  b: MockupPoint,
-  c: MockupPoint,
-  d: MockupPoint,
-): boolean {
-  const abC = cross(a, b, c);
-  const abD = cross(a, b, d);
-  const cdA = cross(c, d, a);
-  const cdB = cross(c, d, b);
-  return abC * abD < -EPSILON && cdA * cdB < -EPSILON;
-}
-
-export function quadPoints(quad: MockupQuad): readonly MockupPoint[] {
-  return [quad.topLeft, quad.topRight, quad.bottomRight, quad.bottomLeft];
-}
-
-export function isValidPlanarQuad(quad: MockupQuad): boolean {
-  const points = quadPoints(quad);
-  if (segmentsIntersect(points[0]!, points[1]!, points[2]!, points[3]!)) return false;
-  if (segmentsIntersect(points[1]!, points[2]!, points[3]!, points[0]!)) return false;
-
-  const turns = points.map((point, index) =>
-    cross(point, points[(index + 1) % 4]!, points[(index + 2) % 4]!),
-  );
-  const hasPositive = turns.some((value) => value > EPSILON);
-  const hasNegative = turns.some((value) => value < -EPSILON);
-  return !(hasPositive && hasNegative) && turns.every((value) => Math.abs(value) > EPSILON);
-}
 
 export function homographyFromUnitSquare(quad: MockupQuad): Matrix3 {
   if (!isValidPlanarQuad(quad)) {
