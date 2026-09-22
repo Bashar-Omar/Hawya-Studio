@@ -5,7 +5,8 @@ import { isoDateTimeSchema, normalizedRectSchema, uuidSchema } from "@/domain/co
 import { pageIdSchema } from "@/domain/guide/guide-document";
 
 const positiveNormalizedRectSchema = normalizedRectSchema.refine(
-  (rect) => rect.width > 0 && rect.height > 0 && rect.x + rect.width <= 1 && rect.y + rect.height <= 1,
+  (rect) =>
+    rect.width > 0 && rect.height > 0 && rect.x + rect.width <= 1 && rect.y + rect.height <= 1,
   "Crop must have positive size and stay inside the source image",
 );
 
