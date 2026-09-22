@@ -22,8 +22,7 @@ export class MockupStudioQuery {
       snapshot,
       backgrounds: snapshot.assets.filter(
         (asset) =>
-          (asset.kind === "mockup" || asset.kind === "image") &&
-          asset.mime !== "image/svg+xml",
+          (asset.kind === "mockup" || asset.kind === "image") && asset.mime !== "image/svg+xml",
       ),
       artworkAssets: snapshot.assets.filter((asset) => ARTWORK_KINDS.has(asset.kind)),
       pageIds: [...snapshot.project.guide.pageOrder],
