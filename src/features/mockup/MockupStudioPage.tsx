@@ -452,14 +452,14 @@ export default function MockupStudioPage({ projectId }: { projectId: ProjectId }
                     <Button
                       variant="secondary"
                       onClick={() => void render(false)}
-                      disabled={!feature.smartSupported || busy}
+                      disabled={!feature.renderSupported || busy}
                     >
                       <WandSparkles aria-hidden="true" size={16} />
                       {t("mockup.preview")}
                     </Button>
                     <Button
                       onClick={() => void render(true)}
-                      disabled={!feature.smartSupported || busy}
+                      disabled={!feature.renderSupported || busy}
                     >
                       <Download aria-hidden="true" size={16} />
                       {t("mockup.download")}
