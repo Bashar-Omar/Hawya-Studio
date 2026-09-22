@@ -3,50 +3,15 @@ import { readFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { expect, test, type Download, type Page } from "@playwright/test";
+import {
+  expect,
+  test,
+  type BrowserContext,
+  type Download,
+  type Page,
+} from "@playwright/test";
 import { strFromU8, unzipSync } from "fflate";
 
-function captureRuntimeIssues(page: Page): string[] {
-  const issues: string[] = [];
-  page.on("console", (message) => {
-    if (message.type() === "error" || message.type() === "warning") {
-      issues.push(`console.${message.type()}: ${message.text()}`);
-    }
-  });
-  page.on("pageerror", (error) => issues.push(`pageerror: ${error.message}`));
-  return issues;
-}
-
-function safeSvg(): Buffer {
-  return Buffer.from(
-    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80"><rect x="10" y="10" width="100" height="60" rx="12" fill="#112233"/><circle cx="60" cy="40" r="16" fill="#F2C14E"/></svg>',
-  );
-}
-
-function arabicFontPath(): string {
-  const entry = fileURLToPath(
-    import.meta.resolve("@fontsource-variable/noto-sans-arabic/index.css"),
-  );
-  const filesDirectory = join(dirname(entry), "files");
-  const candidate = readdirSync(filesDirectory).find(
-    (name) => name.endsWith(".woff2") && name.includes("arabic") && name.includes("wght"),
-  );
-  if (!candidate) throw new Error("Arabic WOFF2 fixture was not found");
-  return join(filesDirectory, candidate);
-}
-
-async function downloadedBytes(download: Download): Promise<Buffer> {
-  const path = await download.path();
-  if (!path) throw new Error("Playwright download path is unavailable");
-  return readFile(path);
-}
-
-async function acknowledgeWarningsIfPresent(page: Page): Promise<void> {
-  const acknowledgement = page.getByText("I reviewed these warnings and want to continue.");
-  if (await acknowledgement.isVisible().catch(() => false)) {
-    await acknowledgement.locator("..").getByRole("checkbox").check();
-  }
-}
 
 async function createExportReadyProject(page: Page): Promise<void> {
   await page.goto("/studio/new");
@@ -99,9 +64,36 @@ async function createExportReadyProject(page: Page): Promise<void> {
   await expect(page.getByRole("heading", { name: "Export Center" })).toBeVisible();
 }
 
-test("Stage 08 exports stable machine-readable brand tokens", async ({ page }) => {
-  const runtimeIssues = captureRuntimeIssues(page);
+test.describe.configure({ mode: "serial" });
+
+let sharedContext: BrowserContext;
+let page: Page;
+let exportUrl = "";
+const runtimeIssues: string[] = [];
+
+test.beforeAll(async ({ browser }) => {
+  sharedContext = await browser.newContext();
+  page = await sharedContext.newPage();
+  page.on("console", (message) => {
+    if (message.type() === "error" || message.type() === "warning") {
+      runtimeIssues.push(`console.${message.type()}: ${message.text()}`);
+    }
+  });
+  page.on("pageerror", (error) => runtimeIssues.push(`pageerror: ${error.message}`));
   await createExportReadyProject(page);
+  exportUrl = page.url();
+});
+
+test.beforeEach(async () => {
+  await page.goto(exportUrl);
+  await expect(page.getByRole("heading", { name: "Export Center" })).toBeVisible();
+});
+
+test.afterAll(async () => {
+  await sharedContext.close();
+});
+
+test("Stage 08 exports stable machine-readable brand tokens", async () => {
 
   await page.getByRole("button", { name: /Design Tokens JSON/ }).click();
   await acknowledgeWarningsIfPresent(page);
@@ -124,11 +116,7 @@ test("Stage 08 exports stable machine-readable brand tokens", async ({ page }) =
   expect(runtimeIssues).toEqual([]);
 });
 
-test("Stage 08 builds the selected delivery ZIP without silently packaging fonts", async ({
-  page,
-}) => {
-  const runtimeIssues = captureRuntimeIssues(page);
-  await createExportReadyProject(page);
+test("Stage 08 builds the selected delivery ZIP without silently packaging fonts", async () => {
 
   await page.getByRole("button", { name: /Delivery ZIP/ }).click();
   await page
@@ -174,9 +162,7 @@ test("Stage 08 builds the selected delivery ZIP without silently packaging fonts
   expect(runtimeIssues).toEqual([]);
 });
 
-test("Stage 08 outlines a selected page with the real browser font worker", async ({ page }) => {
-  const runtimeIssues = captureRuntimeIssues(page);
-  await createExportReadyProject(page);
+test("Stage 08 outlines a selected page with the real browser font worker", async () => {
 
   await page.getByRole("button", { name: /Outlined SVG/ }).click();
   const allPages = page.getByText("All guide pages", { exact: true }).locator("..");
@@ -199,9 +185,7 @@ test("Stage 08 outlines a selected page with the real browser font worker", asyn
   expect(runtimeIssues).toEqual([]);
 });
 
-test("Stage 08 print view becomes resource-ready without application chrome", async ({ page }) => {
-  const runtimeIssues = captureRuntimeIssues(page);
-  await createExportReadyProject(page);
+test("Stage 08 print view becomes resource-ready without application chrome", async () => {
 
   await page.getByRole("button", { name: /Browser Print \/ PDF/ }).click();
   await acknowledgeWarningsIfPresent(page);
