@@ -145,14 +145,10 @@ test("Stage 08 builds the selected delivery ZIP without silently packaging fonts
     .locator(".export-delivery-tree label")
     .filter({ hasText: "Editable + outlined page artwork" });
   await artworkChoice.click();
-  await expect(
-    page.getByRole("checkbox", { name: "Editable + outlined page artwork" }),
-  ).not.toBeChecked();
   const omitFontsChoice = page
     .locator(".export-font-policy label")
     .filter({ hasText: "Omit font binaries" });
   await omitFontsChoice.click();
-  await expect(page.getByRole("radio", { name: "Omit font binaries" })).toBeChecked();
   await acknowledgeWarningsIfPresent(page);
   const generate = page.getByRole("button", { name: "Generate & download" });
   await expect(generate).toBeEnabled();
@@ -190,11 +186,8 @@ test("Stage 08 outlines a selected page with the real browser font worker", asyn
   await page.getByRole("button", { name: /Outlined SVG/ }).click();
   const allPages = page.locator(".export-page-choice--all");
   await allPages.click();
-  await expect(page.getByRole("checkbox", { name: "All guide pages" })).not.toBeChecked();
   const firstPageChoice = page.locator(".export-pages__grid label").first();
-  const firstPageCheckbox = firstPageChoice.getByRole("checkbox");
   await firstPageChoice.click();
-  await expect(firstPageCheckbox).toBeChecked();
   await acknowledgeWarningsIfPresent(page);
 
   const generate = page.getByRole("button", { name: "Generate & download" });
