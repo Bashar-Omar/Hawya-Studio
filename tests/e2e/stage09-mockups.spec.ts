@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 
-import { expect, test, type Download, type Page } from "@playwright/test";
+import { expect, test, type BrowserContext, type Download, type Page } from "@playwright/test";
 
 const ARTWORK_PNG = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAACAAAAAYCAYAAACbU/80AAAAMUlEQVR4nO3OQQEAMAjEsGMaJmJy8G9myOCTGmjqvv5Z7GzOAQAAAAAAAAAAAACSZADTLQG71M5GPwAAAABJRU5ErkJggg==",
@@ -12,8 +12,7 @@ const BACKGROUND_PNG = Buffer.from(
 );
 
 async function finishProject(page: Page): Promise<void> {
-  await page.goto("/studio");
-  await page.getByRole("button", { name: "Create project" }).first().click();
+  await page.goto("/studio/new");
   await page.getByLabel("Project name").fill("Stage Nine Mockups");
   await page.getByRole("button", { name: "Continue" }).click();
   for (const heading of ["Colors", "Typography", "Foundation", "Guide"]) {
@@ -23,6 +22,23 @@ async function finishProject(page: Page): Promise<void> {
   await page.getByRole("button", { name: "Finish setup" }).click();
   await page.getByRole("button", { name: "Open Brand System" }).click();
   await expect(page.getByText("Brand System", { exact: true })).toBeVisible();
+
+  await page.getByRole("tab", { name: "Assets" }).click();
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "mockup-artwork.png",
+    mimeType: "image/png",
+    buffer: ARTWORK_PNG,
+  });
+  await expect(page.locator("article.asset-card").filter({ hasText: "mockup-artwork" })).toBeVisible();
+
+  await page.getByRole("button", { name: "Guide shell" }).click();
+  await expect(
+    page.getByRole("heading", {
+      name: "Your brand guide is generated from reusable semantic content.",
+    }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Mockups" }).click();
+  await expect(page.getByRole("heading", { name: "Mockup Studio" })).toBeVisible();
 }
 
 async function downloadedBytes(download: Download): Promise<Buffer> {
@@ -31,34 +47,29 @@ async function downloadedBytes(download: Download): Promise<Buffer> {
   return readFile(path);
 }
 
-test("Stage 09 persists and renders a reusable smart mockup without mirroring physical geometry", async ({
-  page,
-}) => {
-  const runtimeIssues: string[] = [];
+test.describe.configure({ mode: "serial" });
+
+let sharedContext: BrowserContext;
+let page: Page;
+const runtimeIssues: string[] = [];
+
+test.beforeAll(async ({ browser }) => {
+  sharedContext = await browser.newContext();
+  page = await sharedContext.newPage();
   page.on("console", (message) => {
     if (message.type() === "error" || message.type() === "warning") {
       runtimeIssues.push(`console.${message.type()}: ${message.text()}`);
     }
   });
   page.on("pageerror", (error) => runtimeIssues.push(`pageerror: ${error.message}`));
-
   await finishProject(page);
+});
 
-  await page.getByRole("tab", { name: "Assets" }).click();
-  await page.locator('input[type="file"]').setInputFiles({
-    name: "mockup-artwork.png",
-    mimeType: "image/png",
-    buffer: ARTWORK_PNG,
-  });
-  await expect(
-    page.locator("article.asset-card").filter({ hasText: "mockup-artwork" }),
-  ).toBeVisible();
+test.afterAll(async () => {
+  await sharedContext.close();
+});
 
-  await page.getByRole("button", { name: "Guide shell" }).click();
-  await expect(page.getByRole("button", { name: "Mockups" })).toBeVisible();
-  await page.getByRole("button", { name: "Mockups" }).click();
-  await expect(page.getByRole("heading", { name: "Mockup Studio" })).toBeVisible();
-
+test("Stage 09 persists a reusable smart mockup and physical corner geometry", async () => {
   await page.locator('input[type="file"][accept=".png,.jpg,.jpeg,.webp"]').setInputFiles({
     name: "desk-scene.png",
     mimeType: "image/png",
@@ -95,10 +106,14 @@ test("Stage 09 persists and renders a reusable smart mockup without mirroring ph
   );
 
   const firstCorner = page.locator(".mockup-corner").first();
-  await expect(firstCorner).toHaveCSS("left", /.+/);
-  const physicalLeftBefore = await firstCorner.evaluate(
-    (element) => (element as HTMLElement).style.left,
-  );
+  const physicalLeft = await firstCorner.evaluate((element) => (element as HTMLElement).style.left);
+  expect(physicalLeft).toBe("25%");
+  expect(runtimeIssues).toEqual([]);
+});
+
+test("Stage 09 renders/downloads PNG and RTL does not mirror mockup coordinates", async () => {
+  const firstCorner = page.locator(".mockup-corner").first();
+  const physicalLeftBefore = await firstCorner.evaluate((element) => (element as HTMLElement).style.left);
   expect(physicalLeftBefore).toBe("25%");
 
   const previewButton = page.getByRole("button", { name: "Render preview" });
@@ -118,9 +133,7 @@ test("Stage 09 persists and renders a reusable smart mockup without mirroring ph
 
   await page.getByRole("button", { name: "Language" }).click();
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-  const physicalLeftAfter = await firstCorner.evaluate(
-    (element) => (element as HTMLElement).style.left,
-  );
+  const physicalLeftAfter = await firstCorner.evaluate((element) => (element as HTMLElement).style.left);
   expect(physicalLeftAfter).toBe("25%");
   expect(runtimeIssues).toEqual([]);
 });
