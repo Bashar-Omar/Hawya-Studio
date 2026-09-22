@@ -20,7 +20,10 @@ function countKeyValue(value: unknown, key: string, expected: string): number {
 }
 
 export function countAssetReferences(snapshot: ProjectSnapshot, assetId: AssetId): number {
-  return countKeyValue(snapshot.project, "assetId", assetId);
+  return (
+    countKeyValue(snapshot.project, "assetId", assetId) +
+    countKeyValue(snapshot.project, "backgroundAssetId", assetId)
+  );
 }
 
 export function countColorTokenReferences(snapshot: ProjectSnapshot, tokenId: string): number {
