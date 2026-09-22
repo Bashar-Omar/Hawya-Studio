@@ -142,13 +142,15 @@ test("Stage 08 exports stable machine-readable brand tokens", async () => {
 test("Stage 08 builds the selected delivery ZIP without silently packaging fonts", async () => {
   await page.getByRole("button", { name: /Delivery ZIP/ }).click();
   const artworkChoice = page
-    .getByText("Editable + outlined page artwork", { exact: true })
-    .locator("..");
-  await artworkChoice.getByText("Editable + outlined page artwork", { exact: true }).click();
-  await expect(artworkChoice.getByRole("checkbox")).not.toBeChecked();
-  const omitFontsChoice = page.getByText("Omit font binaries", { exact: true }).locator("..");
-  await omitFontsChoice.getByText("Omit font binaries", { exact: true }).click();
-  await expect(omitFontsChoice.getByRole("radio")).toBeChecked();
+    .locator(".export-delivery-tree label")
+    .filter({ hasText: "Editable + outlined page artwork" });
+  await artworkChoice.click();
+  await expect(artworkChoice.locator('input[type="checkbox"]')).not.toBeChecked();
+  const omitFontsChoice = page
+    .locator(".export-font-policy label")
+    .filter({ hasText: "Omit font binaries" });
+  await omitFontsChoice.click();
+  await expect(omitFontsChoice.locator('input[type="radio"]')).toBeChecked();
   await acknowledgeWarningsIfPresent(page);
   const generate = page.getByRole("button", { name: "Generate & download" });
   await expect(generate).toBeEnabled();
@@ -184,9 +186,9 @@ test("Stage 08 builds the selected delivery ZIP without silently packaging fonts
 
 test("Stage 08 outlines a selected page with the real browser font worker", async () => {
   await page.getByRole("button", { name: /Outlined SVG/ }).click();
-  const allPages = page.getByText("All guide pages", { exact: true }).locator("..");
-  await allPages.getByText("All guide pages", { exact: true }).click();
-  await expect(allPages.getByRole("checkbox")).not.toBeChecked();
+  const allPages = page.locator(".export-page-choice--all");
+  await allPages.click();
+  await expect(allPages.locator('input[type="checkbox"]')).not.toBeChecked();
   const firstPageChoice = page.locator(".export-pages__grid label").first();
   await firstPageChoice.click();
   await expect(firstPageChoice.getByRole("checkbox")).toBeChecked();
