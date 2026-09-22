@@ -133,7 +133,8 @@ export default function EditorPage({
     const load = async () => {
       const entries: Array<[string, string]> = [];
       for (const asset of snapshot.assets) {
-        if (!["image", "vector", "logo", "icon", "illustration"].includes(asset.kind)) continue;
+        if (!["image", "mockup", "vector", "logo", "icon", "illustration"].includes(asset.kind))
+          continue;
         const binary = await runtime.binaries.get(asset.previewBinaryKey ?? asset.binaryKey);
         if (!binary) continue;
         const url = URL.createObjectURL(
@@ -214,7 +215,7 @@ export default function EditorPage({
   const placeableAsset = useMemo(
     () =>
       snapshot?.assets.find((asset) =>
-        ["image", "vector", "logo", "icon", "illustration"].includes(asset.kind),
+        ["image", "mockup", "vector", "logo", "icon", "illustration"].includes(asset.kind),
       ),
     [snapshot],
   );
@@ -222,7 +223,8 @@ export default function EditorPage({
     if (!placeableAsset) return;
     const point = centerPoint();
     void run(async (active) => {
-      const kind = placeableAsset.kind === "image" ? "image" : "vector";
+      const kind =
+        placeableAsset.kind === "image" || placeableAsset.kind === "mockup" ? "image" : "vector";
       const id = await active.addAsset(placeableAsset.id, kind, point.x, point.y);
       setSelectionState([id], id);
       setTool("select");
@@ -604,6 +606,10 @@ export default function EditorPage({
               void run((active) =>
                 active.setTransforms("Edit geometry", { [primaryLayer.id]: transform }),
               );
+            }}
+            onImagePresentation={(fit, crop) => {
+              if (!primaryLayer || primaryLayer.locked || primaryLayer.type !== "image") return;
+              void run((active) => active.setImagePresentation(primaryLayer.id, fit, crop));
             }}
           />
         </div>
