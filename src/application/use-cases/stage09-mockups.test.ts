@@ -18,6 +18,7 @@ import {
 
 const MOCKUP_ASSET_ID = "00000000-0000-4000-8000-000000000901";
 const MOCKUP_PRESET_ID = "00000000-0000-4000-8000-000000000902";
+const MOCKUP_CONTENT_HASH = "9999999999999999999999999999999999999999999999999999999999999999";
 
 class TestClock implements Clock {
   now() {
@@ -57,8 +58,8 @@ async function projectsWithRasterBackground(): Promise<MemoryProjects> {
   snapshot.assets.push({
     ...source,
     id: MOCKUP_ASSET_ID,
-    contentHash: "sha256:stage09-mockup" as typeof source.contentHash,
-    binaryKey: "sha256:stage09-mockup" as typeof source.binaryKey,
+    contentHash: MOCKUP_CONTENT_HASH as typeof source.contentHash,
+    binaryKey: MOCKUP_CONTENT_HASH as typeof source.binaryKey,
     kind: "mockup",
     name: "Desk mockup",
     originalFilename: "desk.webp",
