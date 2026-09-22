@@ -42,17 +42,10 @@ function NumericField({ label, value, onCommit }: NumericFieldProps) {
 interface EditorInspectorProps {
   layer?: RenderedSceneLayer;
   onTransform: (transform: LayerTransform) => void;
-  onImagePresentation: (
-    fit: "cover" | "contain" | "fill",
-    crop?: NormalizedRect,
-  ) => void;
+  onImagePresentation: (fit: "cover" | "contain" | "fill", crop?: NormalizedRect) => void;
 }
 
-export function EditorInspector({
-  layer,
-  onTransform,
-  onImagePresentation,
-}: EditorInspectorProps) {
+export function EditorInspector({ layer, onTransform, onImagePresentation }: EditorInspectorProps) {
   const { t } = useI18n();
   return (
     <section className="editor-panel editor-inspector" aria-label={t("editor.inspector")}>
