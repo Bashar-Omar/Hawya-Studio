@@ -3,7 +3,9 @@ import { describe, expect, it } from "vitest";
 import {
   brandSystemPath,
   editorPath,
+  exportCenterPath,
   matchRoute,
+  printPath,
   newProjectPath,
   pageIdFromPathname,
   projectIdFromPathname,
@@ -28,13 +30,19 @@ describe("app route matching", () => {
     expect(matchRoute(projectPath(projectId))).toBe("project");
     expect(matchRoute(brandSystemPath(projectId))).toBe("brand");
     expect(matchRoute(editorPath(projectId, pageId))).toBe("editor");
+    expect(matchRoute(exportCenterPath(projectId))).toBe("export");
+    expect(matchRoute(printPath(projectId))).toBe("print");
     expect(projectIdFromPathname(newProjectPath(projectId))).toBe(projectId);
     expect(projectIdFromPathname(projectPath(projectId))).toBe(projectId);
     expect(projectIdFromPathname(brandSystemPath(projectId))).toBe(projectId);
     expect(projectIdFromPathname(editorPath(projectId, pageId))).toBe(projectId);
+    expect(projectIdFromPathname(exportCenterPath(projectId))).toBe(projectId);
+    expect(projectIdFromPathname(printPath(projectId))).toBe(projectId);
     expect(pageIdFromPathname(editorPath(projectId, pageId))).toBe(pageId);
     expect(matchRoute("/studio/projects/not-a-uuid")).toBe("not-found");
     expect(matchRoute("/studio/projects/not-a-uuid/brand")).toBe("not-found");
+    expect(matchRoute("/studio/projects/not-a-uuid/export")).toBe("not-found");
+    expect(matchRoute("/studio/projects/not-a-uuid/print")).toBe("not-found");
     expect(matchRoute(`/studio/projects/${projectId}/editor/not-a-uuid`)).toBe("not-found");
   });
 });

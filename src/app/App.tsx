@@ -12,6 +12,8 @@ import { SettingsPage } from "@/features/settings/SettingsPage";
 const BrandSystemPage = lazy(() => import("@/features/brand-system/BrandSystemPage"));
 const GuideStudioPage = lazy(() => import("@/features/guide-studio/GuideStudioPage"));
 const EditorPage = lazy(() => import("@/features/editor/EditorPage"));
+const ExportCenterPage = lazy(() => import("@/features/export/ExportCenterPage"));
+const PrintViewPage = lazy(() => import("@/features/export/PrintViewPage"));
 
 function CurrentRoute() {
   const { pathname, routeId } = useRouter();
@@ -45,6 +47,22 @@ function CurrentRoute() {
       return projectId && pageId ? (
         <Suspense fallback={null}>
           <EditorPage projectId={projectId} pageId={pageId} />
+        </Suspense>
+      ) : (
+        <NotFoundPage />
+      );
+    case "export":
+      return projectId ? (
+        <Suspense fallback={null}>
+          <ExportCenterPage projectId={projectId} />
+        </Suspense>
+      ) : (
+        <NotFoundPage />
+      );
+    case "print":
+      return projectId ? (
+        <Suspense fallback={null}>
+          <PrintViewPage projectId={projectId} />
         </Suspense>
       ) : (
         <NotFoundPage />
