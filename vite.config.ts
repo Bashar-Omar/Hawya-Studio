@@ -6,13 +6,14 @@ import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
 import { hawyaBuildMetricsPlugin } from "./build/hawya-build-metrics-plugin";
+import { hawyaPwaPlugin } from "./build/hawya-pwa-plugin";
 
 const packageJson = JSON.parse(
   readFileSync(fileURLToPath(new URL("./package.json", import.meta.url)), "utf8"),
 ) as { version: string };
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), hawyaBuildMetricsPlugin()],
+  plugins: [react(), tailwindcss(), hawyaBuildMetricsPlugin(), hawyaPwaPlugin()],
   define: {
     __HAWYA_VERSION__: JSON.stringify(packageJson.version),
   },
