@@ -1,9 +1,6 @@
 import type { Asset } from "@/domain/assets/asset";
 import type { Layer } from "@/domain/guide/guide-document";
-import {
-  projectSnapshotSchema,
-  type ProjectSnapshot,
-} from "@/domain/project/hawya-project";
+import { projectSnapshotSchema, type ProjectSnapshot } from "@/domain/project/hawya-project";
 import { WebCryptoSha256Hasher } from "@/infrastructure/runtime/web-crypto-sha256-hasher";
 
 import { createSyntheticProjectFixture } from "../stage02/synthetic-project";
@@ -49,9 +46,7 @@ export async function createStage10ScaleProject(): Promise<ProjectSnapshot> {
       createdAt: base.project.metadata.createdAt,
       updatedAt: base.project.metadata.updatedAt,
       tags: ["stage10-scale"],
-      metadata: font
-        ? { family: `Scale Sans ${sequence}` }
-        : { width: 1600, height: 1200 },
+      metadata: font ? { family: `Scale Sans ${sequence}` } : { width: 1600, height: 1200 },
       binaryKey: contentHash,
       security: {},
     };
@@ -64,40 +59,43 @@ export async function createStage10ScaleProject(): Promise<ProjectSnapshot> {
 
   const pages = Object.fromEntries(
     pageIds.map((pageId, pageIndex) => {
-      const extras: Layer[] = Array.from({ length: STAGE10_SCALE_LAYERS_PER_PAGE }, (_, layerIndex) => {
-        const common = {
-          id: scaleUuid(4, pageIndex * STAGE10_SCALE_LAYERS_PER_PAGE + layerIndex + 1),
-          name: `Scale layer ${pageIndex + 1}.${layerIndex + 1}`,
-          visible: true,
-          locked: false,
-          opacity: 1,
-          transform: {
-            x: 24 + layerIndex * 12,
-            y: 24 + layerIndex * 10,
-            width: 160,
-            height: 90,
-            rotation: 0,
-            scaleX: 1,
-            scaleY: 1,
-          },
-          source: "extra" as const,
-        };
-        if (layerIndex % 2 === 0) {
-          const asset = imageAssets[(pageIndex * 5 + layerIndex / 2) % imageAssets.length];
-          if (!asset) throw new Error("Stage 10 scale fixture requires image assets.");
+      const extras: Layer[] = Array.from(
+        { length: STAGE10_SCALE_LAYERS_PER_PAGE },
+        (_, layerIndex) => {
+          const common = {
+            id: scaleUuid(4, pageIndex * STAGE10_SCALE_LAYERS_PER_PAGE + layerIndex + 1),
+            name: `Scale layer ${pageIndex + 1}.${layerIndex + 1}`,
+            visible: true,
+            locked: false,
+            opacity: 1,
+            transform: {
+              x: 24 + layerIndex * 12,
+              y: 24 + layerIndex * 10,
+              width: 160,
+              height: 90,
+              rotation: 0,
+              scaleX: 1,
+              scaleY: 1,
+            },
+            source: "extra" as const,
+          };
+          if (layerIndex % 2 === 0) {
+            const asset = imageAssets[(pageIndex * 5 + layerIndex / 2) % imageAssets.length];
+            if (!asset) throw new Error("Stage 10 scale fixture requires image assets.");
+            return {
+              ...common,
+              type: "image" as const,
+              assetId: asset.id,
+              fit: "contain" as const,
+            };
+          }
           return {
             ...common,
-            type: "image" as const,
-            assetId: asset.id,
-            fit: "contain" as const,
+            type: "shape" as const,
+            data: { shape: "rect", fill: "#111111" },
           };
-        }
-        return {
-          ...common,
-          type: "shape" as const,
-          data: { shape: "rect", fill: "#111111" },
-        };
-      });
+        },
+      );
       return [
         pageId,
         {
