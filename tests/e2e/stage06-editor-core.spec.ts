@@ -204,3 +204,28 @@ test("Arabic editor keeps physical canvas coordinates across UI RTL and persists
   await expectLeftNear(persisted, afterMove);
   expect(runtimeIssues).toEqual([]);
 });
+
+
+test("Stage 10 layer deletion restores focus to an adjacent layer", async ({ page }) => {
+  const runtimeIssues = captureRuntimeIssues(page);
+  await createProject(page, "en");
+  await generateMinimalGuideAndOpenEditor(page);
+
+  await page.getByRole("button", { name: "Add rectangle (R)" }).click();
+  await page.getByRole("button", { name: "Add rectangle (R)" }).click();
+
+  const shapeRows = page.locator(".editor-layer-row").filter({ hasText: "extra · shape" });
+  await expect(shapeRows).toHaveCount(2);
+  const focusedName = shapeRows.first().locator(".editor-layer-row__name");
+  await focusedName.click();
+  await expect(focusedName).toBeFocused();
+
+  await page.keyboard.press("Delete");
+
+  const remainingRows = page.locator(".editor-layer-row").filter({ hasText: "extra · shape" });
+  await expect(remainingRows).toHaveCount(1);
+  const remainingName = remainingRows.first().locator(".editor-layer-row__name");
+  await expect(remainingName).toBeFocused();
+  await expect(remainingName).toHaveAttribute("aria-pressed", "true");
+  expect(runtimeIssues).toEqual([]);
+});

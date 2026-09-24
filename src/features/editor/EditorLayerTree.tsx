@@ -1,4 +1,5 @@
 import { Eye, EyeOff, Lock, Unlock } from "lucide-react";
+import { useEffect, useRef } from "react";
 
 import { Button } from "@/components/ui/button";
 import type { RenderedSceneLayer, SceneLayerId } from "@/editor/model/editor-types";
@@ -10,6 +11,8 @@ interface EditorLayerTreeProps {
   onSelect: (id: SceneLayerId, toggle: boolean) => void;
   onVisible: (id: SceneLayerId, visible: boolean) => void;
   onLocked: (id: SceneLayerId, locked: boolean) => void;
+  focusLayerId?: SceneLayerId;
+  onFocusSettled?: () => void;
 }
 
 export function EditorLayerTree({
@@ -18,9 +21,20 @@ export function EditorLayerTree({
   onSelect,
   onVisible,
   onLocked,
+  focusLayerId,
+  onFocusSettled,
 }: EditorLayerTreeProps) {
   const { t } = useI18n();
   const selected = new Set(selectedIds);
+  const layerNameButtons = useRef(new Map<SceneLayerId, HTMLButtonElement>());
+
+  useEffect(() => {
+    if (!focusLayerId) return;
+    const button = layerNameButtons.current.get(focusLayerId);
+    if (!button) return;
+    button.focus();
+    onFocusSettled?.();
+  }, [focusLayerId, onFocusSettled]);
   return (
     <section className="editor-panel editor-layer-tree" aria-label={t("editor.layers")}>
       <header className="editor-panel__header">
@@ -42,6 +56,10 @@ export function EditorLayerTree({
               <button
                 className="editor-layer-row__name"
                 type="button"
+                ref={(element) => {
+                  if (element) layerNameButtons.current.set(layer.id, element);
+                  else layerNameButtons.current.delete(layer.id);
+                }}
                 onClick={(event) => onSelect(layer.id, event.shiftKey)}
                 aria-pressed={selected.has(layer.id)}
               >

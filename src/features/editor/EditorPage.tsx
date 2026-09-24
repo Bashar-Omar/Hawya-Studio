@@ -18,6 +18,7 @@ import {
   type DistributionCommand,
 } from "@/editor/geometry/geometry";
 import { editorAssetHydrationPlan } from "@/editor/model/editor-asset-hydration";
+import { layerFocusTargetAfterDeletion } from "@/editor/model/editor-focus";
 import { resolveRenderedScene } from "@/editor/scene/scene-resolver";
 import {
   parseEditorClipboardJson,
@@ -74,6 +75,7 @@ export default function EditorPage({
   const [altDown, setAltDown] = useState(false);
   const [assetUrls, setAssetUrls] = useState<Record<string, string>>({});
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [layerFocusId, setLayerFocusId] = useState<SceneLayerId | undefined>();
   const [error, setError] = useState<string | null>(null);
   const fallbackClipboard = useRef<EditorClipboardPayload | undefined>(undefined);
   const operationQueue = useRef<Promise<void>>(Promise.resolve());
@@ -285,11 +287,19 @@ export default function EditorPage({
   const deleteSelected = useCallback(() => {
     const ids = unlockedSelected.map((layer) => layer.id);
     if (!ids.length) return;
+    const deletedIds = new Set(ids);
+    const focusTarget = layerFocusTargetAfterDeletion(scene?.layers ?? [], deletedIds, primaryId);
     void run(async (active) => {
       await active.delete(ids);
-      setSelectionState([], undefined);
+      if (focusTarget) {
+        setSelectionState([focusTarget], focusTarget);
+        setLayerFocusId(focusTarget);
+      } else {
+        setSelectionState([], undefined);
+        setLayerFocusId(undefined);
+      }
     });
-  }, [run, setSelectionState, unlockedSelected]);
+  }, [primaryId, run, scene?.layers, setSelectionState, unlockedSelected]);
 
   const group = useCallback(() => {
     const ids = unlockedSelected
@@ -580,6 +590,8 @@ export default function EditorPage({
             }}
             onVisible={(id, visible) => void run((active) => active.setVisible(id, visible))}
             onLocked={(id, locked) => void run((active) => active.setLocked(id, locked))}
+            focusLayerId={layerFocusId}
+            onFocusSettled={() => setLayerFocusId(undefined)}
           />
 
           <main className="editor-canvas-column">
