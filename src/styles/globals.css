@@ -2018,3 +2018,13 @@ html[dir="rtl"] .directional-icon {
   font-size: 12px;
   line-height: 1.5;
 }
+
+.route-loading {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: var(--text-2);
+  background: var(--app-bg);
+  font-size: 14px;
+}
