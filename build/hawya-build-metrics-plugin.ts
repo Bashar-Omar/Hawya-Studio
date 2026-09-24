@@ -23,8 +23,7 @@ export function hawyaBuildMetricsPlugin(): Plugin {
       const appEntry =
         chunks.find(
           (chunk) =>
-            chunk.isEntry &&
-            chunk.facadeModuleId?.replaceAll("\\", "/").endsWith("/src/main.tsx"),
+            chunk.isEntry && chunk.facadeModuleId?.replaceAll("\\", "/").endsWith("/src/main.tsx"),
         ) ?? chunks.find((chunk) => chunk.isEntry);
 
       if (!appEntry) {
