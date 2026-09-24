@@ -67,6 +67,24 @@ test("Stage 10 installs an offline shell without caching project routes or user 
     false,
   );
 
+  const loadedBuildAssets = await page.evaluate(() =>
+    performance
+      .getEntriesByType("resource")
+      .map((entry) => entry.name)
+      .filter((value) => new URL(value).pathname.startsWith("/assets/")),
+  );
+  const cacheCoverage = await page.evaluate(async (urls) => {
+    const checks = await Promise.all(
+      urls.map(async (url) => ({
+        url,
+        cached: Boolean(await caches.match(url, { ignoreSearch: true })),
+      })),
+    );
+    return checks;
+  }, loadedBuildAssets);
+  console.log("Stage10 cache coverage", { cacheSnapshot, cacheCoverage });
+  expect(cacheCoverage.filter((entry) => !entry.cached)).toEqual([]);
+
   const projectUrl = page.url();
   await context.setOffline(true);
   await page.reload();
