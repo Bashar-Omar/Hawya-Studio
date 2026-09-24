@@ -2,9 +2,7 @@ import { expect, test } from "@playwright/test";
 
 function srgbChannel(value: number): number {
   const normalized = value / 255;
-  return normalized <= 0.04045
-    ? normalized / 12.92
-    : ((normalized + 0.055) / 1.055) ** 2.4;
+  return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
 }
 
 function luminance(hex: string): number {
@@ -96,7 +94,9 @@ test("Stage 10 preserves keyboard command access after switching the application
   await expect(search).toBeHidden();
 });
 
-test("Stage 10 keeps application chrome contrast within AA-oriented guardrails", async ({ page }) => {
+test("Stage 10 keeps application chrome contrast within AA-oriented guardrails", async ({
+  page,
+}) => {
   await page.goto("/settings");
 
   for (const theme of ["Light", "Dark"] as const) {

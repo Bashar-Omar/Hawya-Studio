@@ -178,9 +178,9 @@ test("Arabic editor keeps physical canvas coordinates across UI RTL and persists
 
   await page.getByRole("button", { name: "Interface language" }).click();
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
-  await expect(page.getByRole("region", { name: "مساحة لوحة التصميم" })).toHaveAccessibleDescription(
-    /الطبقات/,
-  );
+  await expect(
+    page.getByRole("region", { name: "مساحة لوحة التصميم" }),
+  ).toHaveAccessibleDescription(/الطبقات/);
   await expectLeftNear(textLayer, leftBeforeUiRtl);
 
   await textLayer.dblclick();
