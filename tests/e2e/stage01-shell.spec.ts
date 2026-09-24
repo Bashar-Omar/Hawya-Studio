@@ -70,6 +70,7 @@ test("command menu is keyboard reachable from the global shortcut and exits clea
   page,
 }) => {
   await page.goto("/studio");
+  await expect(page.getByRole("button", { name: /Commands/ })).toBeVisible();
 
   await page.evaluate(() => {
     window.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true, bubbles: true }));
