@@ -36,10 +36,10 @@ jobs:
       - name: Check
         run: pnpm check
 
-      - name: Build
+      - name: Build and enforce performance budgets
         run: |
           pnpm build
-          cat dist/hawya-build-metrics.json
+          pnpm check:performance
 
   smoke:
     name: Chromium smoke

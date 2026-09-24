@@ -22,7 +22,8 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:browser": "playwright test --project=chromium",
-    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test"
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
+    "check:performance": "node scripts/check-performance-budgets.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.8.0",

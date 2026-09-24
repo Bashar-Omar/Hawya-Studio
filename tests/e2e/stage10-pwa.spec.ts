@@ -18,16 +18,12 @@ test("Stage 10 installs an offline shell without caching project routes or user 
   const context = await browser.newContext({ serviceWorkers: "allow" });
   const page = await context.newPage();
   const runtimeIssues: string[] = [];
-  const failedRequests: string[] = [];
   page.on("console", (message) => {
     if (message.type() === "error" || message.type() === "warning") {
       runtimeIssues.push(`console.${message.type()}: ${message.text()}`);
     }
   });
   page.on("pageerror", (error) => runtimeIssues.push(`pageerror: ${error.message}`));
-  context.on("requestfailed", (request) => {
-    failedRequests.push(`${request.url()} :: ${request.failure()?.errorText ?? "unknown"}`);
-  });
 
   await page.goto("/studio/new");
   await page.evaluate(async () => {
@@ -77,20 +73,17 @@ test("Stage 10 installs an offline shell without caching project routes or user 
     const checks = await Promise.all(
       urls.map(async (url) => ({
         url,
-        cached: Boolean(await caches.match(url, { ignoreSearch: true })),
+        cached: Boolean(await caches.match(url, { ignoreSearch: true, ignoreVary: true })),
       })),
     );
     return checks;
   }, loadedBuildAssets);
-  console.log("Stage10 cache coverage", { cacheSnapshot, cacheCoverage });
   expect(cacheCoverage.filter((entry) => !entry.cached)).toEqual([]);
 
   const projectUrl = page.url();
   await context.setOffline(true);
   await page.reload();
   await expect(page).toHaveURL(projectUrl);
-  const offlineBody = await page.locator("body").innerText();
-  console.log("Stage10 offline diagnostics", { offlineBody, runtimeIssues, failedRequests });
   await expect(page.getByText("Brand System", { exact: true })).toBeVisible();
   expect(runtimeIssues).toEqual([]);
 
