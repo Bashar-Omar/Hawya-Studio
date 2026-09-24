@@ -8,6 +8,7 @@ const HEAVY_STARTUP_MODULE_MARKERS = [
   "/dompurify/",
   "/colorjs.io/",
   "/react-moveable/",
+  "/pdfjs-dist/",
 ] as const;
 
 function byteLength(source: string): number {
@@ -36,7 +37,7 @@ export function hawyaBuildMetricsPlugin(): Plugin {
         const fileName = pending.pop();
         if (!fileName || initialFiles.has(fileName)) continue;
         const output = bundle[fileName];
-        if (!output || output.type !== "chunk") continue;
+        if (output?.type !== "chunk") continue;
         initialFiles.add(fileName);
         pending.push(...output.imports);
       }
