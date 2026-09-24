@@ -18,7 +18,9 @@ test("Stage 10 honors reduced motion for application chrome", async ({ page }) =
     .toBe("none");
 });
 
-test("Stage 10 keeps the skip link keyboard-first and moves focus to main content", async ({ page }) => {
+test("Stage 10 keeps the skip link keyboard-first and moves focus to main content", async ({
+  page,
+}) => {
   await page.goto("/");
   const skipLink = page.getByRole("link", { name: "Skip to content" });
 
