@@ -205,7 +205,6 @@ test("Arabic editor keeps physical canvas coordinates across UI RTL and persists
   expect(runtimeIssues).toEqual([]);
 });
 
-
 test("Stage 10 layer deletion restores focus to an adjacent layer", async ({ page }) => {
   const runtimeIssues = captureRuntimeIssues(page);
   await createProject(page, "en");
