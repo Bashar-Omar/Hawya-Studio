@@ -89,3 +89,25 @@ test("Stage 10 installs an offline shell without caching project routes or user 
 
   await context.close();
 });
+
+test("Stage 10 exposes an installable Chromium-compatible manifest", async ({ page }) => {
+  await page.goto("/");
+
+  const manifest = await page.evaluate(async () => {
+    const link = document.querySelector<HTMLLinkElement>('link[rel="manifest"]');
+    if (!link) throw new Error("Missing manifest link");
+    const response = await fetch(link.href);
+    return response.json();
+  });
+
+  expect(manifest.name || manifest.short_name).toBeTruthy();
+  expect(manifest.start_url).toBe("/");
+  expect(manifest.scope).toBe("/");
+  expect(["standalone", "fullscreen", "minimal-ui"]).toContain(manifest.display);
+  expect(manifest.icons).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({ sizes: "192x192", type: "image/png" }),
+      expect.objectContaining({ sizes: "512x512", type: "image/png" }),
+    ]),
+  );
+});
