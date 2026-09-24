@@ -1,7 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
 async function createLocalProject(page: Page): Promise<void> {
-  await page.goto("/studio/new");
   await page.getByLabel("Project name").fill("Offline Identity");
   await page.getByRole("button", { name: "Continue" }).click();
   for (const heading of ["Colors", "Typography", "Foundation", "Guide"]) {
@@ -26,11 +25,12 @@ test("Stage 10 installs an offline shell without caching project routes or user 
   });
   page.on("pageerror", (error) => runtimeIssues.push(`pageerror: ${error.message}`));
 
-  await createLocalProject(page);
+  await page.goto("/studio/new");
   await page.evaluate(async () => {
     await navigator.serviceWorker.ready;
   });
   await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
+  await createLocalProject(page);
 
   const cacheSnapshot = await page.evaluate(async () => {
     const keys = await caches.keys();
