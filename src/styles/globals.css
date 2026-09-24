@@ -2031,11 +2031,13 @@ html[dir="rtl"] .directional-icon {
 
 @media (pointer: coarse) {
   .button-sm,
+  .button-icon,
   .toolbar-action,
   .segmented-control__item {
     min-height: 44px;
   }
 
+  .button-icon,
   .dialog-close {
     width: 44px;
     height: 44px;

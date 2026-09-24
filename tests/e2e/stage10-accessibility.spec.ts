@@ -60,13 +60,14 @@ test("Stage 10 enlarges compact chrome targets on touch input", async ({ browser
   const page = await context.newPage();
   await page.goto("/studio");
 
-  const compact = page.getByRole("button", { name: /Commands/ });
-  await expect(compact).toBeVisible();
-  const compactBox = await compact.boundingBox();
-  expect(compactBox?.height ?? 0).toBeGreaterThanOrEqual(44);
+  const navigationTrigger = page.getByRole("button", { name: "Open navigation" });
+  await expect(navigationTrigger).toBeVisible();
+  const triggerBox = await navigationTrigger.boundingBox();
+  expect(triggerBox?.height ?? 0).toBeGreaterThanOrEqual(44);
+  expect(triggerBox?.width ?? 0).toBeGreaterThanOrEqual(44);
 
-  await compact.click();
-  const close = page.getByRole("button", { name: "Close dialog" });
+  await navigationTrigger.click();
+  const close = page.getByRole("button", { name: "Close navigation" });
   await expect(close).toBeVisible();
   const closeBox = await close.boundingBox();
   expect(closeBox?.height ?? 0).toBeGreaterThanOrEqual(44);
