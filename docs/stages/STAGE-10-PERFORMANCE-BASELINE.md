@@ -19,7 +19,7 @@ This is about a **35% reduction** from the measured Stage 09 gzip baseline.
 
 ## CI regression ceiling
 
-CI enforces an initial graph ceiling of **160 KiB gzip** plus a zero-tolerance rule for these heavy startup markers:
+CI's `check:performance` gate enforces an initial graph ceiling of **160 KiB gzip**, a **128 KiB gzip per-initial-chunk ceiling**, and a zero-tolerance rule for these heavy startup markers:
 
 - `@cantoo/fontkit`
 - `fflate`

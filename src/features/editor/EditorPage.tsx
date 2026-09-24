@@ -590,7 +590,7 @@ export default function EditorPage({
             }}
             onVisible={(id, visible) => void run((active) => active.setVisible(id, visible))}
             onLocked={(id, locked) => void run((active) => active.setLocked(id, locked))}
-            focusLayerId={layerFocusId}
+            {...(layerFocusId ? { focusLayerId: layerFocusId } : {})}
             onFocusSettled={() => setLayerFocusId(undefined)}
           />
 

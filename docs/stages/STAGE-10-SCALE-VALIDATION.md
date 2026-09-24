@@ -1,18 +1,22 @@
 # Stage 10 — Representative Scale Validation
 
-The QA target is exercised with a deterministic fixture containing:
+The deterministic Stage 10 fixture exercises the binding v1 scale target in normal CI:
 
 - 50 guide pages;
-- 500 canonical extra layers (10 per page);
+- 500 canonical layers (10 per page);
 - 100 asset metadata entries;
-- the existing bilingual/project schema and archive codec.
+- 4 project fonts.
 
-The browser test imports the fixture through the real `.hawya` path, verifies the Guide Studio exposes all 50 pages while mounting one active full preview, opens Brand System, and verifies all 100 asset records render without Hawya console warnings/errors. The test logs guide/import and asset-view readiness timings so CI measurements are visible without turning variable hosted-runner timing into a brittle pass/fail threshold.
+The query test validates both Guide Studio and Brand System projections against that model and keeps the combined projection budget below 500 ms on the GitHub test runner. It also verifies that asset-reference counting remains correct at scale.
+
+The editor test resolves one active page and asserts that binary hydration is limited to visual assets referenced by that active scene rather than hydrating the full 100-asset corpus.
 
 ## Virtualization decision
 
-No virtualization is introduced by default in this slice. The current Guide Studio already mounts one full preview and a metadata-only 50-page rail. The 100-asset grid is validated at the binding v1 target. Virtualization should be added only if representative browser measurements demonstrate interaction or memory pressure; the canonical model must not be flattened to obtain it.
+No list virtualization is added by default at this target. The measured projection is bounded, Guide Studio keeps one active full preview, and editor hydration is active-scene-only. Adding virtualization without a measured bottleneck would add state/scroll complexity without evidence.
+
+If later browser profiling shows page-rail or asset-grid rendering pressure beyond the v1 target, virtualization belongs in the projection/UI layer; the canonical project model must remain unchanged.
 
 ## Large local corpus
 
-The Project Pack also calls for a 100–250 MB local asset corpus stress scenario and explicitly notes that not all large rasters should be decoded simultaneously. That corpus is intentionally a manual/resource stress check rather than a normal GitHub-hosted CI payload. Stage closure records the result or a documented exception.
+The Project Pack's 100–250 MB local asset corpus remains a resource-stress scenario rather than a normal hosted-CI payload. The architecture already avoids decoding every binary simultaneously; Stage 10 documents the stress result/exception at closure instead of committing a very large fixture to the repository.
