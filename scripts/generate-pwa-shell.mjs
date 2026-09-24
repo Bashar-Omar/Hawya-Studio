@@ -73,13 +73,13 @@ self.addEventListener("fetch", (event) => {
   if (url.origin !== self.location.origin) return;
 
   if (request.mode === "navigate") {
-    event.respondWith(caches.match("/index.html").then((cached) => cached ?? fetch(request)));
+    event.respondWith(caches\n      .match("/index.html", { ignoreSearch: true, ignoreVary: true })\n      .then((cached) => cached ?? fetch(request)));
     return;
   }
 
   if (!APP_SHELL_PATHS.has(url.pathname)) return;
   event.respondWith(
-    caches.match(request, { ignoreSearch: true }).then((cached) => cached ?? fetch(request)),
+    caches\n      .match(request, { ignoreSearch: true, ignoreVary: true })\n      .then((cached) => cached ?? fetch(request)),
   );
 });
 `;
