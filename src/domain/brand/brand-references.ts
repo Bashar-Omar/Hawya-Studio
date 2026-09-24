@@ -2,35 +2,49 @@ import type { AssetId } from "@/domain/assets/asset";
 import type { ColorToken, TextStyleToken } from "@/domain/brand/brand-system";
 import type { ProjectSnapshot } from "@/domain/project/hawya-project";
 
-function countKeyValue(value: unknown, key: string, expected: string): number {
+const ASSET_REFERENCE_KEYS = new Set(["assetId", "backgroundAssetId"]);
+const COLOR_REFERENCE_KEYS = new Set(["colorTokenId", "preferredBackground"]);
+
+function countStringReferences(
+  value: unknown,
+  keys: ReadonlySet<string>,
+  counts = new Map<string, number>(),
+): Map<string, number> {
   if (Array.isArray(value)) {
-    return value.reduce((sum, item) => sum + countKeyValue(item, key, expected), 0);
+    for (const item of value) countStringReferences(item, keys, counts);
+    return counts;
   }
   if (!value || typeof value !== "object") {
-    return 0;
+    return counts;
   }
-  let count = 0;
   for (const [entryKey, entryValue] of Object.entries(value)) {
-    if (entryKey === key && entryValue === expected) {
-      count += 1;
+    if (keys.has(entryKey) && typeof entryValue === "string") {
+      counts.set(entryValue, (counts.get(entryValue) ?? 0) + 1);
     }
-    count += countKeyValue(entryValue, key, expected);
+    countStringReferences(entryValue, keys, counts);
   }
-  return count;
+  return counts;
+}
+
+export function countAssetReferencesById(snapshot: ProjectSnapshot): ReadonlyMap<AssetId, number> {
+  return countStringReferences(snapshot.project, ASSET_REFERENCE_KEYS) as ReadonlyMap<
+    AssetId,
+    number
+  >;
+}
+
+export function countColorTokenReferencesById(
+  snapshot: ProjectSnapshot,
+): ReadonlyMap<string, number> {
+  return countStringReferences(snapshot.project, COLOR_REFERENCE_KEYS);
 }
 
 export function countAssetReferences(snapshot: ProjectSnapshot, assetId: AssetId): number {
-  return (
-    countKeyValue(snapshot.project, "assetId", assetId) +
-    countKeyValue(snapshot.project, "backgroundAssetId", assetId)
-  );
+  return countAssetReferencesById(snapshot).get(assetId) ?? 0;
 }
 
 export function countColorTokenReferences(snapshot: ProjectSnapshot, tokenId: string): number {
-  return (
-    countKeyValue(snapshot.project, "colorTokenId", tokenId) +
-    countKeyValue(snapshot.project, "preferredBackground", tokenId)
-  );
+  return countColorTokenReferencesById(snapshot).get(tokenId) ?? 0;
 }
 
 export function resolveColorToken(
