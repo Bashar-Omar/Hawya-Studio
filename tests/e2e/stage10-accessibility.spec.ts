@@ -1,5 +1,26 @@
 import { expect, test } from "@playwright/test";
 
+function srgbChannel(value: number): number {
+  const normalized = value / 255;
+  return normalized <= 0.04045
+    ? normalized / 12.92
+    : ((normalized + 0.055) / 1.055) ** 2.4;
+}
+
+function luminance(hex: string): number {
+  const value = hex.trim().replace("#", "");
+  const r = Number.parseInt(value.slice(0, 2), 16);
+  const g = Number.parseInt(value.slice(2, 4), 16);
+  const b = Number.parseInt(value.slice(4, 6), 16);
+  return 0.2126 * srgbChannel(r) + 0.7152 * srgbChannel(g) + 0.0722 * srgbChannel(b);
+}
+
+function contrastRatio(foreground: string, background: string): number {
+  const lighter = Math.max(luminance(foreground), luminance(background));
+  const darker = Math.min(luminance(foreground), luminance(background));
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
 test("Stage 10 honors reduced motion for application chrome", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/studio");
@@ -72,4 +93,29 @@ test("Stage 10 preserves keyboard command access after switching the application
   await expect(search).toBeFocused();
   await page.keyboard.press("Escape");
   await expect(search).toBeHidden();
+});
+
+test("Stage 10 keeps application chrome contrast within AA-oriented guardrails", async ({ page }) => {
+  await page.goto("/settings");
+
+  for (const theme of ["Light", "Dark"] as const) {
+    await page.getByRole("button", { name: theme }).click();
+    const tokens = await page.evaluate(() => {
+      const style = getComputedStyle(document.documentElement);
+      return {
+        text1: style.getPropertyValue("--text-1").trim(),
+        text2: style.getPropertyValue("--text-2").trim(),
+        surface1: style.getPropertyValue("--surface-1").trim(),
+        appBg: style.getPropertyValue("--app-bg").trim(),
+        accent: style.getPropertyValue("--accent").trim(),
+        accentForeground: style.getPropertyValue("--accent-foreground").trim(),
+        focus: style.getPropertyValue("--focus").trim(),
+      };
+    });
+
+    expect(contrastRatio(tokens.text1, tokens.surface1)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(tokens.text2, tokens.surface1)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(tokens.accentForeground, tokens.accent)).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(tokens.focus, tokens.appBg)).toBeGreaterThanOrEqual(3);
+  }
 });

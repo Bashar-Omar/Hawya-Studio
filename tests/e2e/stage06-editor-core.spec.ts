@@ -81,6 +81,8 @@ test("EN editor transforms one command, undo/redo persists after reload, and dra
   const runtimeIssues = captureRuntimeIssues(page);
   await createProject(page, "en");
   await generateMinimalGuideAndOpenEditor(page);
+  const canvasRegion = page.getByRole("region", { name: "Canvas workspace" });
+  await expect(canvasRegion).toHaveAccessibleDescription(/layers; .* visible/);
 
   await page.getByRole("button", { name: "Add rectangle (R)" }).click();
   const shape = page.locator(".editor-scene-layer--shape").last();
@@ -176,6 +178,9 @@ test("Arabic editor keeps physical canvas coordinates across UI RTL and persists
 
   await page.getByRole("button", { name: "Interface language" }).click();
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  await expect(page.getByRole("region", { name: "مساحة لوحة التصميم" })).toHaveAccessibleDescription(
+    /الطبقات/,
+  );
   await expectLeftNear(textLayer, leftBeforeUiRtl);
 
   await textLayer.dblclick();

@@ -5,6 +5,7 @@ import {
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
   useEffect,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -129,6 +130,7 @@ function eventHasAltKey(inputEvent: unknown): boolean {
 
 export function EditorCanvas(props: EditorCanvasProps) {
   const { t } = useI18n();
+  const canvasSummaryId = useId();
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const pageRef = useRef<HTMLDivElement | null>(null);
   const layerElements = useRef(new Map<SceneLayerId, HTMLElement>());
@@ -428,6 +430,9 @@ export function EditorCanvas(props: EditorCanvasProps) {
     <div
       className={`editor-viewport ${props.tool === "hand" || props.spaceDown ? "is-panning-tool" : ""}`}
       ref={viewportRef}
+      role="region"
+      aria-label={t("editor.canvasRegion")}
+      aria-describedby={canvasSummaryId}
       onPointerDown={onViewportPointerDown}
       onPointerMove={onViewportPointerMove}
       onPointerUp={onViewportPointerUp}
@@ -441,6 +446,15 @@ export function EditorCanvas(props: EditorCanvasProps) {
         });
       }}
     >
+      <p className="sr-only" id={canvasSummaryId}>
+        {t("editor.canvasSummary", {
+          width: props.scene.pageWidth,
+          height: props.scene.pageHeight,
+          unit: props.unit,
+          layers: props.scene.layers.length,
+          visible: props.scene.layers.filter((layer) => layer.visible).length,
+        })}
+      </p>
       <div
         className="editor-page"
         ref={pageRef}

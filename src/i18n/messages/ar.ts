@@ -437,6 +437,9 @@ export const arMessages: MessageCatalog = {
   "editor.snapEnable": "تفعيل المحاذاة الذكية",
   "editor.snapDisable": "إيقاف المحاذاة الذكية",
   "editor.scene": "المشهد",
+  "editor.canvasRegion": "مساحة لوحة التصميم",
+  "editor.canvasSummary":
+    "لوحة التصميم {width} × {height} {unit}. عدد الطبقات {layers}؛ الظاهر منها {visible}. استخدم لوحة الطبقات للتنقل الميسر بين العناصر.",
   "editor.layers": "الطبقات",
   "editor.properties": "الخصائص",
   "editor.inspector": "لوحة الخصائص",
