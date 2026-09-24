@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import type { ProjectRepository } from "@/application/ports/project-repository";
 import { BrandSystemQuery } from "@/application/queries/brand-system-query";
 import { GuideStudioQuery } from "@/application/queries/guide-studio-query";
+import { editorAssetHydrationPlan } from "@/editor/model/editor-asset-hydration";
+import { resolveRenderedScene } from "@/editor/scene/scene-resolver";
 import type { ProjectId, ProjectSnapshot } from "@/domain/project/hawya-project";
 
 import {
@@ -71,5 +73,27 @@ describe("Stage 10 representative project scale", () => {
       );
     }, 0);
     expect(brand.assetUsage[referencedScaleAsset.id]).toBe(layerUses);
+  });
+
+  it("hydrates only visual binaries referenced by the active editor scene", async () => {
+    const snapshot = await createStage10ScaleProject();
+    const pageId = snapshot.project.guide.pageOrder[0];
+    const page = pageId ? snapshot.project.guide.pages[pageId] : undefined;
+    expect(page).toBeDefined();
+    if (!page) return;
+
+    const scene = resolveRenderedScene(snapshot, page, "en");
+    const expectedIds = new Set(
+      scene.layers.flatMap((layer) => {
+        if (layer.type === "image") return [layer.assetId];
+        if (layer.type === "vector" && layer.assetId) return [layer.assetId];
+        return [];
+      }),
+    );
+    const plan = editorAssetHydrationPlan(snapshot.assets, scene.layers);
+
+    expect(new Set(plan.map((entry) => entry.assetId))).toEqual(expectedIds);
+    expect(plan.length).toBeLessThanOrEqual(STAGE10_SCALE_LAYERS_PER_PAGE);
+    expect(plan.length).toBeLessThan(STAGE10_SCALE_ASSETS);
   });
 });
