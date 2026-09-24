@@ -37,7 +37,9 @@ jobs:
         run: pnpm check
 
       - name: Build
-        run: pnpm build
+        run: |
+          pnpm build
+          cat dist/hawya-build-metrics.json
 
   smoke:
     name: Chromium smoke
