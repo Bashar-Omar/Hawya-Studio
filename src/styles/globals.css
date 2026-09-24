@@ -2028,3 +2028,16 @@ html[dir="rtl"] .directional-icon {
   background: var(--app-bg);
   font-size: 14px;
 }
+
+@media (pointer: coarse) {
+  .button-sm,
+  .toolbar-action,
+  .segmented-control__item {
+    min-height: 44px;
+  }
+
+  .dialog-close {
+    width: 44px;
+    height: 44px;
+  }
+}
