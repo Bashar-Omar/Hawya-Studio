@@ -4,7 +4,7 @@
 
 Hawya Studio is a free, open-source, local-first Brand System Production Studio for brand designers. It is designed to turn structured identity inputs into reusable brand systems, editable guidelines, assets, and honest export formats without requiring an account, paid API, cloud database, or subscription.
 
-> Current status: **Stage 12 — Deploy & Public Release release candidate verified**. Production smoke is green; formal `v0.1.0` closure follows exact-head merge, merged-main CI, exact merged-SHA production verification, and tag/release creation.
+> Current status: **v0.1.0 released**. Stage 12 is formally closed. The public release is tagged at `82da1460a31300be4e43385b8c6348a0b8201575`, and the production app is available at [hawya-studio.vercel.app](https://hawya-studio.vercel.app).
 
 ## Non-negotiable guarantees
 
@@ -86,7 +86,7 @@ The domain layer must remain framework- and browser-independent. React renders U
 
 ## Deployment
 
-The web app builds to static assets and requires no runtime secret. Vercel is the primary public deployment target. Automatic per-commit Vercel deployment stays disabled during release hardening; production release is intentional and tied to an exact commit.
+The web app builds to static assets and requires no runtime secret. Vercel is the primary public deployment target. Release deployments are intentional and tied to exact commits; automatic per-commit Vercel deployment remains disabled so production provenance stays explicit.
 
 ```bash
 pnpm install --frozen-lockfile
@@ -107,4 +107,4 @@ File import, SVG handling, archives, browser persistence, and later service-work
 
 MIT — see [`LICENSE`](LICENSE). Direct production dependency notices are in [`docs/licenses/THIRD-PARTY-NOTICES.md`](docs/licenses/THIRD-PARTY-NOTICES.md), with bundled asset provenance tracked in [`docs/licenses/ASSET-PROVENANCE.md`](docs/licenses/ASSET-PROVENANCE.md).
 
-Release progress is tracked in [`docs/release/RELEASE-CHECKLIST.md`](docs/release/RELEASE-CHECKLIST.md) and [`CHANGELOG.md`](CHANGELOG.md).
+Release evidence is tracked in [`docs/release/RELEASE-CHECKLIST.md`](docs/release/RELEASE-CHECKLIST.md), [`docs/stages/STAGE-12-COMPLETION.md`](docs/stages/STAGE-12-COMPLETION.md), and [`CHANGELOG.md`](CHANGELOG.md). The published source handoff is attached to the [v0.1.0 GitHub Release](https://github.com/Bashar-Omar/Hawya-Studio/releases/tag/v0.1.0).

@@ -7,12 +7,13 @@ project format, but schema changes remain explicitly versioned and migrated.
 
 ## [Unreleased]
 
-No unreleased changes are recorded after the first public release candidate.
+No unreleased changes are recorded after `v0.1.0`.
 
 ## [0.1.0] - 2026-09-25
 
-The `v0.1.0` changelog is finalized on the Stage 12 release branch. The public tag/release is created
-only after exact-head merge, merged-main CI and exact merged-SHA Production verification.
+`v0.1.0` was published on 2026-09-25 from
+`82da1460a31300be4e43385b8c6348a0b8201575` after merged-main CI, exact merged-SHA
+Production verification, public tag verification, and source-handoff integrity checks.
 
 ### Added
 
