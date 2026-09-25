@@ -166,4 +166,68 @@ async function assertArchive(project: GoldenProject) {
   expect(decoded.ok).toBe(true);
   if (!decoded.ok) throw decoded.error;
   expect(decoded.value.snapshot).toEqual(project.snapshot);
-  ex
+  expect(decoded.value.binaries.map((binary) => binary.contentHash).sort()).toEqual(project.binaries.map((binary) => binary.contentHash).sort());
+}
+
+describe("Stage 11 export semantic golden matrix", () => {
+  it("covers the seven required golden projects and round-trips .hawya semantics", async () => {
+    const projects = await buildGoldens(new WebCryptoSha256Hasher());
+    expect(projects.map((project) => project.id)).toEqual(["latin-minimal", "arabic-minimal", "bilingual-standard", "variable-font-axis", "missing-asset-warning", "complex-svg-gradient", "legacy-schema-migration"]);
+    for (const project of projects) {
+      expect(project.snapshot.project.schemaVersion).toBe(CURRENT_PROJECT_SCHEMA_VERSION);
+      await assertArchive(project);
+    }
+  });
+
+  it("keeps locale SVG semantics stable and executable markup absent", async () => {
+    const projects = await buildGoldens(new WebCryptoSha256Hasher());
+    for (const project of projects.filter((candidate) => candidate.text)) {
+      const outliner = new GoldenOutliner();
+      const editable = new SvgExportRenderer(store(project), outliner, "editable");
+      const outlined = new SvgExportRenderer(store(project), outliner, "outlined");
+      const options = { localeMode: project.localeMode, pageIds: [SYNTHETIC_PAGE_ID] } as const;
+      const [editableArtifact] = await editable.render(project.snapshot, options, new AbortController().signal);
+      const [outlinedArtifact] = await outlined.render(project.snapshot, options, new AbortController().signal);
+      const editableSvg = new TextDecoder().decode(editableArtifact?.bytes);
+      const outlinedSvg = new TextDecoder().decode(outlinedArtifact?.bytes);
+      expect(editableSvg).toContain('viewBox="0 0 1200 675"');
+      expect(editableSvg).toContain('data-layer-id="' + project.text?.id + '"');
+      expect(editableSvg).toContain('direction="' + project.text?.direction + '"');
+      expect(editableSvg).toContain(project.text?.value);
+      expect(outlinedSvg).toContain('data-hawya-export="outlined"');
+      expect(outlinedSvg).not.toContain(project.text?.value);
+      expect(outliner.calls).toContain(project.text?.value);
+      for (const output of [editableSvg, outlinedSvg]) expect(output).not.toMatch(/<script\b|<foreignObject\b|href=["']https?:/i);
+    }
+  });
+
+  it("preserves variable weight semantics and a safe complex SVG gradient", async () => {
+    const projects = await buildGoldens(new WebCryptoSha256Hasher());
+    const variable = projects.find((project) => project.id === "variable-font-axis");
+    const gradient = projects.find((project) => project.id === "complex-svg-gradient");
+    if (!variable || !gradient) throw new Error("Stage 11 export golden fixture missing");
+    expect(variable.snapshot.project.brand.typography.fonts[0]?.variableAxes).toEqual([{ tag: "wght", min: 100, default: 400, max: 900 }]);
+    expect(variable.snapshot.project.brand.typography.styles[0]?.fontWeight).toBe(650);
+    const [variableArtifact] = await new SvgExportRenderer(store(variable), new GoldenOutliner(), "editable").render(variable.snapshot, { localeMode: "en", pageIds: [SYNTHETIC_PAGE_ID] }, new AbortController().signal);
+    expect(new TextDecoder().decode(variableArtifact?.bytes)).toContain('font-weight="650"');
+    const [gradientArtifact] = await new SvgExportRenderer(store(gradient), new GoldenOutliner(), "editable").render(gradient.snapshot, { localeMode: "en", pageIds: [SYNTHETIC_PAGE_ID] }, new AbortController().signal);
+    const gradientSvg = new TextDecoder().decode(gradientArtifact?.bytes);
+    expect(gradientSvg).toContain("data:image/svg+xml;base64," + bytesToBase64(new TextEncoder().encode(GRADIENT_SVG)));
+    expect(gradientSvg).toContain('data-layer-id="' + IDS.gradientLayer + '"');
+    expect(GRADIENT_SVG).not.toMatch(/<script\b|<foreignObject\b|https?:\/\//i);
+  });
+
+  it("blocks broken artwork export but keeps .hawya portability available", async () => {
+    const project = (await buildGoldens(new WebCryptoSha256Hasher())).find((candidate) => candidate.id === "missing-asset-warning");
+    if (!project) throw new Error("Stage 11 missing-asset golden is missing");
+    const available = new Set(project.binaries.map((binary) => binary.contentHash));
+    const audit = buildAuditReport(project.snapshot, { has: (hash) => available.has(hash) });
+    expect(audit.issues.some((issue) => issue.code === "missing-layer-asset")).toBe(true);
+    const artwork = runExportPreflight({ snapshot: project.snapshot, audit, availableBinaryHashes: available, format: "svg-editable" });
+    const backup = runExportPreflight({ snapshot: project.snapshot, audit, availableBinaryHashes: available, format: "hawya" });
+    expect(artwork.ok).toBe(false);
+    expect(artwork.issues).toEqual(expect.arrayContaining([expect.objectContaining({ code: "audit.missing-layer-asset", severity: "blocking" })]));
+    expect(backup.ok).toBe(true);
+    expect(backup.issues).toEqual(expect.arrayContaining([expect.objectContaining({ code: "audit.missing-layer-asset", severity: "warning" })]));
+  });
+});
