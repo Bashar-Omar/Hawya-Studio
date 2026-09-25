@@ -79,9 +79,7 @@ function pixelAt(px, py, size) {
   const base = BACKGROUND.map((value, index) =>
     Math.round(value * (1 - tileAlpha) + TILE[index] * tileAlpha),
   );
-  return base.map((value, index) =>
-    Math.round(value * (1 - markAlpha) + MARK[index] * markAlpha),
-  );
+  return base.map((value, index) => Math.round(value * (1 - markAlpha) + MARK[index] * markAlpha));
 }
 
 function createPng(size) {
