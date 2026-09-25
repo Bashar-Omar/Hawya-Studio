@@ -2018,3 +2018,28 @@ html[dir="rtl"] .directional-icon {
   font-size: 12px;
   line-height: 1.5;
 }
+
+.route-loading {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: var(--text-2);
+  background: var(--app-bg);
+  font-size: 14px;
+}
+
+@media (pointer: coarse) {
+  .button-sm,
+  .button-icon,
+  .toolbar-action,
+  .segmented-control__item {
+    min-height: 44px;
+  }
+
+  .button-icon,
+  .dialog-close {
+    width: 44px;
+    height: 44px;
+  }
+}

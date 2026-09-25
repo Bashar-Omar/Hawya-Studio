@@ -450,6 +450,9 @@ export const enMessages = {
   "editor.snapEnable": "Enable snapping",
   "editor.snapDisable": "Disable snapping",
   "editor.scene": "Scene",
+  "editor.canvasRegion": "Canvas workspace",
+  "editor.canvasSummary":
+    "Canvas {width} × {height} {unit}. {layers} layers; {visible} visible. Use the Layers panel for accessible object navigation.",
   "editor.layers": "Layers",
   "editor.properties": "Properties",
   "editor.inspector": "Inspector",

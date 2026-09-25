@@ -5,6 +5,7 @@ import {
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
   useEffect,
+  useId,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -129,7 +130,8 @@ function eventHasAltKey(inputEvent: unknown): boolean {
 
 export function EditorCanvas(props: EditorCanvasProps) {
   const { t } = useI18n();
-  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const canvasSummaryId = useId();
+  const viewportRef = useRef<HTMLElement | null>(null);
   const pageRef = useRef<HTMLDivElement | null>(null);
   const layerElements = useRef(new Map<SceneLayerId, HTMLElement>());
   const [moveableTarget, setMoveableTarget] = useState<HTMLElement | null>(null);
@@ -382,7 +384,7 @@ export function EditorCanvas(props: EditorCanvasProps) {
     event.currentTarget.releasePointerCapture(event.pointerId);
   };
 
-  const onViewportPointerDown = (event: ReactPointerEvent<HTMLDivElement>) => {
+  const onViewportPointerDown = (event: ReactPointerEvent<HTMLElement>) => {
     if (!(props.tool === "hand" || props.spaceDown)) return;
     const clientX = event.clientX;
     const clientY = event.clientY;
@@ -397,7 +399,7 @@ export function EditorCanvas(props: EditorCanvasProps) {
     event.preventDefault();
   };
 
-  const onViewportPointerMove = (event: ReactPointerEvent<HTMLDivElement>) => {
+  const onViewportPointerMove = (event: ReactPointerEvent<HTMLElement>) => {
     if (!panning || panning.pointerId !== event.pointerId) return;
     props.onViewport({
       ...props.viewport,
@@ -406,7 +408,7 @@ export function EditorCanvas(props: EditorCanvasProps) {
     });
   };
 
-  const onViewportPointerUp = (event: ReactPointerEvent<HTMLDivElement>) => {
+  const onViewportPointerUp = (event: ReactPointerEvent<HTMLElement>) => {
     if (!panning || panning.pointerId !== event.pointerId) return;
     setPanning(null);
     event.currentTarget.releasePointerCapture(event.pointerId);
@@ -425,9 +427,11 @@ export function EditorCanvas(props: EditorCanvasProps) {
   const selectedUnlockedIds = props.selection.filter((id) => !layerMap.get(id)?.locked);
 
   return (
-    <div
+    <section
       className={`editor-viewport ${props.tool === "hand" || props.spaceDown ? "is-panning-tool" : ""}`}
       ref={viewportRef}
+      aria-label={t("editor.canvasRegion")}
+      aria-describedby={canvasSummaryId}
       onPointerDown={onViewportPointerDown}
       onPointerMove={onViewportPointerMove}
       onPointerUp={onViewportPointerUp}
@@ -441,6 +445,15 @@ export function EditorCanvas(props: EditorCanvasProps) {
         });
       }}
     >
+      <p className="sr-only" id={canvasSummaryId}>
+        {t("editor.canvasSummary", {
+          width: props.scene.pageWidth,
+          height: props.scene.pageHeight,
+          unit: props.unit,
+          layers: props.scene.layers.length,
+          visible: props.scene.layers.filter((layer) => layer.visible).length,
+        })}
+      </p>
       <div
         className="editor-page"
         ref={pageRef}
@@ -520,6 +533,6 @@ export function EditorCanvas(props: EditorCanvasProps) {
           onRotateEnd={() => props.onCommitTransform()}
         />
       ) : null}
-    </div>
+    </section>
   );
 }

@@ -17,6 +17,8 @@ import {
   type AlignmentCommand,
   type DistributionCommand,
 } from "@/editor/geometry/geometry";
+import { editorAssetHydrationPlan } from "@/editor/model/editor-asset-hydration";
+import { layerFocusTargetAfterDeletion } from "@/editor/model/editor-focus";
 import { resolveRenderedScene } from "@/editor/scene/scene-resolver";
 import {
   parseEditorClipboardJson,
@@ -73,9 +75,11 @@ export default function EditorPage({
   const [altDown, setAltDown] = useState(false);
   const [assetUrls, setAssetUrls] = useState<Record<string, string>>({});
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [layerFocusId, setLayerFocusId] = useState<SceneLayerId | undefined>();
   const [error, setError] = useState<string | null>(null);
   const fallbackClipboard = useRef<EditorClipboardPayload | undefined>(undefined);
   const operationQueue = useRef<Promise<void>>(Promise.resolve());
+  const assetObjectUrls = useRef(new Map<string, string>());
 
   const sync = useCallback((active: EditorSession) => {
     setSnapshot(active.projectSnapshot());
@@ -126,31 +130,58 @@ export default function EditorPage({
   );
   const history = session?.historyState();
 
+  const assetHydrationPlan = useMemo(
+    () => (snapshot && scene ? editorAssetHydrationPlan(snapshot.assets, scene.layers) : []),
+    [scene, snapshot],
+  );
+
   useEffect(() => {
-    if (!snapshot) return;
     let cancelled = false;
-    const urls: string[] = [];
     const load = async () => {
-      const entries: Array<[string, string]> = [];
-      for (const asset of snapshot.assets) {
-        if (!["image", "mockup", "vector", "logo", "icon", "illustration"].includes(asset.kind))
-          continue;
-        const binary = await runtime.binaries.get(asset.previewBinaryKey ?? asset.binaryKey);
+      const desiredBinaryKeys = new Set(assetHydrationPlan.map((entry) => entry.binaryKey));
+      for (const [binaryKey, url] of assetObjectUrls.current) {
+        if (desiredBinaryKeys.has(binaryKey)) continue;
+        URL.revokeObjectURL(url);
+        assetObjectUrls.current.delete(binaryKey);
+      }
+
+      for (const entry of assetHydrationPlan) {
+        if (assetObjectUrls.current.has(entry.binaryKey)) continue;
+        const binary = await runtime.binaries.get(entry.binaryKey);
         if (!binary) continue;
         const url = URL.createObjectURL(
           new Blob([Uint8Array.from(binary.bytes)], { type: binary.mime }),
         );
-        urls.push(url);
-        entries.push([asset.id, url]);
+        if (cancelled) {
+          URL.revokeObjectURL(url);
+          return;
+        }
+        assetObjectUrls.current.set(entry.binaryKey, url);
       }
-      if (!cancelled) setAssetUrls(Object.fromEntries(entries));
+
+      if (cancelled) return;
+      setAssetUrls(
+        Object.fromEntries(
+          assetHydrationPlan.flatMap((entry) => {
+            const url = assetObjectUrls.current.get(entry.binaryKey);
+            return url ? [[entry.assetId, url] as const] : [];
+          }),
+        ),
+      );
     };
     void load();
     return () => {
       cancelled = true;
-      for (const url of urls) URL.revokeObjectURL(url);
     };
-  }, [runtime, snapshot]);
+  }, [assetHydrationPlan, runtime]);
+
+  useEffect(
+    () => () => {
+      for (const url of assetObjectUrls.current.values()) URL.revokeObjectURL(url);
+      assetObjectUrls.current.clear();
+    },
+    [],
+  );
 
   const run = useCallback(
     (operation: (active: EditorSession) => Promise<unknown>): Promise<void> => {
@@ -256,11 +287,19 @@ export default function EditorPage({
   const deleteSelected = useCallback(() => {
     const ids = unlockedSelected.map((layer) => layer.id);
     if (!ids.length) return;
+    const deletedIds = new Set(ids);
+    const focusTarget = layerFocusTargetAfterDeletion(scene?.layers ?? [], deletedIds, primaryId);
     void run(async (active) => {
       await active.delete(ids);
-      setSelectionState([], undefined);
+      if (focusTarget) {
+        setSelectionState([focusTarget], focusTarget);
+        setLayerFocusId(focusTarget);
+      } else {
+        setSelectionState([], undefined);
+        setLayerFocusId(undefined);
+      }
     });
-  }, [run, setSelectionState, unlockedSelected]);
+  }, [primaryId, run, scene?.layers, setSelectionState, unlockedSelected]);
 
   const group = useCallback(() => {
     const ids = unlockedSelected
@@ -551,6 +590,8 @@ export default function EditorPage({
             }}
             onVisible={(id, visible) => void run((active) => active.setVisible(id, visible))}
             onLocked={(id, locked) => void run((active) => active.setLocked(id, locked))}
+            {...(layerFocusId ? { focusLayerId: layerFocusId } : {})}
+            onFocusSettled={() => setLayerFocusId(undefined)}
           />
 
           <main className="editor-canvas-column">

@@ -36,8 +36,10 @@ jobs:
       - name: Check
         run: pnpm check
 
-      - name: Build
-        run: pnpm build
+      - name: Build and enforce performance budgets
+        run: |
+          pnpm build
+          pnpm check:performance
 
   smoke:
     name: Chromium smoke

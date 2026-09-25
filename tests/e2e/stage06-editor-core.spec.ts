@@ -81,6 +81,8 @@ test("EN editor transforms one command, undo/redo persists after reload, and dra
   const runtimeIssues = captureRuntimeIssues(page);
   await createProject(page, "en");
   await generateMinimalGuideAndOpenEditor(page);
+  const canvasRegion = page.getByRole("region", { name: "Canvas workspace" });
+  await expect(canvasRegion).toHaveAccessibleDescription(/layers; .* visible/);
 
   await page.getByRole("button", { name: "Add rectangle (R)" }).click();
   const shape = page.locator(".editor-scene-layer--shape").last();
@@ -176,6 +178,9 @@ test("Arabic editor keeps physical canvas coordinates across UI RTL and persists
 
   await page.getByRole("button", { name: "Interface language" }).click();
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+  await expect(
+    page.getByRole("region", { name: "مساحة لوحة التصميم" }),
+  ).toHaveAccessibleDescription(/الطبقات/);
   await expectLeftNear(textLayer, leftBeforeUiRtl);
 
   await textLayer.dblclick();
@@ -202,5 +207,29 @@ test("Arabic editor keeps physical canvas coordinates across UI RTL and persists
   await expect(persisted).toHaveAttribute("dir", "rtl");
   await expect(persisted).toContainText("هوية عربية جديدة");
   await expectLeftNear(persisted, afterMove);
+  expect(runtimeIssues).toEqual([]);
+});
+
+test("Stage 10 layer deletion restores focus to an adjacent layer", async ({ page }) => {
+  const runtimeIssues = captureRuntimeIssues(page);
+  await createProject(page, "en");
+  await generateMinimalGuideAndOpenEditor(page);
+
+  await page.getByRole("button", { name: "Add rectangle (R)" }).click();
+  await page.getByRole("button", { name: "Add rectangle (R)" }).click();
+
+  const shapeRows = page.locator(".editor-layer-row").filter({ hasText: "extra · shape" });
+  await expect(shapeRows).toHaveCount(2);
+  const focusedName = shapeRows.first().locator(".editor-layer-row__name");
+  await focusedName.click();
+  await expect(focusedName).toBeFocused();
+
+  await page.keyboard.press("Delete");
+
+  const remainingRows = page.locator(".editor-layer-row").filter({ hasText: "extra · shape" });
+  await expect(remainingRows).toHaveCount(1);
+  const remainingName = remainingRows.first().locator(".editor-layer-row__name");
+  await expect(remainingName).toBeFocused();
+  await expect(remainingName).toHaveAttribute("aria-pressed", "true");
   expect(runtimeIssues).toEqual([]);
 });
