@@ -1,9 +1,10 @@
 import { createHash } from "node:crypto";
-import { readdir, writeFile } from "node:fs/promises";
+import { readFile, readdir, writeFile } from "node:fs/promises";
 import { extname, relative, resolve, sep } from "node:path";
 
 const DIST_DIR = resolve("dist");
 const SERVICE_WORKER_PATH = resolve(DIST_DIR, "sw.js");
+const MANIFEST_PATH = resolve(DIST_DIR, "manifest.webmanifest");
 const PRECACHE_EXTENSIONS = new Set([
   ".css",
   ".js",
@@ -18,6 +19,20 @@ const PRECACHE_EXTENSIONS = new Set([
   ".otf",
 ]);
 
+function normalizeBasePath(value) {
+  const trimmed = value.trim();
+  if (!trimmed || trimmed === "/") return "/";
+  if (!trimmed.startsWith("/")) {
+    throw new Error(`PWA base path must start with "/": ${value}`);
+  }
+  if (trimmed.includes("..") || trimmed.includes("#") || trimmed.includes("?")) {
+    throw new Error(`PWA base path is not safe: ${value}`);
+  }
+  return `${trimmed.replace(/\/+$/, "")}/`;
+}
+
+const basePath = normalizeBasePath(process.argv[2] ?? "/");
+
 async function walk(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
   const files = [];
@@ -29,20 +44,37 @@ async function walk(directory) {
   return files;
 }
 
-function webPath(absolutePath) {
-  return `/${relative(DIST_DIR, absolutePath).split(sep).join("/")}`;
+function withBase(pathname) {
+  const relativePath = pathname.replace(/^\/+/, "");
+  return basePath === "/" ? `/${relativePath}` : `${basePath}${relativePath}`;
 }
+
+function webPath(absolutePath) {
+  return withBase(relative(DIST_DIR, absolutePath).split(sep).join("/"));
+}
+
+const manifest = JSON.parse(await readFile(MANIFEST_PATH, "utf8"));
+manifest.start_url = basePath;
+manifest.scope = basePath;
+manifest.icons = (manifest.icons ?? []).map((icon) => ({
+  ...icon,
+  src: withBase(icon.src ?? ""),
+}));
+await writeFile(MANIFEST_PATH, `${JSON.stringify(manifest, null, 2)}\n`, "utf8");
 
 const buildFiles = (await walk(DIST_DIR))
   .filter((path) => PRECACHE_EXTENSIONS.has(extname(path).toLowerCase()))
   .map(webPath);
-const shellAssets = ["/", "/index.html", "/manifest.webmanifest", ...buildFiles]
+const indexPath = withBase("index.html");
+const shellAssets = [basePath, indexPath, withBase("manifest.webmanifest"), ...buildFiles]
   .filter((value, index, values) => values.indexOf(value) === index)
   .sort();
 const version = createHash("sha256").update(shellAssets.join("\n")).digest("hex").slice(0, 16);
 
 const source = `const CACHE_PREFIX = "hawya-shell-";
 const CACHE_NAME = CACHE_PREFIX + ${JSON.stringify(version)};
+const BASE_PATH = ${JSON.stringify(basePath)};
+const INDEX_PATH = ${JSON.stringify(indexPath)};
 const APP_SHELL = ${JSON.stringify(shellAssets)};
 const APP_SHELL_PATHS = new Set(APP_SHELL);
 
@@ -70,19 +102,25 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
 
   const url = new URL(request.url);
-  if (url.origin !== self.location.origin) return;
+  if (url.origin !== self.location.origin || !url.pathname.startsWith(BASE_PATH)) return;
 
   if (request.mode === "navigate") {
-    event.respondWith(caches\n      .match("/index.html", { ignoreSearch: true, ignoreVary: true })\n      .then((cached) => cached ?? fetch(request)));
+    event.respondWith(caches
+      .match(INDEX_PATH, { ignoreSearch: true, ignoreVary: true })
+      .then((cached) => cached ?? fetch(request)));
     return;
   }
 
   if (!APP_SHELL_PATHS.has(url.pathname)) return;
   event.respondWith(
-    caches\n      .match(request, { ignoreSearch: true, ignoreVary: true })\n      .then((cached) => cached ?? fetch(request)),
+    caches
+      .match(request, { ignoreSearch: true, ignoreVary: true })
+      .then((cached) => cached ?? fetch(request)),
   );
 });
 `;
 
 await writeFile(SERVICE_WORKER_PATH, source, "utf8");
-console.log(`Generated ${webPath(SERVICE_WORKER_PATH)} with ${shellAssets.length} offline assets.`);
+console.log(
+  `Generated ${webPath(SERVICE_WORKER_PATH)} with ${shellAssets.length} offline assets for base ${basePath}.`,
+);

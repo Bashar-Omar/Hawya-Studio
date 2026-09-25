@@ -41,6 +41,8 @@ jobs:
           pnpm build
           pnpm check:performance
           pnpm check:security-policy
+          pnpm check:release-docs
+          pnpm check:app-icons
 
   dependency-security:
     name: Dependency security
@@ -134,3 +136,137 @@ jobs:
 
       - name: Run Stage 11 compatibility suite
         run: pnpm test:compatibility --project=${{ matrix.browser }}
+
+  static-fallback:
+    name: Static fallback
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@v2.1.0
+        with:
+          version: 12.4.2
+          runtime: node@24.21.0
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build and inspect repository-path fallback
+        run: |
+          pnpm build:static-fallback
+          pnpm check:static-fallback
+
+      - name: Run fallback browser acceptance
+        run: pnpm test:static-fallback
+
+  release-evidence:
+    name: Stage 12 release evidence
+    if: github.event_name == 'pull_request' && github.head_ref == 'stage-12-deploy-public-release'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact release head
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@v2.1.0
+        with:
+          version: 12.4.2
+          runtime: node@24.21.0
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build exact release head
+        run: pnpm build
+
+      - name: Upload exact production build
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage12-production-build-${{ github.event.pull_request.head.sha }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Capture release evidence
+        env:
+          HAWYA_RELEASE_SHA: ${{ github.event.pull_request.head.sha }}
+        run: pnpm test:release-evidence
+
+      - name: Upload release evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage12-release-evidence-${{ github.event.pull_request.head.sha }}
+          path: release-evidence/
+          if-no-files-found: error
+          retention-days: 30
+
+  production-smoke:
+    name: Stage 12 production smoke
+    if: github.event_name == 'pull_request' && github.head_ref == 'stage-12-deploy-public-release'
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact release head
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@v2.1.0
+        with:
+          version: 12.4.2
+          runtime: node@24.21.0
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build exact release head
+        run: pnpm build
+
+      - name: Verify live shell matches release build
+        env:
+          HAWYA_PRODUCTION_URL: https://hawya-studio.vercel.app
+        run: |
+          curl --fail --silent --show-error "$HAWYA_PRODUCTION_URL/" --output /tmp/production-index.html
+          curl --fail --silent --show-error "$HAWYA_PRODUCTION_URL/manifest.webmanifest" --output /tmp/production-manifest.webmanifest
+          curl --fail --silent --show-error "$HAWYA_PRODUCTION_URL/sw.js" --output /tmp/production-sw.js
+          cmp dist/index.html /tmp/production-index.html
+          cmp dist/manifest.webmanifest /tmp/production-manifest.webmanifest
+          cmp dist/sw.js /tmp/production-sw.js
+
+      - name: Run anonymous production journey
+        env:
+          HAWYA_PRODUCTION_URL: https://hawya-studio.vercel.app
+        run: pnpm exec playwright test --config=playwright.production.config.ts
+
+      - name: Upload production smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage12-production-smoke-${{ github.event.pull_request.head.sha }}
+          path: production-smoke-evidence/
+          if-no-files-found: error
+          retention-days: 30

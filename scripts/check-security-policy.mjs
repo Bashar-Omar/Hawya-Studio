@@ -45,6 +45,13 @@ if (vercel.git?.deploymentEnabled !== false) {
   throw new Error("Vercel Git deployments must remain disabled during staged QA.");
 }
 
+const spaRewrite = vercel.rewrites?.find(
+  (rule) => rule.source === "/(.*)" && rule.destination === "/index.html",
+);
+if (!spaRewrite) {
+  throw new Error("Vercel Vite production must preserve SPA deep links with /(.*) -> /index.html.");
+}
+
 const requiredSecurityHeaders = new Map([
   ["X-Content-Type-Options", "nosniff"],
   ["Referrer-Policy", "no-referrer"],

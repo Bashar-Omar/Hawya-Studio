@@ -32,3 +32,7 @@ Thumbs.db
 
 # TypeScript build metadata
 *.tsbuildinfo
+
+# Generated reproducible PWA icons
+public/icons/hawya-192.png
+public/icons/hawya-512.png
