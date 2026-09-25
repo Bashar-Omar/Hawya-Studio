@@ -126,9 +126,11 @@ describe("Stage 11 emergency backup recovery", () => {
       session.updateText(emergencyLayer.id, "Unsaved emergency text v2"),
     ).rejects.toBeInstanceOf(StorageError);
     expect(
-      session.projectSnapshot().project.guide.pages[SYNTHETIC_PAGE_ID]?.extras.some(
-        (layer) => layer.type === "text" && layer.content === "Unsaved emergency text v2",
-      ),
+      session
+        .projectSnapshot()
+        .project.guide.pages[SYNTHETIC_PAGE_ID]?.extras.some(
+          (layer) => layer.type === "text" && layer.content === "Unsaved emergency text v2",
+        ),
     ).toBe(true);
     expect(repository.durable.project.guide.pages[SYNTHETIC_PAGE_ID]?.extras).toHaveLength(0);
 

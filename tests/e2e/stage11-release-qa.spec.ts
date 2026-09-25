@@ -46,7 +46,6 @@ test("Stage 11 production CSP fallback boots the local-first application without
   expect(pageErrors).toEqual([]);
 });
 
-
 test("Stage 11 exports the latest in-memory project after a simulated IndexedDB write failure", async ({
   page,
 }) => {
@@ -116,9 +115,9 @@ test("Stage 11 exports the latest in-memory project after a simulated IndexedDB 
   const archivedLayers = Object.values(archived.project?.guide?.pages ?? {}).flatMap(
     (entry) => entry.extras ?? [],
   );
-  expect(
-    archivedLayers.some((layer) => layer.type === "text" && layer.content === "نص عربي"),
-  ).toBe(true);
+  expect(archivedLayers.some((layer) => layer.type === "text" && layer.content === "نص عربي")).toBe(
+    true,
+  );
 
   await page.evaluate(() => {
     (

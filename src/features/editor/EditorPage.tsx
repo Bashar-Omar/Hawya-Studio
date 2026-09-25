@@ -240,15 +240,11 @@ export default function EditorPage({
         result.value,
         projectArchiveFilename(`${current.project.metadata.name}-emergency`),
       );
-      setStorageFailure((failure) =>
-        failure ? { ...failure, actionError: undefined } : failure,
-      );
+      setStorageFailure((failure) => (failure ? { ...failure, actionError: undefined } : failure));
       announce(t("editor.storageFailure.exported"));
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : t("common.unknownError");
-      setStorageFailure((failure) =>
-        failure ? { ...failure, actionError: message } : failure,
-      );
+      setStorageFailure((failure) => (failure ? { ...failure, actionError: message } : failure));
     } finally {
       setRecoveryBusy(null);
     }
@@ -283,9 +279,7 @@ export default function EditorPage({
       );
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : t("common.unknownError");
-      setStorageFailure((failure) =>
-        failure ? { ...failure, actionError: message } : failure,
-      );
+      setStorageFailure((failure) => (failure ? { ...failure, actionError: message } : failure));
     } finally {
       setRecoveryBusy(null);
     }
