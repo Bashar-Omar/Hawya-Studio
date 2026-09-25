@@ -22,9 +22,12 @@ for (const file of requiredFiles) {
 }
 
 const packageJson = JSON.parse(await readFile(resolve(root, "package.json"), "utf8"));
-if (packageJson.license !== "MIT") throw new Error(`Expected package license MIT, got ${packageJson.license}`);
+if (packageJson.license !== "MIT")
+  throw new Error(`Expected package license MIT, got ${packageJson.license}`);
 if (packageJson.version !== "0.1.0") {
-  throw new Error(`Stage 12 release-doc gate expects package version 0.1.0, got ${packageJson.version}`);
+  throw new Error(
+    `Stage 12 release-doc gate expects package version 0.1.0, got ${packageJson.version}`,
+  );
 }
 if (packageJson.repository?.url !== "https://github.com/Bashar-Omar/Hawya-Studio.git") {
   throw new Error("package.json repository URL does not point at the canonical public repository");
@@ -33,13 +36,16 @@ if (packageJson.repository?.url !== "https://github.com/Bashar-Omar/Hawya-Studio
 const notices = await readFile(resolve(root, "docs/licenses/THIRD-PARTY-NOTICES.md"), "utf8");
 for (const dependency of Object.keys(packageJson.dependencies ?? {})) {
   if (!notices.includes(`\`${dependency}\``)) {
-    throw new Error(`Direct production dependency is missing from third-party notices: ${dependency}`);
+    throw new Error(
+      `Direct production dependency is missing from third-party notices: ${dependency}`,
+    );
   }
 }
 
 const deployment = await readFile(resolve(root, "docs/release/DEPLOYMENT.md"), "utf8");
 for (const statement of ["Required environment secrets: **none**", "pnpm build", "dist/"]) {
-  if (!deployment.includes(statement)) throw new Error(`Deployment documentation is missing: ${statement}`);
+  if (!deployment.includes(statement))
+    throw new Error(`Deployment documentation is missing: ${statement}`);
 }
 
 console.log(
