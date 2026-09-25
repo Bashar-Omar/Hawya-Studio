@@ -1,4 +1,4 @@
-import { ArrowLeft, Save, SlidersHorizontal } from "lucide-react";
+import { ArrowLeft, CircleAlert, Save, SlidersHorizontal } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import type { EditorSession } from "@/application/editor/editor-session";
@@ -7,6 +7,7 @@ import { useStudioRuntime } from "@/app/providers/studio-runtime";
 import { projectPath } from "@/app/routes/route-config";
 import { useRouter } from "@/app/routes/RouterProvider";
 import { AppShell } from "@/components/app/AppShell";
+import { useAnnounce } from "@/components/app/LiveRegion";
 import { Button } from "@/components/ui/button";
 import type { PageId } from "@/domain/guide/guide-document";
 import type { ProjectId, ProjectSnapshot } from "@/domain/project/hawya-project";
@@ -36,7 +37,13 @@ import { EditorCanvas } from "@/features/editor/EditorCanvas";
 import { EditorInspector } from "@/features/editor/EditorInspector";
 import { EditorLayerTree } from "@/features/editor/EditorLayerTree";
 import { EditorToolbar } from "@/features/editor/EditorToolbar";
+import {
+  EditorStorageRecovery,
+  type EditorRecoveryAction,
+  type EditorStorageFailureState,
+} from "@/features/editor/EditorStorageRecovery";
 import { ShortcutsDialog } from "@/features/editor/ShortcutsDialog";
+import { projectArchiveFilename } from "@/infrastructure/file-system/browser-project-files";
 import "@/features/editor/editor.css";
 
 const CLIPBOARD_MIME = "application/x-hawya-layer+json";
@@ -63,6 +70,7 @@ export default function EditorPage({
   const runtime = useStudioRuntime();
   const { navigate } = useRouter();
   const { t } = useI18n();
+  const announce = useAnnounce();
   const [session, setSession] = useState<EditorSession | null>(null);
   const [snapshot, setSnapshot] = useState<ProjectSnapshot | null>(null);
   const [tool, setTool] = useState<EditorTool>("select");
@@ -77,6 +85,8 @@ export default function EditorPage({
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [layerFocusId, setLayerFocusId] = useState<SceneLayerId | undefined>();
   const [error, setError] = useState<string | null>(null);
+  const [storageFailure, setStorageFailure] = useState<EditorStorageFailureState | null>(null);
+  const [recoveryBusy, setRecoveryBusy] = useState<EditorRecoveryAction | null>(null);
   const fallbackClipboard = useRef<EditorClipboardPayload | undefined>(undefined);
   const operationQueue = useRef<Promise<void>>(Promise.resolve());
   const assetObjectUrls = useRef(new Map<string, string>());
@@ -192,16 +202,94 @@ export default function EditorPage({
         .then(async () => {
           await operation(session);
           sync(session);
+          if (!session.hasPendingPersistence()) setStorageFailure(null);
         })
         .catch((cause: unknown) => {
-          setError(cause instanceof Error ? cause.message : t("common.unknownError"));
+          sync(session);
+          const message = cause instanceof Error ? cause.message : t("common.unknownError");
+          if (session.hasPendingPersistence()) {
+            setStorageFailure((current) => ({
+              message,
+              ...(current?.diagnostics ? { diagnostics: current.diagnostics } : {}),
+            }));
+            announce(t("editor.storageFailure.announcement"));
+            return;
+          }
+          setError(message);
         });
 
       operationQueue.current = task;
       return task;
     },
-    [session, sync, t],
+    [announce, session, sync, t],
   );
+
+  const exportEmergencyBackup = useCallback(async () => {
+    if (!session) return;
+    setRecoveryBusy("export");
+    try {
+      const current = session.projectSnapshot();
+      const result = await runtime.exportProjectSnapshotArchive.execute(current);
+      if (!result.ok) {
+        setStorageFailure((failure) =>
+          failure ? { ...failure, actionError: result.error.message } : failure,
+        );
+        return;
+      }
+      runtime.projectFiles.download(
+        result.value,
+        projectArchiveFilename(`${current.project.metadata.name}-emergency`),
+      );
+      setStorageFailure((failure) =>
+        failure ? { ...failure, actionError: undefined } : failure,
+      );
+      announce(t("editor.storageFailure.exported"));
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : t("common.unknownError");
+      setStorageFailure((failure) =>
+        failure ? { ...failure, actionError: message } : failure,
+      );
+    } finally {
+      setRecoveryBusy(null);
+    }
+  }, [announce, runtime, session, t]);
+
+  const retryStorageSave = useCallback(async () => {
+    if (!session) return;
+    setRecoveryBusy("retry");
+    try {
+      await session.retryPersistence();
+      sync(session);
+      setStorageFailure(null);
+      announce(t("editor.storageFailure.saved"));
+    } catch (cause) {
+      sync(session);
+      const message = cause instanceof Error ? cause.message : t("common.unknownError");
+      setStorageFailure((failure) =>
+        failure ? { ...failure, message, actionError: message } : { message, actionError: message },
+      );
+      announce(t("editor.storageFailure.announcement"));
+    } finally {
+      setRecoveryBusy(null);
+    }
+  }, [announce, session, sync, t]);
+
+  const showStorageDiagnostics = useCallback(async () => {
+    setRecoveryBusy("diagnostics");
+    try {
+      const diagnostics = await runtime.storageManager.diagnostics();
+      setStorageFailure((failure) =>
+        failure ? { ...failure, diagnostics, actionError: undefined } : failure,
+      );
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : t("common.unknownError");
+      setStorageFailure((failure) =>
+        failure ? { ...failure, actionError: message } : failure,
+      );
+    } finally {
+      setRecoveryBusy(null);
+    }
+  }, [runtime, t]);
 
   const setSelectionState = useCallback((ids: SceneLayerId[], primary?: SceneLayerId) => {
     setSelection(ids);
@@ -536,8 +624,17 @@ export default function EditorPage({
             </div>
           </div>
           <div className="editor-topbar__status">
-            <span className="editor-save-state">
-              <Save aria-hidden="true" size={14} /> {t("editor.autosave")}
+            <span
+              className={
+                storageFailure ? "editor-save-state editor-save-state--failed" : "editor-save-state"
+              }
+            >
+              {storageFailure ? (
+                <CircleAlert aria-hidden="true" size={14} />
+              ) : (
+                <Save aria-hidden="true" size={14} />
+              )}{" "}
+              {storageFailure ? t("editor.storageFailure.status") : t("editor.autosave")}
             </span>
             <span>
               <SlidersHorizontal aria-hidden="true" size={14} />{" "}
@@ -595,7 +692,16 @@ export default function EditorPage({
           />
 
           <main className="editor-canvas-column">
-            {error ? (
+            {storageFailure ? (
+              <EditorStorageRecovery
+                failure={storageFailure}
+                busy={recoveryBusy}
+                onExport={() => void exportEmergencyBackup()}
+                onRetry={() => void retryStorageSave()}
+                onDiagnostics={() => void showStorageDiagnostics()}
+              />
+            ) : null}
+            {error && !storageFailure ? (
               <p className="editor-error" role="alert">
                 {error}
               </p>

@@ -118,6 +118,20 @@ describe("Stage 11 emergency backup recovery", () => {
     ).toBe(true);
     expect(durablePage?.extras).toHaveLength(0);
 
+    const emergencyLayer = volatilePage?.extras.find(
+      (layer) => layer.type === "text" && layer.content === "Unsaved emergency text",
+    );
+    if (!emergencyLayer) throw new Error("Emergency text layer was not preserved in memory");
+    await expect(
+      session.updateText(emergencyLayer.id, "Unsaved emergency text v2"),
+    ).rejects.toBeInstanceOf(StorageError);
+    expect(
+      session.projectSnapshot().project.guide.pages[SYNTHETIC_PAGE_ID]?.extras.some(
+        (layer) => layer.type === "text" && layer.content === "Unsaved emergency text v2",
+      ),
+    ).toBe(true);
+    expect(repository.durable.project.guide.pages[SYNTHETIC_PAGE_ID]?.extras).toHaveLength(0);
+
     const binaries = new MemoryBinaryStore(
       fixture.binaries.map((binary) => ({
         ...binary,
@@ -137,7 +151,7 @@ describe("Stage 11 emergency backup recovery", () => {
     const archivedPage = archived.project.guide.pages[SYNTHETIC_PAGE_ID];
     expect(
       archivedPage?.extras.some(
-        (layer) => layer.type === "text" && layer.content === "Unsaved emergency text",
+        (layer) => layer.type === "text" && layer.content === "Unsaved emergency text v2",
       ),
     ).toBe(true);
 

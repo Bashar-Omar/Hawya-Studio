@@ -1,4 +1,7 @@
+import { readFile } from "node:fs/promises";
+
 import { expect, test, type Locator, type Page } from "@playwright/test";
+import { strFromU8, unzipSync } from "fflate";
 
 async function createArabicProjectAndOpenEditor(page: Page): Promise<void> {
   await page.goto("/studio/new");
@@ -41,6 +44,92 @@ test("Stage 11 production CSP fallback boots the local-first application without
   expect(policy).not.toContain("*");
   await expect(page.getByRole("button", { name: "Create project" }).first()).toBeVisible();
   expect(pageErrors).toEqual([]);
+});
+
+
+test("Stage 11 exports the latest in-memory project after a simulated IndexedDB write failure", async ({
+  page,
+}) => {
+  await createArabicProjectAndOpenEditor(page);
+
+  await page.evaluate(() => {
+    const originalPut = IDBObjectStore.prototype.put;
+    let blockWrites = true;
+    const scopedWindow = window as typeof window & {
+      __hawyaStage11AllowStorageWrites?: () => void;
+    };
+    scopedWindow.__hawyaStage11AllowStorageWrites = () => {
+      blockWrites = false;
+    };
+
+    Object.defineProperty(IDBObjectStore.prototype, "put", {
+      configurable: true,
+      writable: true,
+      value: function (this: IDBObjectStore, value: unknown, key?: IDBValidKey) {
+        if (
+          blockWrites &&
+          ["projects", "brandSystems", "pages", "projectAssets"].includes(this.name)
+        ) {
+          throw new DOMException("Stage 11 simulated quota failure", "QuotaExceededError");
+        }
+        return key === undefined
+          ? originalPut.call(this, value)
+          : originalPut.call(this, value, key);
+      },
+    });
+  });
+
+  await page.getByRole("button", { name: "Add text (T)" }).click();
+
+  const recovery = page.locator(".editor-storage-failure");
+  await expect(recovery).toBeVisible();
+  await expect(recovery).toContainText("Your latest work is still present");
+  await expect(page.locator(".editor-save-state--failed")).toContainText("Save failed");
+
+  const createdTextLayer = page.locator(".editor-scene-layer--text").last();
+  await expect(createdTextLayer).toContainText("نص عربي");
+  const textLayerId = await createdTextLayer.getAttribute("data-layer-id");
+  expect(textLayerId).not.toBeNull();
+  if (!textLayerId) return;
+
+  await recovery.getByRole("button", { name: "Storage diagnostics" }).click();
+  await expect(recovery.locator(".editor-storage-failure__diagnostics")).toBeVisible();
+
+  const [download] = await Promise.all([
+    page.waitForEvent("download", { timeout: 15_000 }),
+    recovery.getByRole("button", { name: "Export .hawya backup" }).click(),
+  ]);
+  expect(download.suggestedFilename()).toMatch(/emergency\.hawya$/);
+
+  const downloadPath = await download.path();
+  if (!downloadPath) throw new Error("Emergency backup download path is unavailable");
+  const entries = unzipSync(new Uint8Array(await readFile(downloadPath)));
+  const projectBytes = entries["project.json"];
+  if (!projectBytes) throw new Error("Emergency backup is missing project.json");
+  const archived = JSON.parse(strFromU8(projectBytes)) as {
+    project?: {
+      guide?: {
+        pages?: Record<string, { extras?: Array<{ type?: string; content?: unknown }> }>;
+      };
+    };
+  };
+  const archivedLayers = Object.values(archived.project?.guide?.pages ?? {}).flatMap(
+    (entry) => entry.extras ?? [],
+  );
+  expect(
+    archivedLayers.some((layer) => layer.type === "text" && layer.content === "نص عربي"),
+  ).toBe(true);
+
+  await page.evaluate(() => {
+    (
+      window as typeof window & { __hawyaStage11AllowStorageWrites?: () => void }
+    ).__hawyaStage11AllowStorageWrites?.();
+  });
+  await recovery.getByRole("button", { name: "Retry save" }).click();
+  await expect(recovery).toHaveCount(0);
+
+  await page.reload();
+  await expect(page.locator(`[data-layer-id="${textLayerId}"]`)).toContainText("نص عربي");
 });
 
 test("Stage 11 preserves mixed bidi stress text and physical canvas coordinates across UI RTL", async ({

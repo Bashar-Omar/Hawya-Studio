@@ -279,11 +279,9 @@ export class EditorSession {
   }
 
   async setSnapEnabled(enabled: boolean): Promise<void> {
-    let base = this.snapshot;
+    let base: ProjectSnapshot;
     try {
-      const latest = await this.projects.get(this.projectId);
-      if (!latest) throw new Error(`Project ${this.projectId} no longer exists`);
-      base = latest;
+      base = await this.persistenceBase();
     } catch (error) {
       const next = projectSnapshotSchema.parse({
         ...this.snapshot,
@@ -351,11 +349,9 @@ export class EditorSession {
   }
 
   private async persist(page: GuidePage): Promise<void> {
-    let base = this.snapshot;
+    let base: ProjectSnapshot;
     try {
-      const latest = await this.projects.get(this.projectId);
-      if (!latest) throw new Error(`Project ${this.projectId} no longer exists`);
-      base = latest;
+      base = await this.persistenceBase();
     } catch (error) {
       const next = this.snapshotWithPage(this.snapshot, page);
       this.snapshot = next;
@@ -368,6 +364,13 @@ export class EditorSession {
     this.pendingPersistence = next;
     await this.projects.save(next);
     this.pendingPersistence = undefined;
+  }
+
+  private async persistenceBase(): Promise<ProjectSnapshot> {
+    if (this.pendingPersistence) return this.pendingPersistence;
+    const latest = await this.projects.get(this.projectId);
+    if (!latest) throw new Error(`Project ${this.projectId} no longer exists`);
+    return latest;
   }
 
   private snapshotWithPage(base: ProjectSnapshot, page: GuidePage): ProjectSnapshot {
