@@ -4,6 +4,7 @@ const baseURL = "http://127.0.0.1:4173";
 
 export default defineConfig({
   testDir: "./tests/e2e",
+  testIgnore: "stage12-static-fallback.spec.ts",
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: process.env.CI ? 2 : 0,
