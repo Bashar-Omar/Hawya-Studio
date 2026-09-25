@@ -22,8 +22,12 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:browser": "playwright test --project=chromium",
+    "test:release-browsers": "playwright test --project=chromium --project=firefox --project=webkit",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
-    "check:performance": "node scripts/check-performance-budgets.mjs"
+    "check:performance": "node scripts/check-performance-budgets.mjs",
+    "check:security-policy": "node scripts/check-security-policy.mjs",
+    "check:security": "pnpm audit --prod --audit-level high",
+    "inventory:licenses": "pnpm licenses list --prod --json"
   },
   "dependencies": {
     "@base-ui/react": "1.8.0",
