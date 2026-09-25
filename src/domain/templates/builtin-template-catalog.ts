@@ -57,9 +57,7 @@ function kindForRole(role: string): TemplateSlot["contentKinds"][number] {
   return "text";
 }
 
-function bilingualProductionChecklistRects(
-  family: TemplateFamilyId,
-): Array<TemplateSlot["rect"]> {
+function bilingualProductionChecklistRects(family: TemplateFamilyId): Array<TemplateSlot["rect"]> {
   if (family === "editorial") {
     return [
       { x: 8, y: 10, width: 48, height: 24 },

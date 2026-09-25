@@ -230,14 +230,17 @@ test("Stage 08 print view becomes resource-ready without application chrome", as
     timeout: 10_000,
   });
   await expect(page.locator(".hawya-print-sheet")).not.toHaveCount(0);
-  const overflowingTextLayers = await page.locator(".hawya-print-layer--text").evaluateAll((layers) =>
-    layers
-      .filter(
-        (layer) =>
-          layer.scrollHeight > layer.clientHeight + 1 || layer.scrollWidth > layer.clientWidth + 1,
-      )
-      .map((layer) => layer.getAttribute("data-layer-id")),
-  );
+  const overflowingTextLayers = await page
+    .locator(".hawya-print-layer--text")
+    .evaluateAll((layers) =>
+      layers
+        .filter(
+          (layer) =>
+            layer.scrollHeight > layer.clientHeight + 1 ||
+            layer.scrollWidth > layer.clientWidth + 1,
+        )
+        .map((layer) => layer.getAttribute("data-layer-id")),
+    );
   expect(overflowingTextLayers).toEqual([]);
   await expect(page.locator(".app-shell")).toHaveCount(0);
   await expect(page.getByRole("button", { name: "Print / Save as PDF" })).toBeEnabled();
