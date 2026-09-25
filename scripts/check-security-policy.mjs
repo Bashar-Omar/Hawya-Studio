@@ -26,7 +26,12 @@ const cspHeader = globalHeaders.find((header) => header.key === "Content-Securit
 if (!cspHeader) throw new Error("Production Content-Security-Policy header is missing.");
 
 for (const directive of requiredHeaderDirectives) {
-  if (!cspHeader.split(";").map((value) => value.trim()).includes(directive)) {
+  if (
+    !cspHeader
+      .split(";")
+      .map((value) => value.trim())
+      .includes(directive)
+  ) {
     throw new Error(`Production CSP is missing directive: ${directive}`);
   }
 }
@@ -57,7 +62,12 @@ const metaDirectives = cspHeader
   .map((value) => value.trim())
   .filter((value) => value && !value.startsWith("frame-ancestors"));
 for (const directive of metaDirectives) {
-  if (!meta.split(";").map((value) => value.trim()).includes(directive)) {
+  if (
+    !meta
+      .split(";")
+      .map((value) => value.trim())
+      .includes(directive)
+  ) {
     throw new Error(`CSP meta fallback is missing directive: ${directive}`);
   }
 }
