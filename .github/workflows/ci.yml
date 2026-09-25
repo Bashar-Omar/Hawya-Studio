@@ -216,3 +216,57 @@ jobs:
           path: release-evidence/
           if-no-files-found: error
           retention-days: 30
+
+  production-smoke:
+    name: Stage 12 production smoke
+    if: github.event_name == 'pull_request' && github.head_ref == 'stage-12-deploy-public-release'
+    needs: quality
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact release head
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@v2.1.0
+        with:
+          version: 12.4.2
+          runtime: node@24.21.0
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build exact release head
+        run: pnpm build
+
+      - name: Verify live shell matches release build
+        env:
+          HAWYA_PRODUCTION_URL: https://hawya-studio.vercel.app
+        run: |
+          curl --fail --silent --show-error "$HAWYA_PRODUCTION_URL/" --output /tmp/production-index.html
+          curl --fail --silent --show-error "$HAWYA_PRODUCTION_URL/manifest.webmanifest" --output /tmp/production-manifest.webmanifest
+          curl --fail --silent --show-error "$HAWYA_PRODUCTION_URL/sw.js" --output /tmp/production-sw.js
+          cmp dist/index.html /tmp/production-index.html
+          cmp dist/manifest.webmanifest /tmp/production-manifest.webmanifest
+          cmp dist/sw.js /tmp/production-sw.js
+
+      - name: Run anonymous production journey
+        env:
+          HAWYA_PRODUCTION_URL: https://hawya-studio.vercel.app
+        run: pnpm exec playwright test --config=playwright.production.config.ts
+
+      - name: Upload production smoke evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage12-production-smoke-${{ github.event.pull_request.head.sha }}
+          path: production-smoke-evidence/
+          if-no-files-found: error
+          retention-days: 30
