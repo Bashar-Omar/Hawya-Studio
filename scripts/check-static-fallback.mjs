@@ -10,10 +10,7 @@ const [html, manifestSource, serviceWorker] = await Promise.all([
 ]);
 const manifest = JSON.parse(manifestSource);
 
-for (const expected of [
-  `${basePath}manifest.webmanifest`,
-  `${basePath}icons/hawya-192.png`,
-]) {
+for (const expected of [`${basePath}manifest.webmanifest`, `${basePath}icons/hawya-192.png`]) {
   if (!html.includes(expected)) throw new Error(`Static fallback HTML is missing ${expected}`);
 }
 if (!html.includes(`${basePath}assets/`)) {
@@ -38,7 +35,7 @@ for (const expected of [
     throw new Error(`Static fallback service worker is missing ${expected}`);
   }
 }
-if (/([#'])\/assets\//.test(html) || /([#'])\/icons\//.test(html)) {
+if (/(["'])\/assets\//.test(html) || /(["'])\/icons\//.test(html)) {
   throw new Error("Static fallback HTML still contains root-relative built asset URLs");
 }
 

@@ -9,10 +9,7 @@ import {
   useSyncExternalStore,
 } from "react";
 
-import {
-  appPathFromBrowserLocation,
-  browserPathForAppPath,
-} from "@/app/routes/browser-path";
+import { appPathFromBrowserLocation, browserPathForAppPath } from "@/app/routes/browser-path";
 import { matchRoute, type MatchedRouteId } from "@/app/routes/route-config";
 
 interface RouterContextValue {
@@ -97,6 +94,10 @@ export function AppLink({
   };
 
   return (
-    <a href={browserPathForAppPath(href, import.meta.env.BASE_URL)} onClick={handleClick} {...props} />
+    <a
+      href={browserPathForAppPath(href, import.meta.env.BASE_URL)}
+      onClick={handleClick}
+      {...props}
+    />
   );
 }

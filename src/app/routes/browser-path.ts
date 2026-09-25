@@ -24,10 +24,7 @@ export function browserPathForAppPath(appPath: string, baseUrl: string): string 
   return `${basePath}#${appPath}`;
 }
 
-export function appPathFromBrowserLocation(
-  location: BrowserLocationPath,
-  baseUrl: string,
-): string {
+export function appPathFromBrowserLocation(location: BrowserLocationPath, baseUrl: string): string {
   if (!usesHashRouting(baseUrl)) return location.pathname || "/";
   const hashPath = location.hash.startsWith("#") ? location.hash.slice(1) : location.hash;
   return hashPath.startsWith("/") ? hashPath : "/";

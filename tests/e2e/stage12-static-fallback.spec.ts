@@ -64,7 +64,9 @@ test("Stage 12 serves the PWA from a repository subpath with hash routing and of
   const cachedPaths = await page.evaluate(async () => {
     const requests = (
       await Promise.all(
-        (await caches.keys()).map(async (key) => {
+        (
+          await caches.keys()
+        ).map(async (key) => {
           const cache = await caches.open(key);
           return cache.keys();
         }),
