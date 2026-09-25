@@ -8,18 +8,12 @@
       "clientName": "Fixture Client",
       "createdAt": "2026-09-19T10:00:00.000Z",
       "updatedAt": "2026-09-19T10:00:00.000Z",
-      "tags": [
-        "fixture",
-        "legacy-v1"
-      ],
+      "tags": ["fixture", "legacy-v1"],
       "thumbnailAssetId": "00000000-0000-4000-8000-000000000020"
     },
     "settings": {
       "defaultContentLocale": "en",
-      "enabledContentLocales": [
-        "en",
-        "ar"
-      ],
+      "enabledContentLocales": ["en", "ar"],
       "defaultDirection": "ltr",
       "guideProfile": "standard",
       "pagePreset": "screen-16-9",
@@ -109,14 +103,10 @@
             "en": "Overview",
             "ar": "نظرة عامة"
           },
-          "pageIds": [
-            "00000000-0000-4000-8000-000000000010"
-          ]
+          "pageIds": ["00000000-0000-4000-8000-000000000010"]
         }
       ],
-      "pageOrder": [
-        "00000000-0000-4000-8000-000000000010"
-      ],
+      "pageOrder": ["00000000-0000-4000-8000-000000000010"],
       "pages": {
         "00000000-0000-4000-8000-000000000010": {
           "id": "00000000-0000-4000-8000-000000000010",
@@ -182,9 +172,7 @@
       "byteLength": 32,
       "createdAt": "2026-09-19T10:00:00.000Z",
       "updatedAt": "2026-09-19T10:00:00.000Z",
-      "tags": [
-        "logo"
-      ],
+      "tags": ["logo"],
       "metadata": {},
       "binaryKey": "e8f3a400518e4fc1863e8fecad388212c228e06b50a8822a75c42c493f986a22",
       "security": {
@@ -203,9 +191,7 @@
       "byteLength": 32,
       "createdAt": "2026-09-19T10:00:00.000Z",
       "updatedAt": "2026-09-19T10:00:00.000Z",
-      "tags": [
-        "dedup"
-      ],
+      "tags": ["dedup"],
       "metadata": {},
       "binaryKey": "e8f3a400518e4fc1863e8fecad388212c228e06b50a8822a75c42c493f986a22",
       "security": {
@@ -224,9 +210,7 @@
       "byteLength": 24,
       "createdAt": "2026-09-19T10:00:00.000Z",
       "updatedAt": "2026-09-19T10:00:00.000Z",
-      "tags": [
-        "font"
-      ],
+      "tags": ["font"],
       "metadata": {
         "family": "Synthetic Sans"
       },
