@@ -25,8 +25,10 @@ commits do not consume deployment quota and production evidence remains attribut
 
 Hawya uses History API navigation. Production hosting therefore needs SPA fallback behavior so a
 refresh of a route such as `/studio`, `/settings`, or a project/editor URL returns `index.html` rather
-than a host 404. Vercel release verification must exercise direct navigation and refresh on both
-static and project-specific routes.
+than a host 404. `vercel.json` encodes this explicitly with the Vite SPA rewrite
+`/(.*) -> /index.html`, and the release security-policy gate rejects a build if that rule is removed.
+Vercel release verification must exercise direct navigation and refresh on both static and
+project-specific routes.
 
 ## PWA expectations
 
