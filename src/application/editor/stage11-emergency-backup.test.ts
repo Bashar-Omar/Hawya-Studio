@@ -111,7 +111,11 @@ describe("Stage 11 emergency backup recovery", () => {
     expect(session.hasPendingPersistence()).toBe(true);
     const volatilePage = session.projectSnapshot().project.guide.pages[SYNTHETIC_PAGE_ID];
     const durablePage = repository.durable.project.guide.pages[SYNTHETIC_PAGE_ID];
-    expect(volatilePage?.extras.some((layer) => layer.type === "text" && layer.content === "Unsaved emergency text")).toBe(true);
+    expect(
+      volatilePage?.extras.some(
+        (layer) => layer.type === "text" && layer.content === "Unsaved emergency text",
+      ),
+    ).toBe(true);
     expect(durablePage?.extras).toHaveLength(0);
 
     const binaries = new MemoryBinaryStore(

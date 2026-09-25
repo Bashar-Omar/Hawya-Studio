@@ -1,10 +1,7 @@
 import type { BinaryStore } from "@/application/ports/binary-store";
 import type { ProjectArchiveCodec } from "@/application/ports/project-archive-codec";
 import { ProjectArchiveError } from "@/domain/project/errors";
-import {
-  type ProjectSnapshot,
-  projectSnapshotSchema,
-} from "@/domain/project/hawya-project";
+import { type ProjectSnapshot, projectSnapshotSchema } from "@/domain/project/hawya-project";
 import { err, type Result } from "@/shared/types/result";
 
 export class ExportProjectSnapshotArchiveUseCase {
@@ -27,9 +24,7 @@ export class ExportProjectSnapshotArchiveUseCase {
       );
     }
 
-    const referencedIds = new Set(
-      snapshot.project.assetRefs.map((reference) => reference.assetId),
-    );
+    const referencedIds = new Set(snapshot.project.assetRefs.map((reference) => reference.assetId));
     const hashes = [
       ...new Set(
         snapshot.assets
