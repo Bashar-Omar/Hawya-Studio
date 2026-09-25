@@ -5,11 +5,29 @@ function srgbChannel(value: number): number {
   return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
 }
 
-function luminance(hex: string): number {
-  const value = hex.trim().replace("#", "");
-  const r = Number.parseInt(value.slice(0, 2), 16);
-  const g = Number.parseInt(value.slice(2, 4), 16);
-  const b = Number.parseInt(value.slice(4, 6), 16);
+function colorChannels(value: string): [number, number, number] {
+  const normalized = value.trim();
+  const hex = normalized.match(/^#([0-9a-f]{6})$/i);
+  if (hex?.[1]) {
+    return [
+      Number.parseInt(hex[1].slice(0, 2), 16),
+      Number.parseInt(hex[1].slice(2, 4), 16),
+      Number.parseInt(hex[1].slice(4, 6), 16),
+    ];
+  }
+
+  const rgb = normalized.match(
+    /^rgba?\(\s*([\d.]+)(?:\s+|\s*,\s*)([\d.]+)(?:\s+|\s*,\s*)([\d.]+)/i,
+  );
+  if (rgb?.[1] && rgb[2] && rgb[3]) {
+    return [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])];
+  }
+
+  throw new Error(`Unsupported CSS color serialization: ${JSON.stringify(value)}`);
+}
+
+function luminance(value: string): number {
+  const [r, g, b] = colorChannels(value);
   return 0.2126 * srgbChannel(r) + 0.7152 * srgbChannel(g) + 0.0722 * srgbChannel(b);
 }
 
@@ -67,9 +85,12 @@ test("Stage 10 enlarges compact chrome targets on touch input", async ({ browser
   await navigationTrigger.click();
   const close = page.getByRole("button", { name: "Close navigation" });
   await expect(close).toBeVisible();
-  const closeBox = await close.boundingBox();
-  expect(closeBox?.height ?? 0).toBeGreaterThanOrEqual(44);
-  expect(closeBox?.width ?? 0).toBeGreaterThanOrEqual(44);
+  await expect
+    .poll(async () => (await close.boundingBox())?.height ?? 0)
+    .toBeGreaterThanOrEqual(44);
+  await expect
+    .poll(async () => (await close.boundingBox())?.width ?? 0)
+    .toBeGreaterThanOrEqual(44);
 
   await context.close();
 });
@@ -101,16 +122,25 @@ test("Stage 10 keeps application chrome contrast within AA-oriented guardrails",
 
   for (const theme of ["Light", "Dark"] as const) {
     await page.getByRole("button", { name: theme }).click();
+    await expect(page.locator("html")).toHaveAttribute("data-theme", theme.toLowerCase());
     const tokens = await page.evaluate(() => {
-      const style = getComputedStyle(document.documentElement);
+      const resolveColor = (variable: string) => {
+        const probe = document.createElement("span");
+        probe.style.color = `var(${variable})`;
+        document.body.append(probe);
+        const value = getComputedStyle(probe).color;
+        probe.remove();
+        return value;
+      };
+
       return {
-        text1: style.getPropertyValue("--text-1").trim(),
-        text2: style.getPropertyValue("--text-2").trim(),
-        surface1: style.getPropertyValue("--surface-1").trim(),
-        appBg: style.getPropertyValue("--app-bg").trim(),
-        accent: style.getPropertyValue("--accent").trim(),
-        accentForeground: style.getPropertyValue("--accent-foreground").trim(),
-        focus: style.getPropertyValue("--focus").trim(),
+        text1: resolveColor("--text-1"),
+        text2: resolveColor("--text-2"),
+        surface1: resolveColor("--surface-1"),
+        appBg: resolveColor("--app-bg"),
+        accent: resolveColor("--accent"),
+        accentForeground: resolveColor("--accent-foreground"),
+        focus: resolveColor("--focus"),
       };
     });
 
