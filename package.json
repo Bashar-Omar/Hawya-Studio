@@ -12,6 +12,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build && node scripts/generate-pwa-shell.mjs",
+    "build:static-fallback": "tsc -b && vite build --base=/Hawya-Studio/ && node scripts/generate-pwa-shell.mjs /Hawya-Studio/",
     "preview": "vite preview",
     "typecheck": "tsc -b --pretty false",
     "lint": "biome lint .",
@@ -23,10 +24,12 @@
     "test:e2e": "playwright test",
     "test:browser": "playwright test --project=chromium",
     "test:compatibility": "playwright test tests/e2e/stage11-release-qa.spec.ts",
+    "test:static-fallback": "playwright test --config=playwright.static-fallback.config.ts",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
     "check:performance": "node scripts/check-performance-budgets.mjs",
     "check:security-policy": "node scripts/check-security-policy.mjs",
     "check:release-docs": "node scripts/check-release-docs.mjs",
+    "check:static-fallback": "node scripts/check-static-fallback.mjs",
     "check:security": "pnpm audit --prod --audit-level high",
     "inventory:licenses": "pnpm licenses list --prod --json"
   },

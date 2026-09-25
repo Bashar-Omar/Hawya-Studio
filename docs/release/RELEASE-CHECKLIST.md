@@ -37,13 +37,13 @@ Status meanings:
 | project-format docs | versioned v1/v2 implementation docs exist | Stage 12 pending review |
 | changelog + release tag | changelog draft exists; tag intentionally absent | Stage 12 pending |
 | large local asset corpus | Stage 10 scale fixture is metadata-scale, not 100-250 MB corpus | Manual pending |
-| fallback static deployment | root-host build exists; subpath/static-host behavior not verified | **Blocked** |
+| fallback static deployment | base-aware fallback build + static artifact checker added | Stage 12 pending browser smoke |
 
 ## Known release blockers / open evidence
 
-1. **Static-host subpath compatibility.** The current service-worker registration, manifest paths and
-   application routes are root-oriented. GitHub Pages under `/Hawya-Studio/` must not be claimed as a
-   tested fallback until Stage 12 validates or fixes the base-path strategy.
+1. **Static-host browser evidence.** A base-aware `/Hawya-Studio/` build and artifact checker now exist,
+   but the fallback is not release-complete until Stage 12 executes it in a browser and verifies hash
+   navigation, PWA scope and offline behavior.
 2. **App-icon provenance.** The repository contains `public/icons/hawya-192.png` and
    `public/icons/hawya-512.png`, but the available project history does not document their creation or
    redistribution provenance. Confirm or replace them with demonstrably project-owned/generated

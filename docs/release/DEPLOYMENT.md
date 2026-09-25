@@ -39,19 +39,18 @@ return-to-online behavior from a fresh browser profile.
 
 ## Static-host fallback
 
-The architectural fallback is a normal static host such as GitHub Pages. The generated `dist/` tree
-contains no server runtime requirement, but **the current root-oriented route/PWA URLs are not yet
-certified for a repository subpath such as `/Hawya-Studio/`**.
+GitHub Pages is the documented fallback for a repository-path static host. Build the fallback artifact
+with:
 
-The Stage 12 fallback gate must verify all of the following before this fallback is marked supported:
+```bash
+pnpm build:static-fallback
+pnpm check:static-fallback
+```
 
-1. Vite asset base under a non-root path;
-2. application navigation/history paths under the configured base;
-3. manifest `start_url`, `scope`, icon URLs and manifest link;
-4. service-worker URL, scope, cache keys and navigation fallback;
-5. direct-route/static-host fallback behavior;
-6. fonts/workers/chunks load without root-path assumptions.
+That build uses Vite base `/Hawya-Studio/`, hash-based application routes under the non-root base, a
+base-scoped service worker, and a rewritten manifest `start_url`/`scope`/icon set. Hash routing is used
+only for non-root builds so the primary root-hosted Vercel deployment keeps clean History API URLs.
 
-Until that gate is green, the supported production deployment model is a root-hosted static origin
-such as the current Vercel project. This document intentionally records the limitation instead of
-claiming untested portability.
+The automated build gate verifies base-scoped HTML assets, manifest fields and service-worker shell
+paths. Stage 12 still requires a browser smoke of the produced fallback artifact before public release;
+a static file check alone is not treated as end-to-end evidence.

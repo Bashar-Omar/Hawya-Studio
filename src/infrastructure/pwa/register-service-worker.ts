@@ -3,9 +3,10 @@ export async function registerHawyaServiceWorker(): Promise<ServiceWorkerRegistr
     return undefined;
   }
 
+  const scope = import.meta.env.BASE_URL;
   try {
-    return await navigator.serviceWorker.register("/sw.js", {
-      scope: "/",
+    return await navigator.serviceWorker.register(`${scope}sw.js`, {
+      scope,
       updateViaCache: "none",
     });
   } catch {

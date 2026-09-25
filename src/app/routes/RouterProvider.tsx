@@ -9,6 +9,10 @@ import {
   useSyncExternalStore,
 } from "react";
 
+import {
+  appPathFromBrowserLocation,
+  browserPathForAppPath,
+} from "@/app/routes/browser-path";
 import { matchRoute, type MatchedRouteId } from "@/app/routes/route-config";
 
 interface RouterContextValue {
@@ -21,15 +25,17 @@ const RouterContext = createContext<RouterContextValue | null>(null);
 
 function subscribe(callback: () => void): () => void {
   window.addEventListener("popstate", callback);
+  window.addEventListener("hashchange", callback);
   window.addEventListener("hawya:navigate", callback);
   return () => {
     window.removeEventListener("popstate", callback);
+    window.removeEventListener("hashchange", callback);
     window.removeEventListener("hawya:navigate", callback);
   };
 }
 
 function getSnapshot(): string {
-  return window.location.pathname;
+  return appPathFromBrowserLocation(window.location, import.meta.env.BASE_URL);
 }
 
 function getServerSnapshot(): string {
@@ -40,11 +46,11 @@ export function RouterProvider({ children }: { children: ReactNode }) {
   const pathname = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
 
   const navigate = useCallback((nextPathname: string) => {
-    if (window.location.pathname === nextPathname) {
+    if (getSnapshot() === nextPathname) {
       return;
     }
 
-    window.history.pushState({}, "", nextPathname);
+    window.history.pushState({}, "", browserPathForAppPath(nextPathname, import.meta.env.BASE_URL));
     window.dispatchEvent(new Event("hawya:navigate"));
     window.scrollTo({ top: 0, behavior: "auto" });
   }, []);
@@ -90,5 +96,7 @@ export function AppLink({
     navigate(href);
   };
 
-  return <a href={href} onClick={handleClick} {...props} />;
+  return (
+    <a href={browserPathForAppPath(href, import.meta.env.BASE_URL)} onClick={handleClick} {...props} />
+  );
 }
