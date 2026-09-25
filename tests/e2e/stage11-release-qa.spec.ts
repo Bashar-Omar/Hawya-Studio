@@ -28,13 +28,16 @@ async function documentLeft(layer: Locator): Promise<number> {
 test("Stage 11 production CSP fallback boots the local-first application without violations", async ({
   page,
 }) => {
-  await page.addInitScript(() => {
-    const violations: string[] = [];
-    (window as Window & { __hawyaCspViolations?: string[] }).__hawyaCspViolations = violations;
-    document.addEventListener("securitypolicyviolation", (event) => {
-      violations.push(`${event.violatedDirective} -> ${event.blockedURI}`);
-    });
+  const runtimeIssues: string[] = [];
+  page.on("console", (message) => {
+    if (
+      (message.type() === "error" || message.type() === "warning") &&
+      /content security policy|refused to|violates.*directive/i.test(message.text())
+    ) {
+      runtimeIssues.push(`console.${message.type()}: ${message.text()}`);
+    }
   });
+  page.on("pageerror", (error) => runtimeIssues.push(`pageerror: ${error.message}`));
 
   await page.goto("/studio");
   const policy = await page
@@ -45,11 +48,7 @@ test("Stage 11 production CSP fallback boots the local-first application without
   expect(policy).not.toContain("unsafe-eval");
   expect(policy).not.toContain("*");
   await expect(page.getByRole("button", { name: "Create project" }).first()).toBeVisible();
-
-  const violations = await page.evaluate(
-    () => (window as Window & { __hawyaCspViolations?: string[] }).__hawyaCspViolations ?? [],
-  );
-  expect(violations).toEqual([]);
+  expect(runtimeIssues).toEqual([]);
 });
 
 test("Stage 11 preserves mixed bidi stress text and physical canvas coordinates across UI RTL", async ({
@@ -58,8 +57,12 @@ test("Stage 11 preserves mixed bidi stress text and physical canvas coordinates 
   await createArabicProjectAndOpenEditor(page);
   await page.getByRole("button", { name: "Add text (T)" }).click();
 
-  const textLayer = page.locator(".editor-scene-layer--text").last();
-  await expect(textLayer).toBeVisible();
+  const createdTextLayer = page.locator(".editor-scene-layer--text").last();
+  await expect(createdTextLayer).toBeVisible();
+  const textLayerId = await createdTextLayer.getAttribute("data-layer-id");
+  expect(textLayerId).not.toBeNull();
+  if (!textLayerId) return;
+  const textLayer = page.locator(`[data-layer-id="${textLayerId}"]`);
   const beforeUiRtl = await documentLeft(textLayer);
 
   const stressSamples = [
@@ -85,7 +88,7 @@ test("Stage 11 preserves mixed bidi stress text and physical canvas coordinates 
   ).toBe(true);
 
   await page.reload();
-  const persisted = page.locator(".editor-scene-layer--text").last();
+  const persisted = page.locator(`[data-layer-id="${textLayerId}"]`);
   await expect(persisted).toContainText(stressSamples.at(-1) ?? "");
   await expect(persisted).toHaveAttribute("dir", "rtl");
 });
