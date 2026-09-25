@@ -70,7 +70,7 @@ jobs:
         run: pnpm inventory:licenses > dependency-licenses.json
 
       - name: Upload dependency license inventory
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: dependency-licenses
           path: dependency-licenses.json
@@ -196,7 +196,7 @@ jobs:
         run: pnpm build
 
       - name: Upload exact production build
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: stage12-production-build-${{ github.event.pull_request.head.sha }}
           path: dist/
@@ -210,7 +210,7 @@ jobs:
 
       - name: Upload release evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: stage12-release-evidence-${{ github.event.pull_request.head.sha }}
           path: release-evidence/
@@ -264,7 +264,7 @@ jobs:
 
       - name: Upload production smoke evidence
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: stage12-production-smoke-${{ github.event.pull_request.head.sha }}
           path: production-smoke-evidence/
