@@ -20,8 +20,10 @@ function inspectPng(bytes, expectedSize) {
   let offset = 8;
   let width;
   let height;
+  let paletteEntries = 0;
   const idat = [];
   let sawEnd = false;
+
   while (offset + 12 <= bytes.length) {
     const length = bytes.readUInt32BE(offset);
     const typeStart = offset + 4;
@@ -34,29 +36,42 @@ function inspectPng(bytes, expectedSize) {
     const expectedCrc = bytes.readUInt32BE(crcOffset);
     const actualCrc = crc32(Buffer.concat([Buffer.from(type, "ascii"), data]));
     if (actualCrc !== expectedCrc) throw new Error(`PNG ${type} CRC mismatch`);
+
     if (type === "IHDR") {
       width = data.readUInt32BE(0);
       height = data.readUInt32BE(4);
-      if (data[8] !== 8 || data[9] !== 2) throw new Error("App icon must be 8-bit RGB PNG");
-    } else if (type === "IDAT") idat.push(data);
-    else if (type === "IEND") {
+      if (data[8] !== 8 || data[9] !== 3) {
+        throw new Error("App icon must be an 8-bit indexed PNG");
+      }
+    } else if (type === "PLTE") {
+      if (data.length % 3 !== 0) throw new Error("PNG palette length is invalid");
+      paletteEntries = data.length / 3;
+    } else if (type === "IDAT") {
+      idat.push(data);
+    } else if (type === "IEND") {
       sawEnd = true;
       break;
     }
     offset = crcOffset + 4;
   }
+
   if (!sawEnd) throw new Error("PNG is missing IEND");
   if (width !== expectedSize || height !== expectedSize) {
     throw new Error(`Expected ${expectedSize}x${expectedSize}, got ${width}x${height}`);
   }
+  if (paletteEntries !== 2) throw new Error(`Expected a two-color palette, got ${paletteEntries}`);
+
   const raw = inflateSync(Buffer.concat(idat));
-  const expectedRawLength = expectedSize * (expectedSize * 3 + 1);
+  const expectedRawLength = expectedSize * (expectedSize + 1);
   if (raw.length !== expectedRawLength) {
     throw new Error(`PNG decoded byte length ${raw.length} does not match ${expectedRawLength}`);
   }
   for (let y = 0; y < expectedSize; y += 1) {
-    if (raw[y * (expectedSize * 3 + 1)] !== 0)
-      throw new Error("App icon uses unexpected PNG filter");
+    const row = y * (expectedSize + 1);
+    if (raw[row] !== 0) throw new Error("App icon uses unexpected PNG filter");
+    for (let x = 0; x < expectedSize; x += 1) {
+      if (raw[row + 1 + x] > 1) throw new Error("App icon references an unexpected palette entry");
+    }
   }
 }
 

@@ -1,12 +1,10 @@
+import { writeFile, mkdir } from "node:fs/promises";
+import { dirname, resolve } from "node:path";
 import { deflateSync } from "node:zlib";
-import { writeFile } from "node:fs/promises";
-import { resolve } from "node:path";
 
 const OUTPUTS = [192, 512];
 const BACKGROUND = [16, 16, 16];
 const TILE = [244, 241, 234];
-const MARK = [16, 16, 16];
-const SUPERSAMPLE = 4;
 
 function crc32(bytes) {
   let crc = 0xffffffff;
@@ -53,47 +51,31 @@ function insideMark(x, y, size) {
   );
 }
 
-function pixelAt(px, py, size) {
+function createPng(size) {
+  const stride = size + 1;
+  const raw = Buffer.alloc(stride * size);
   const tileLeft = size * (30 / 192);
   const tileTop = size * (30 / 192);
   const tileRight = size * (163 / 192);
   const tileBottom = size * (163 / 192);
   const radius = size * (22 / 192);
-  let tileCoverage = 0;
-  let markCoverage = 0;
-  const samples = SUPERSAMPLE * SUPERSAMPLE;
 
-  for (let sy = 0; sy < SUPERSAMPLE; sy += 1) {
-    for (let sx = 0; sx < SUPERSAMPLE; sx += 1) {
-      const x = px + (sx + 0.5) / SUPERSAMPLE;
-      const y = py + (sy + 0.5) / SUPERSAMPLE;
-      if (insideRoundedRect(x, y, tileLeft, tileTop, tileRight, tileBottom, radius)) {
-        tileCoverage += 1;
-        if (insideMark(x, y, size)) markCoverage += 1;
-      }
-    }
-  }
-
-  const tileAlpha = tileCoverage / samples;
-  const markAlpha = markCoverage / samples;
-  const base = BACKGROUND.map((value, index) =>
-    Math.round(value * (1 - tileAlpha) + TILE[index] * tileAlpha),
-  );
-  return base.map((value, index) => Math.round(value * (1 - markAlpha) + MARK[index] * markAlpha));
-}
-
-function createPng(size) {
-  const stride = size * 3 + 1;
-  const raw = Buffer.alloc(stride * size);
   for (let y = 0; y < size; y += 1) {
     const row = y * stride;
     raw[row] = 0;
     for (let x = 0; x < size; x += 1) {
-      const [r, g, b] = pixelAt(x, y, size);
-      const offset = row + 1 + x * 3;
-      raw[offset] = r;
-      raw[offset + 1] = g;
-      raw[offset + 2] = b;
+      const sampleX = x + 0.5;
+      const sampleY = y + 0.5;
+      const tile = insideRoundedRect(
+        sampleX,
+        sampleY,
+        tileLeft,
+        tileTop,
+        tileRight,
+        tileBottom,
+        radius,
+      );
+      raw[row + 1 + x] = tile && !insideMark(sampleX, sampleY, size) ? 1 : 0;
     }
   }
 
@@ -101,11 +83,13 @@ function createPng(size) {
   ihdr.writeUInt32BE(size, 0);
   ihdr.writeUInt32BE(size, 4);
   ihdr[8] = 8;
-  ihdr[9] = 2;
+  ihdr[9] = 3;
   const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+  const palette = Buffer.from([...BACKGROUND, ...TILE]);
   return Buffer.concat([
     signature,
     chunk("IHDR", ihdr),
+    chunk("PLTE", palette),
     chunk("IDAT", deflateSync(raw, { level: 9 })),
     chunk("IEND", Buffer.alloc(0)),
   ]);
@@ -113,6 +97,7 @@ function createPng(size) {
 
 for (const size of OUTPUTS) {
   const output = resolve(`public/icons/hawya-${size}.png`);
+  await mkdir(dirname(output), { recursive: true });
   await writeFile(output, createPng(size));
   console.log(`Generated ${output}`);
 }
