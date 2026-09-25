@@ -63,7 +63,7 @@
     "tailwindcss": "~4.3.0",
     "typescript": "7.0.2",
     "vite": "~8.1.5",
-    "vitest": "4.1.11",
+    "vitest": "5.0.1",
     "fake-indexeddb": "6.2.5"
   },
   "license": "MIT",
