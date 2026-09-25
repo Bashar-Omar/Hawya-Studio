@@ -229,7 +229,9 @@ describe("Stage 11 export semantic golden matrix", () => {
     expect(svg).toContain(`data:image/svg+xml;base64,${bytesToBase64(gradientBytes)}`);
     expect(svg).toContain(`data-layer-id="${STAGE11_GRADIENT_LAYER_ID}"`);
     expect(STAGE11_GRADIENT_SVG).toContain('linearGradient id="stage11-gradient"');
-    expect(STAGE11_GRADIENT_SVG).not.toMatch(/<script\b|<foreignObject\b|https?:\/\//i);
+    expect(STAGE11_GRADIENT_SVG).not.toMatch(
+      /<script\b|<foreignObject\b|href=["'](?:https?:|\/\/)|url\s*\(\s*["']?(?:https?:|\/\/)/i,
+    );
   });
 
   it("blocks artwork export for a missing layer asset while keeping .hawya emergency portability available", async () => {
