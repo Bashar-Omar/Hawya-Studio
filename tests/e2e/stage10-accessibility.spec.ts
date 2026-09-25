@@ -88,9 +88,7 @@ test("Stage 10 enlarges compact chrome targets on touch input", async ({ browser
   await expect
     .poll(async () => (await close.boundingBox())?.height ?? 0)
     .toBeGreaterThanOrEqual(44);
-  await expect
-    .poll(async () => (await close.boundingBox())?.width ?? 0)
-    .toBeGreaterThanOrEqual(44);
+  await expect.poll(async () => (await close.boundingBox())?.width ?? 0).toBeGreaterThanOrEqual(44);
 
   await context.close();
 });
