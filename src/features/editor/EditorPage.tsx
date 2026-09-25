@@ -240,7 +240,14 @@ export default function EditorPage({
         result.value,
         projectArchiveFilename(`${current.project.metadata.name}-emergency`),
       );
-      setStorageFailure((failure) => (failure ? { ...failure, actionError: undefined } : failure));
+      setStorageFailure((failure) =>
+        failure
+          ? {
+              message: failure.message,
+              ...(failure.diagnostics ? { diagnostics: failure.diagnostics } : {}),
+            }
+          : failure,
+      );
       announce(t("editor.storageFailure.exported"));
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : t("common.unknownError");
@@ -275,7 +282,7 @@ export default function EditorPage({
     try {
       const diagnostics = await runtime.storageManager.diagnostics();
       setStorageFailure((failure) =>
-        failure ? { ...failure, diagnostics, actionError: undefined } : failure,
+        failure ? { message: failure.message, diagnostics } : failure,
       );
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : t("common.unknownError");
