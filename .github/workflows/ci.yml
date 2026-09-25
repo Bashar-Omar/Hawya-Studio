@@ -201,6 +201,7 @@ jobs:
         run: pnpm test:release-evidence
 
       - name: Upload release evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: stage12-release-evidence-${{ github.event.pull_request.head.sha }}

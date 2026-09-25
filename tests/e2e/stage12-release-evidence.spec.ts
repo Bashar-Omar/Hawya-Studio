@@ -1,5 +1,7 @@
+import { readdirSync } from "node:fs";
 import { mkdir, stat, writeFile } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 import { expect, test, type Page } from "@playwright/test";
 
@@ -13,6 +15,24 @@ interface FocusEvidence {
   tag: string;
   role: string | null;
   name: string;
+}
+
+function safeSvg(): Buffer {
+  return Buffer.from(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 80"><rect x="10" y="10" width="100" height="60" rx="12" fill="#112233"/><circle cx="60" cy="40" r="16" fill="#F2C14E"/></svg>',
+  );
+}
+
+function arabicFontPath(): string {
+  const entry = fileURLToPath(
+    import.meta.resolve("@fontsource-variable/noto-sans-arabic/index.css"),
+  );
+  const filesDirectory = join(dirname(entry), "files");
+  const candidate = readdirSync(filesDirectory).find(
+    (name) => name.endsWith(".woff2") && name.includes("arabic") && name.includes("wght"),
+  );
+  if (!candidate) throw new Error("Arabic WOFF2 release fixture was not found");
+  return join(filesDirectory, candidate);
 }
 
 async function captureKeyboardTrail(page: Page): Promise<FocusEvidence[]> {
@@ -122,7 +142,7 @@ async function readLargeLocalCorpus(page: Page) {
   });
 }
 
-async function createArabicReleaseProject(page: Page): Promise<string> {
+async function createArabicReleaseProject(page: Page): Promise<void> {
   await page.goto("/settings");
   await page.getByRole("button", { name: "العربية" }).click();
   await expect(page.locator("html")).toHaveAttribute("lang", "ar");
@@ -146,7 +166,63 @@ async function createArabicReleaseProject(page: Page): Promise<string> {
   ).toBeVisible();
   await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   await page.screenshot({ path: join(EVIDENCE_DIR, "03-project-ar-rtl.png"), fullPage: true });
-  return page.url();
+}
+
+async function createExportReadyProject(page: Page): Promise<void> {
+  await page.goto("/studio/new");
+  await page.getByLabel("Project name").fill("Stage Twelve Release Evidence");
+  await page.locator("label.checkbox-row").getByRole("checkbox").check();
+  await page.getByRole("button", { name: "Continue" }).click();
+
+  await page.getByRole("button", { name: "Skip for now" }).click();
+  await expect(page.getByRole("heading", { name: "Colors" })).toBeVisible();
+  await page.locator(".color-input-row .text-input").fill("#112233");
+  await page.getByRole("button", { name: "Continue" }).click();
+
+  await expect(page.getByRole("heading", { name: "Typography" })).toBeVisible();
+  await page.getByRole("button", { name: "Skip for now" }).click();
+  await page.getByRole("button", { name: "Skip for now" }).click();
+  await expect(page.getByRole("heading", { name: "Guide" })).toBeVisible();
+  await page.getByRole("button", { name: "Finish setup" }).click();
+
+  await page.getByRole("button", { name: "Open Brand System" }).click();
+  await page.getByRole("tab", { name: "Logos" }).click();
+  await page.locator('input[type="file"]').setInputFiles({
+    name: "stage-twelve-logo.svg",
+    mimeType: "image/svg+xml",
+    buffer: safeSvg(),
+  });
+  await page.getByRole("button", { name: "Add variant" }).click();
+  await expect(page.getByText("Primary", { exact: true })).toBeVisible();
+
+  await page.getByRole("tab", { name: "Typography" }).click();
+  await page
+    .getByLabel("License / rights note")
+    .fill("OFL release fixture from installed Fontsource dependency");
+  await page.locator('input[type="file"]').setInputFiles(arabicFontPath());
+  await expect(page.locator(".font-card").first()).toBeVisible();
+  await page.getByRole("button", { name: "Add text style" }).click();
+  await expect(page.locator(".type-style-card")).toHaveCount(1);
+
+  await page.getByRole("button", { name: "Guide shell" }).click();
+  await page.getByLabel("Profile").selectOption("minimal");
+  await page.getByLabel("Document locale mode").selectOption("bilingual");
+  await page.getByRole("button", { name: "Generate guide" }).click();
+  await expect(
+    page.getByRole("heading", {
+      name: "Your brand guide is generated from reusable semantic content.",
+    }),
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: "Export" }).click();
+  await expect(page.getByRole("heading", { name: "Export Center" })).toBeVisible();
+}
+
+async function acknowledgeWarningsIfPresent(page: Page): Promise<void> {
+  const acknowledgement = page.getByText("I reviewed these warnings and want to continue.");
+  if (await acknowledgement.isVisible().catch(() => false)) {
+    await acknowledgement.locator("..").getByRole("checkbox").check();
+  }
 }
 
 test("Stage 12 captures auditable release-candidate evidence", async ({ page }) => {
@@ -182,29 +258,15 @@ test("Stage 12 captures auditable release-candidate evidence", async ({ page }) 
   const corpusAfterReload = await readLargeLocalCorpus(page);
   expect(corpusAfterReload.bytes).toBeGreaterThanOrEqual(EXPECTED_CORPUS_BYTES);
 
-  const guideShellUrl = await createArabicReleaseProject(page);
+  await createArabicReleaseProject(page);
 
   await page.goto("/settings");
   await page.getByRole("button", { name: "English" }).click();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
-  await page.goto(guideShellUrl);
 
-  await page.getByLabel("Profile").selectOption("minimal");
-  await page.getByLabel("Document locale mode").selectOption("ar");
-  await page.getByRole("button", { name: "Generate guide" }).click();
-  await expect(
-    page.getByRole("heading", {
-      name: "Your brand guide is generated from reusable semantic content.",
-    }),
-  ).toBeVisible();
-
-  await page.getByRole("button", { name: "Export" }).click();
+  await createExportReadyProject(page);
   await page.getByRole("button", { name: /Browser Print \/ PDF/ }).click();
-
-  const acknowledgement = page.getByText("I reviewed these warnings and want to continue.");
-  if (await acknowledgement.isVisible().catch(() => false)) {
-    await acknowledgement.locator("..").getByRole("checkbox").check();
-  }
+  await acknowledgeWarningsIfPresent(page);
 
   const openPrint = page.getByRole("button", { name: "Open Print View" });
   await expect(openPrint).toBeEnabled();
@@ -217,8 +279,11 @@ test("Stage 12 captures auditable release-candidate evidence", async ({ page }) 
     await document.fonts.ready;
   });
 
-  await page.screenshot({ path: join(EVIDENCE_DIR, "04-print-view-ar.png"), fullPage: true });
-  const pdfPath = join(EVIDENCE_DIR, "05-brand-guidelines-ar.pdf");
+  await page.screenshot({
+    path: join(EVIDENCE_DIR, "04-print-view-bilingual.png"),
+    fullPage: true,
+  });
+  const pdfPath = join(EVIDENCE_DIR, "05-brand-guidelines-bilingual.pdf");
   await page.pdf({
     path: pdfPath,
     format: "A4",
@@ -235,9 +300,9 @@ test("Stage 12 captures auditable release-candidate evidence", async ({ page }) 
       englishStudio: "01-studio-en.png",
       arabicSettings: "02-settings-ar-rtl.png",
       arabicProject: "03-project-ar-rtl.png",
-      arabicPrintView: "04-print-view-ar.png",
-      lang: "ar",
-      direction: "rtl",
+      bilingualPrintView: "04-print-view-bilingual.png",
+      verifiedArabicLang: "ar",
+      verifiedArabicDirection: "rtl",
     },
     keyboard: {
       steps: keyboardTrail.length,
@@ -249,7 +314,7 @@ test("Stage 12 captures auditable release-candidate evidence", async ({ page }) 
       afterReload: corpusAfterReload,
     },
     pdf: {
-      file: "05-brand-guidelines-ar.pdf",
+      file: "05-brand-guidelines-bilingual.pdf",
       byteLength: pdfInfo.size,
     },
     runtimeIssues,
