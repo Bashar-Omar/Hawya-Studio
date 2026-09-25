@@ -91,4 +91,79 @@ async function buildGoldens(hasher: ContentHasher): Promise<GoldenProject[]> {
   const variable = makeText("variable-font-axis", "en", IDS.variable, "Variable weight 650", "ltr", "en", "standard");
   const variableFont = variable.snapshot.project.brand.typography.fonts[0];
   const variableStyle = variable.snapshot.project.brand.typography.styles[0];
-  if (!variableFont || !variableStyle) t
+  if (!variableFont || !variableStyle) throw new Error("Stage 11 variable-font fixture is incomplete");
+  variableFont.variableAxes = [{ tag: "wght", min: 100, default: 400, max: 900 }];
+  variableStyle.fontWeight = 650;
+  variable.snapshot = projectSnapshotSchema.parse(variable.snapshot);
+
+  const missingDraft = structuredClone(base.snapshot);
+  missingDraft.project.metadata.name = "Stage 11 missing-asset-warning";
+  const missingPage = missingDraft.project.guide.pages[SYNTHETIC_PAGE_ID];
+  if (!missingPage) throw new Error("Stage 11 missing-asset fixture page is missing");
+  missingPage.extras.push({ id: IDS.missingLayer, name: "Missing artwork", source: "extra", type: "image", visible: true, locked: false, opacity: 1, transform: { x: 80, y: 80, width: 320, height: 220, rotation: 0, scaleX: 1, scaleY: 1 }, assetId: IDS.missingAsset, fit: "contain" });
+  const missing: GoldenProject = { id: "missing-asset-warning", localeMode: "en", snapshot: projectSnapshotSchema.parse(missingDraft), binaries: base.binaries };
+
+  const gradientBytes = new TextEncoder().encode(GRADIENT_SVG);
+  const gradientHash = await hasher.hash(gradientBytes);
+  const gradientDraft = structuredClone(base.snapshot);
+  gradientDraft.project.metadata.name = "Stage 11 complex-svg-gradient";
+  gradientDraft.project.assetRefs.push({ assetId: IDS.gradientAsset });
+  gradientDraft.assets.push({ id: IDS.gradientAsset, projectId: SYNTHETIC_PROJECT_ID, contentHash: gradientHash, kind: "vector", name: "Stage 11 gradient artwork", originalFilename: "stage11-gradient.svg", mime: "image/svg+xml", extension: "svg", byteLength: gradientBytes.byteLength, createdAt: SYNTHETIC_TIMESTAMP, updatedAt: SYNTHETIC_TIMESTAMP, tags: ["stage-11", "golden"], metadata: { viewBox: "0 0 240 120" }, binaryKey: gradientHash, security: { sanitized: true } });
+  const gradientPage = gradientDraft.project.guide.pages[SYNTHETIC_PAGE_ID];
+  if (!gradientPage) throw new Error("Stage 11 gradient fixture page is missing");
+  gradientPage.extras.push({ id: IDS.gradientLayer, name: "Gradient artwork", source: "extra", type: "vector", visible: true, locked: false, opacity: 1, transform: { x: 160, y: 180, width: 480, height: 240, rotation: 0, scaleX: 1, scaleY: 1 }, data: { assetId: IDS.gradientAsset } });
+  const gradient: GoldenProject = { id: "complex-svg-gradient", localeMode: "en", snapshot: projectSnapshotSchema.parse(gradientDraft), binaries: [...base.binaries, { contentHash: gradientHash, mime: "image/svg+xml", bytes: gradientBytes }] };
+
+  const legacy: GoldenProject = { id: "legacy-schema-migration", localeMode: "en", snapshot: migrateProjectSnapshot(JSON.parse(legacyV1Json) as unknown), binaries: base.binaries };
+  return [latin, arabic, bilingual, variable, missing, gradient, legacy];
+}
+
+class MemoryBinaryStore implements BinaryStore {
+  constructor(private readonly values: ReadonlyMap<string, StoredBinary>) {}
+  async has(hash: string) { return this.values.has(hash); }
+  async get(hash: string) { return this.values.get(hash); }
+  async put() { return { inserted: false }; }
+  async listContentHashes() { return [...this.values.keys()]; }
+  async delete() {}
+}
+class GoldenOutliner implements FontOutliner {
+  readonly calls: string[] = [];
+  async outline(_bytes: Uint8Array, text: string, _options: FontOutlineOptions, _signal: AbortSignal): Promise<FontOutlineResult> {
+    this.calls.push(text);
+    return { glyphs: text ? [{ pathData: "M0 0L600 0L600 700L0 700Z", x: 0, y: 0 }] : [], unitsPerEm: 1000, ascent: 800, descent: -200, advanceWidth: text ? 600 : 0 };
+  }
+}
+class FixedClock implements Clock {
+  private readonly value = isoDateTimeSchema.parse(SYNTHETIC_SAVE_TIMESTAMP);
+  now(): ISODateTime { return this.value; }
+}
+function store(project: GoldenProject) {
+  return new MemoryBinaryStore(new Map(project.binaries.map((binary) => [binary.contentHash, { ...binary, byteLength: binary.bytes.byteLength }])));
+}
+
+async function assertArchive(project: GoldenProject) {
+  const hasher = new WebCryptoSha256Hasher();
+  const codec = new FflateProjectArchiveCodec(hasher, new FixedClock());
+  const encoded = await codec.encode({ snapshot: project.snapshot, binaries: project.binaries });
+  expect(encoded.ok).toBe(true);
+  if (!encoded.ok) throw encoded.error;
+  const entries = unzipSync(encoded.value);
+  const manifestBytes = entries["manifest.json"];
+  const projectBytes = entries["project.json"];
+  const checksumsBytes = entries["checksums.json"];
+  if (!manifestBytes || !projectBytes || !checksumsBytes) throw new Error("Stage 11 archive critical entry missing: " + project.id);
+  const manifest = hawyaArchiveManifestSchema.parse(JSON.parse(strFromU8(manifestBytes)));
+  const checksums = archiveChecksumsSchema.parse(JSON.parse(strFromU8(checksumsBytes)));
+  expect(manifest.projectId).toBe(project.snapshot.project.id);
+  expect(manifest.projectName).toBe(project.snapshot.project.metadata.name);
+  expect(checksums.entries["project.json"]).toBe(await hasher.hash(projectBytes));
+  for (const [path, expectedHash] of Object.entries(checksums.entries)) {
+    const bytes = entries[path];
+    expect(bytes, project.id + " checksummed entry " + path).toBeDefined();
+    if (bytes) expect(await hasher.hash(bytes)).toBe(expectedHash);
+  }
+  const decoded = await codec.decode(encoded.value);
+  expect(decoded.ok).toBe(true);
+  if (!decoded.ok) throw decoded.error;
+  expect(decoded.value.snapshot).toEqual(project.snapshot);
+  ex
