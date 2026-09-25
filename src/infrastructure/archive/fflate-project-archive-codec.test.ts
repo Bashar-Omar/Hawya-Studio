@@ -6,6 +6,7 @@ import { type ISODateTime, isoDateTimeSchema } from "@/domain/common/primitives"
 import { cloneDefaultMockupQuad } from "@/domain/mockup/mockup";
 import { projectSnapshotSchema } from "@/domain/project/hawya-project";
 import { FflateProjectArchiveCodec } from "@/infrastructure/archive/fflate-project-archive-codec";
+import type { ProjectArchivePolicy } from "@/infrastructure/archive/project-archive-policy";
 import { WebCryptoSha256Hasher } from "@/infrastructure/runtime/web-crypto-sha256-hasher";
 import {
   createSyntheticProjectFixture,
@@ -22,11 +23,12 @@ class FixedClock implements Clock {
   }
 }
 
-function createCodec() {
-  return new FflateProjectArchiveCodec(
-    new WebCryptoSha256Hasher(),
-    new FixedClock(isoDateTimeSchema.parse(SYNTHETIC_SAVE_TIMESTAMP)),
-  );
+function createCodec(policy?: ProjectArchivePolicy) {
+  const hasher = new WebCryptoSha256Hasher();
+  const clock = new FixedClock(isoDateTimeSchema.parse(SYNTHETIC_SAVE_TIMESTAMP));
+  return policy
+    ? new FflateProjectArchiveCodec(hasher, clock, policy)
+    : new FflateProjectArchiveCodec(hasher, clock);
 }
 
 describe("FflateProjectArchiveCodec", () => {
@@ -49,6 +51,58 @@ describe("FflateProjectArchiveCodec", () => {
     if (!result.ok) {
       expect(result.error.code).toBe("unsafe-path");
     }
+  });
+
+  it("rejects compressed archives before decompression when the archive byte budget is exceeded", async () => {
+    const policy: ProjectArchivePolicy = {
+      maxCompressedBytes: 4,
+      maxEntries: 10,
+      maxEntryUncompressedBytes: 1024,
+      maxTotalUncompressedBytes: 4096,
+    };
+    const result = await createCodec(policy).decode(zipSync({ "project.json": strToU8("{}") }));
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.error.code).toBe("archive-too-large");
+  });
+
+  it("rejects entry-count, per-entry and cumulative decompression quota violations", async () => {
+    const entryCount = await createCodec({
+      maxCompressedBytes: 1024 * 1024,
+      maxEntries: 2,
+      maxEntryUncompressedBytes: 1024,
+      maxTotalUncompressedBytes: 4096,
+    }).decode(
+      zipSync({
+        "one.txt": strToU8("1"),
+        "two.txt": strToU8("2"),
+        "three.txt": strToU8("3"),
+      }),
+    );
+    expect(entryCount.ok).toBe(false);
+    if (!entryCount.ok) expect(entryCount.error.code).toBe("too-many-entries");
+
+    const perEntry = await createCodec({
+      maxCompressedBytes: 1024 * 1024,
+      maxEntries: 10,
+      maxEntryUncompressedBytes: 16,
+      maxTotalUncompressedBytes: 4096,
+    }).decode(zipSync({ "large.txt": strToU8("x".repeat(64)) }));
+    expect(perEntry.ok).toBe(false);
+    if (!perEntry.ok) expect(perEntry.error.code).toBe("entry-too-large");
+
+    const cumulative = await createCodec({
+      maxCompressedBytes: 1024 * 1024,
+      maxEntries: 10,
+      maxEntryUncompressedBytes: 128,
+      maxTotalUncompressedBytes: 80,
+    }).decode(
+      zipSync({
+        "first.txt": strToU8("a".repeat(48)),
+        "second.txt": strToU8("b".repeat(48)),
+      }),
+    );
+    expect(cumulative.ok).toBe(false);
+    if (!cumulative.ok) expect(cumulative.error.code).toBe("archive-too-large");
   });
 
   it("round-trips a non-empty Stage 09 mockup preset through .hawya", async () => {
