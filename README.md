@@ -4,7 +4,7 @@
 
 Hawya Studio is a free, open-source, local-first Brand System Production Studio for brand designers. It is designed to turn structured identity inputs into reusable brand systems, editable guidelines, assets, and honest export formats without requiring an account, paid API, cloud database, or subscription.
 
-> Current status: **Stage 12 — Deploy & Public Release is in progress** from the verified Stage 11 baseline. No public `v0.1.0` release tag exists until the release gates close.
+> Current status: **Stage 12 — Deploy & Public Release release candidate verified**. Production smoke is green; formal `v0.1.0` closure follows exact-head merge, merged-main CI, exact merged-SHA production verification, and tag/release creation.
 
 ## Non-negotiable guarantees
 
@@ -60,7 +60,7 @@ pnpm test:browser
 
 `pnpm check` runs formatting verification, linting, strict type-checking, and unit tests.
 
-Stage completion evidence: [`Stage 01`](docs/stages/STAGE-01-COMPLETION.md) · [`Stage 02`](docs/stages/STAGE-02-COMPLETION.md) · [`Stage 03`](docs/stages/STAGE-03-COMPLETION.md) · [`Stage 04`](docs/stages/STAGE-04-COMPLETION.md) · [`Stage 05`](docs/stages/STAGE-05-COMPLETION.md) · [`Stage 06`](docs/stages/STAGE-06-COMPLETION.md) · [`Stage 07`](docs/stages/STAGE-07-COMPLETION.md) · [`Stage 08`](docs/stages/STAGE-08-COMPLETION.md) · [`Stage 09`](docs/stages/STAGE-09-COMPLETION.md) · [`Stage 10`](docs/stages/STAGE-10-COMPLETION.md) · [`Stage 11`](docs/stages/STAGE-11-COMPLETION.md).
+Stage completion evidence: [`Stage 01`](docs/stages/STAGE-01-COMPLETION.md) · [`Stage 02`](docs/stages/STAGE-02-COMPLETION.md) · [`Stage 03`](docs/stages/STAGE-03-COMPLETION.md) · [`Stage 04`](docs/stages/STAGE-04-COMPLETION.md) · [`Stage 05`](docs/stages/STAGE-05-COMPLETION.md) · [`Stage 06`](docs/stages/STAGE-06-COMPLETION.md) · [`Stage 07`](docs/stages/STAGE-07-COMPLETION.md) · [`Stage 08`](docs/stages/STAGE-08-COMPLETION.md) · [`Stage 09`](docs/stages/STAGE-09-COMPLETION.md) · [`Stage 10`](docs/stages/STAGE-10-COMPLETION.md) · [`Stage 11`](docs/stages/STAGE-11-COMPLETION.md) · [`Stage 12`](docs/stages/STAGE-12-COMPLETION.md).
 
 ## Architecture reading order
 
