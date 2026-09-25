@@ -37,16 +37,13 @@ Status meanings:
 | project-format docs | versioned v1/v2 implementation docs exist | Stage 12 pending review |
 | changelog + release tag | changelog draft exists; tag intentionally absent | Stage 12 pending |
 | large local asset corpus | Stage 10 scale fixture is metadata-scale, not 100-250 MB corpus | Manual pending |
-| fallback static deployment | base-aware fallback build + static artifact checker added | Stage 12 pending browser smoke |
+| fallback static deployment | base-aware build + artifact checker + Chromium subpath/PWA/offline acceptance | Covered / rerun pending |
 
 ## Known release blockers / open evidence
 
-1. **Static-host browser evidence.** A base-aware `/Hawya-Studio/` build and artifact checker now exist,
-   but the fallback is not release-complete until Stage 12 executes it in a browser and verifies hash
-   navigation, PWA scope and offline behavior.
-2. **Manual release evidence.** Arabic visual review, keyboard pass, Print / Save-to-PDF inspection and
+1. **Manual release evidence.** Arabic visual review, keyboard pass, Print / Save-to-PDF inspection and
    the practical 100-250 MB local corpus exercise remain intentional Stage 12 checks.
-3. **Repository governance.** Public rulesets currently enumerate as empty, while the connected GitHub
+2. **Repository governance.** Public rulesets currently enumerate as empty, while the connected GitHub
    integration cannot read or mutate legacy branch-protection administration. Final release must not
    rely on an unverified protection assumption; the established expected-head/no-direct-main workflow
    remains mandatory.
