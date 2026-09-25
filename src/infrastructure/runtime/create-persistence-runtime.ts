@@ -23,6 +23,7 @@ import { DeleteStudioProjectUseCase } from "@/application/use-cases/delete-studi
 import { DuplicateProjectUseCase } from "@/application/use-cases/duplicate-project";
 import { ExportProjectArchiveUseCase } from "@/application/use-cases/export-project-archive";
 import { ExportProjectBackupUseCase } from "@/application/use-cases/export-project-backup";
+import { ExportProjectSnapshotArchiveUseCase } from "@/application/use-cases/export-project-snapshot-archive";
 import { GarbageCollectBinariesUseCase } from "@/application/use-cases/garbage-collect-binaries";
 import { GenerateGuideUseCase } from "@/application/use-cases/generate-guide";
 import { ImportProjectArchiveUseCase } from "@/application/use-cases/import-project-archive";
@@ -79,6 +80,10 @@ export function createPersistenceRuntime(databaseName?: string) {
   );
   const importAsset = new ImportAssetUseCase(projects, assetIngestor, clock, ids);
   const exportProjectArchive = new ExportProjectArchiveUseCase(projects, binaries, archiveCodec);
+  const exportProjectSnapshotArchive = new ExportProjectSnapshotArchiveUseCase(
+    binaries,
+    archiveCodec,
+  );
   const deleteProject = new DeleteProjectUseCase(projects, garbageCollectBinaries);
 
   return {
@@ -99,6 +104,7 @@ export function createPersistenceRuntime(databaseName?: string) {
     deleteStudioProject: new DeleteStudioProjectUseCase(deleteProject, setupDrafts),
     projectSnapshots: new ProjectSnapshotService(snapshots, projects, clock, ids),
     exportProjectArchive,
+    exportProjectSnapshotArchive,
     exportProjectBackup: new ExportProjectBackupUseCase(exportProjectArchive, projects, clock),
     importProjectArchive: new ImportProjectArchiveUseCase(archiveCodec, projects, binaries, ids),
     createProject: new CreateProjectUseCase(projects, setupDrafts, clock, ids),
