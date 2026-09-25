@@ -4,7 +4,7 @@
 
 Hawya Studio is a free, open-source, local-first Brand System Production Studio for brand designers. It is designed to turn structured identity inputs into reusable brand systems, editable guidelines, assets, and honest export formats without requiring an account, paid API, cloud database, or subscription.
 
-> Current status: **Stage 10 — PWA, Performance & Accessibility Hardening complete**. Stage 11 Security, Compatibility & Golden QA is next according to the Project Pack.
+> Current status: **Stage 11 — Security, Compatibility & Golden QA complete**. Stage 12 Deploy & Public Release is next according to the Project Pack.
 
 ## Non-negotiable guarantees
 
@@ -58,7 +58,7 @@ pnpm test:browser
 
 `pnpm check` runs formatting verification, linting, strict type-checking, and unit tests.
 
-Stage completion evidence: [`Stage 01`](docs/stages/STAGE-01-COMPLETION.md) · [`Stage 02`](docs/stages/STAGE-02-COMPLETION.md) · [`Stage 03`](docs/stages/STAGE-03-COMPLETION.md) · [`Stage 04`](docs/stages/STAGE-04-COMPLETION.md) · [`Stage 05`](docs/stages/STAGE-05-COMPLETION.md) · [`Stage 06`](docs/stages/STAGE-06-COMPLETION.md) · [`Stage 07`](docs/stages/STAGE-07-COMPLETION.md) · [`Stage 08`](docs/stages/STAGE-08-COMPLETION.md) · [`Stage 09`](docs/stages/STAGE-09-COMPLETION.md) · [`Stage 10`](docs/stages/STAGE-10-COMPLETION.md).
+Stage completion evidence: [`Stage 01`](docs/stages/STAGE-01-COMPLETION.md) · [`Stage 02`](docs/stages/STAGE-02-COMPLETION.md) · [`Stage 03`](docs/stages/STAGE-03-COMPLETION.md) · [`Stage 04`](docs/stages/STAGE-04-COMPLETION.md) · [`Stage 05`](docs/stages/STAGE-05-COMPLETION.md) · [`Stage 06`](docs/stages/STAGE-06-COMPLETION.md) · [`Stage 07`](docs/stages/STAGE-07-COMPLETION.md) · [`Stage 08`](docs/stages/STAGE-08-COMPLETION.md) · [`Stage 09`](docs/stages/STAGE-09-COMPLETION.md) · [`Stage 10`](docs/stages/STAGE-10-COMPLETION.md) · [`Stage 11`](docs/stages/STAGE-11-COMPLETION.md).
 
 ## Architecture reading order
 
