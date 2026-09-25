@@ -59,6 +59,11 @@
   gap: 5px;
 }
 
+.editor-save-state--failed {
+  color: var(--danger);
+  font-weight: 650;
+}
+
 .editor-toolbar {
   position: relative;
   z-index: 20;
@@ -253,6 +258,78 @@
     10px -10px,
     -10px 0;
   background-size: 20px 20px;
+}
+
+.editor-storage-failure {
+  position: absolute;
+  z-index: 60;
+  inset-block-start: 12px;
+  inset-inline-start: 50%;
+  width: min(680px, calc(100% - 24px));
+  transform: translateX(-50%);
+  border: 1px solid color-mix(in srgb, var(--danger) 36%, var(--border));
+  border-radius: 12px;
+  background: var(--surface-1);
+  padding: 14px;
+  box-shadow: var(--shadow-lg);
+}
+
+.editor-storage-failure__heading {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--danger);
+}
+
+.editor-storage-failure__heading h2,
+.editor-storage-failure__heading p,
+.editor-storage-failure__cause,
+.editor-storage-failure__diagnostics p,
+.editor-storage-failure__action-error {
+  margin: 0;
+}
+
+.editor-storage-failure__heading h2 {
+  font-size: 14px;
+}
+
+.editor-storage-failure__heading p,
+.editor-storage-failure__cause,
+.editor-storage-failure__diagnostics,
+.editor-storage-failure__action-error {
+  font-size: 12px;
+}
+
+.editor-storage-failure__heading p {
+  margin-block-start: 3px;
+  color: var(--text-2);
+}
+
+.editor-storage-failure__cause {
+  margin-block-start: 10px;
+  color: var(--text-2);
+}
+
+.editor-storage-failure__diagnostics {
+  display: grid;
+  gap: 3px;
+  margin-block-start: 9px;
+  border-radius: 8px;
+  background: var(--surface-2);
+  padding: 8px 10px;
+  color: var(--text-2);
+}
+
+.editor-storage-failure__action-error {
+  margin-block-start: 8px;
+  color: var(--danger);
+}
+
+.editor-storage-failure__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-block-start: 12px;
 }
 
 .editor-error {

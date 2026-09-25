@@ -1,0 +1,221 @@
+{
+  "project": {
+    "schemaVersion": 1,
+    "id": "00000000-0000-4000-8000-000000000001",
+    "metadata": {
+      "name": "Legacy Synthetic Identity",
+      "slug": "legacy-synthetic-identity",
+      "clientName": "Fixture Client",
+      "createdAt": "2026-09-19T10:00:00.000Z",
+      "updatedAt": "2026-09-19T10:00:00.000Z",
+      "tags": ["fixture", "legacy-v1"],
+      "thumbnailAssetId": "00000000-0000-4000-8000-000000000020"
+    },
+    "settings": {
+      "defaultContentLocale": "en",
+      "enabledContentLocales": ["en", "ar"],
+      "defaultDirection": "ltr",
+      "guideProfile": "standard",
+      "pagePreset": "screen-16-9",
+      "templateFamilyId": "essential",
+      "unitDisplay": "px",
+      "snapEnabled": true,
+      "autosaveEnabled": true
+    },
+    "brand": {
+      "identity": {
+        "brandName": {
+          "en": "Legacy Synthetic Identity",
+          "ar": "هوية تجريبية قديمة"
+        },
+        "values": [],
+        "personality": []
+      },
+      "logos": {
+        "variants": [
+          {
+            "id": "00000000-0000-4000-8000-000000000030",
+            "name": {
+              "en": "Primary",
+              "ar": "الأساسي"
+            },
+            "role": "primary",
+            "assetId": "00000000-0000-4000-8000-000000000020"
+          }
+        ],
+        "primaryLogoId": "00000000-0000-4000-8000-000000000030",
+        "rules": {
+          "incorrectUsage": []
+        }
+      },
+      "colors": {
+        "tokens": [
+          {
+            "id": "00000000-0000-4000-8000-000000000033",
+            "name": {
+              "en": "Ink",
+              "ar": "حبر"
+            },
+            "role": "primary",
+            "srgbHex": "#111111",
+            "alpha": 1,
+            "rgb": {
+              "r": 17,
+              "g": 17,
+              "b": 17
+            }
+          }
+        ]
+      },
+      "typography": {
+        "fonts": [
+          {
+            "id": "00000000-0000-4000-8000-000000000031",
+            "assetId": "00000000-0000-4000-8000-000000000022",
+            "familyName": "Synthetic Sans",
+            "weight": 400,
+            "style": "normal"
+          }
+        ],
+        "styles": [
+          {
+            "id": "00000000-0000-4000-8000-000000000032",
+            "name": "Body",
+            "role": "body",
+            "fontRefId": "00000000-0000-4000-8000-000000000031",
+            "fontSize": 16,
+            "lineHeight": 24,
+            "letterSpacing": 0,
+            "fontWeight": 400,
+            "direction": "auto",
+            "colorTokenId": "00000000-0000-4000-8000-000000000033"
+          }
+        ]
+      },
+      "visualLanguage": {}
+    },
+    "guide": {
+      "sections": [
+        {
+          "id": "00000000-0000-4000-8000-000000000011",
+          "type": "overview",
+          "title": {
+            "en": "Overview",
+            "ar": "نظرة عامة"
+          },
+          "pageIds": ["00000000-0000-4000-8000-000000000010"]
+        }
+      ],
+      "pageOrder": ["00000000-0000-4000-8000-000000000010"],
+      "pages": {
+        "00000000-0000-4000-8000-000000000010": {
+          "id": "00000000-0000-4000-8000-000000000010",
+          "name": {
+            "en": "Cover",
+            "ar": "الغلاف"
+          },
+          "semanticType": "cover",
+          "content": {
+            "title": "Legacy Synthetic Identity"
+          },
+          "templateBinding": {
+            "templateId": "essential.cover",
+            "version": 1,
+            "slotBindings": {
+              "title": "page.content.title"
+            }
+          },
+          "canvas": {
+            "width": 1200,
+            "height": 675,
+            "unit": "px",
+            "background": {
+              "type": "solid",
+              "color": "#FFFFFF",
+              "alpha": 1
+            }
+          },
+          "extras": [],
+          "localOverrides": []
+        }
+      }
+    },
+    "assetRefs": [
+      {
+        "assetId": "00000000-0000-4000-8000-000000000020"
+      },
+      {
+        "assetId": "00000000-0000-4000-8000-000000000021"
+      },
+      {
+        "assetId": "00000000-0000-4000-8000-000000000022"
+      }
+    ],
+    "templatePackRefs": [
+      {
+        "id": "builtin-core",
+        "version": 1
+      }
+    ],
+    "revisions": []
+  },
+  "assets": [
+    {
+      "id": "00000000-0000-4000-8000-000000000020",
+      "projectId": "00000000-0000-4000-8000-000000000001",
+      "contentHash": "e8f3a400518e4fc1863e8fecad388212c228e06b50a8822a75c42c493f986a22",
+      "kind": "logo",
+      "name": "Primary logo",
+      "originalFilename": "logo.svg",
+      "mime": "image/svg+xml",
+      "extension": "svg",
+      "byteLength": 32,
+      "createdAt": "2026-09-19T10:00:00.000Z",
+      "updatedAt": "2026-09-19T10:00:00.000Z",
+      "tags": ["logo"],
+      "metadata": {},
+      "binaryKey": "e8f3a400518e4fc1863e8fecad388212c228e06b50a8822a75c42c493f986a22",
+      "security": {
+        "sanitized": true
+      }
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000021",
+      "projectId": "00000000-0000-4000-8000-000000000001",
+      "contentHash": "e8f3a400518e4fc1863e8fecad388212c228e06b50a8822a75c42c493f986a22",
+      "kind": "image",
+      "name": "Shared binary duplicate",
+      "originalFilename": "duplicate.svg",
+      "mime": "image/svg+xml",
+      "extension": "svg",
+      "byteLength": 32,
+      "createdAt": "2026-09-19T10:00:00.000Z",
+      "updatedAt": "2026-09-19T10:00:00.000Z",
+      "tags": ["dedup"],
+      "metadata": {},
+      "binaryKey": "e8f3a400518e4fc1863e8fecad388212c228e06b50a8822a75c42c493f986a22",
+      "security": {
+        "sanitized": true
+      }
+    },
+    {
+      "id": "00000000-0000-4000-8000-000000000022",
+      "projectId": "00000000-0000-4000-8000-000000000001",
+      "contentHash": "72b27fdcad2882543c77cc7ea845d22661a58ffb24e0c3ebdb081bc316b3978e",
+      "kind": "font",
+      "name": "Synthetic Sans Regular",
+      "originalFilename": "synthetic-sans.woff2",
+      "mime": "font/woff2",
+      "extension": "woff2",
+      "byteLength": 24,
+      "createdAt": "2026-09-19T10:00:00.000Z",
+      "updatedAt": "2026-09-19T10:00:00.000Z",
+      "tags": ["font"],
+      "metadata": {
+        "family": "Synthetic Sans"
+      },
+      "binaryKey": "72b27fdcad2882543c77cc7ea845d22661a58ffb24e0c3ebdb081bc316b3978e",
+      "security": {}
+    }
+  ]
+}

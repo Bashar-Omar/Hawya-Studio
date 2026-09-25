@@ -31,6 +31,7 @@ import type { LayerTransform, SceneLayerId } from "@/editor/model/editor-types";
 export class EditorSession {
   private readonly history: EditorHistory;
   private transientTransforms = new Map<SceneLayerId, LayerTransform>();
+  private pendingPersistence: ProjectSnapshot | undefined;
 
   private constructor(
     private readonly projects: ProjectRepository,
@@ -71,6 +72,18 @@ export class EditorSession {
   }
 
   projectSnapshot(): ProjectSnapshot {
+    return this.snapshot;
+  }
+
+  hasPendingPersistence(): boolean {
+    return this.pendingPersistence !== undefined;
+  }
+
+  async retryPersistence(): Promise<ProjectSnapshot> {
+    const pending = this.pendingPersistence;
+    if (!pending) return this.snapshot;
+    await this.projects.save(pending);
+    this.pendingPersistence = undefined;
     return this.snapshot;
   }
 
@@ -266,22 +279,39 @@ export class EditorSession {
   }
 
   async setSnapEnabled(enabled: boolean): Promise<void> {
-    const latest = await this.projects.get(this.projectId);
-    if (!latest) throw new Error(`Project ${this.projectId} no longer exists`);
-    if (latest.project.settings.snapEnabled === enabled) {
-      this.snapshot = latest;
+    let base: ProjectSnapshot;
+    try {
+      base = await this.persistenceBase();
+    } catch (error) {
+      const next = projectSnapshotSchema.parse({
+        ...this.snapshot,
+        project: {
+          ...this.snapshot.project,
+          metadata: { ...this.snapshot.project.metadata, updatedAt: this.clock.now() },
+          settings: { ...this.snapshot.project.settings, snapEnabled: enabled },
+        },
+      });
+      this.snapshot = next;
+      this.pendingPersistence = next;
+      throw error;
+    }
+
+    if (base.project.settings.snapEnabled === enabled) {
+      this.snapshot = base;
       return;
     }
     const next = projectSnapshotSchema.parse({
-      ...latest,
+      ...base,
       project: {
-        ...latest.project,
-        metadata: { ...latest.project.metadata, updatedAt: this.clock.now() },
-        settings: { ...latest.project.settings, snapEnabled: enabled },
+        ...base.project,
+        metadata: { ...base.project.metadata, updatedAt: this.clock.now() },
+        settings: { ...base.project.settings, snapEnabled: enabled },
       },
     });
-    await this.projects.save(next);
     this.snapshot = next;
+    this.pendingPersistence = next;
+    await this.projects.save(next);
+    this.pendingPersistence = undefined;
   }
 
   async undo(): Promise<GuidePage | undefined> {
@@ -319,20 +349,41 @@ export class EditorSession {
   }
 
   private async persist(page: GuidePage): Promise<void> {
+    let base: ProjectSnapshot;
+    try {
+      base = await this.persistenceBase();
+    } catch (error) {
+      const next = this.snapshotWithPage(this.snapshot, page);
+      this.snapshot = next;
+      this.pendingPersistence = next;
+      throw error;
+    }
+
+    const next = this.snapshotWithPage(base, page);
+    this.snapshot = next;
+    this.pendingPersistence = next;
+    await this.projects.save(next);
+    this.pendingPersistence = undefined;
+  }
+
+  private async persistenceBase(): Promise<ProjectSnapshot> {
+    if (this.pendingPersistence) return this.pendingPersistence;
     const latest = await this.projects.get(this.projectId);
     if (!latest) throw new Error(`Project ${this.projectId} no longer exists`);
-    const next = projectSnapshotSchema.parse({
-      ...latest,
+    return latest;
+  }
+
+  private snapshotWithPage(base: ProjectSnapshot, page: GuidePage): ProjectSnapshot {
+    return projectSnapshotSchema.parse({
+      ...base,
       project: {
-        ...latest.project,
-        metadata: { ...latest.project.metadata, updatedAt: this.clock.now() },
+        ...base.project,
+        metadata: { ...base.project.metadata, updatedAt: this.clock.now() },
         guide: {
-          ...latest.project.guide,
-          pages: { ...latest.project.guide.pages, [this.pageId]: page },
+          ...base.project.guide,
+          pages: { ...base.project.guide.pages, [this.pageId]: page },
         },
       },
     });
-    await this.projects.save(next);
-    this.snapshot = next;
   }
 }
