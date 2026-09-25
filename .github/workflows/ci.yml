@@ -75,14 +75,42 @@ jobs:
           if-no-files-found: error
           retention-days: 14
 
-  browser:
-    name: Browser ${{ matrix.browser }}
+  chromium-regression:
+    name: Chromium regression
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7.0.1
+
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@v2.1.0
+        with:
+          version: 12.4.2
+          runtime: node@24.21.0
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build
+        run: pnpm build
+
+      - name: Run full Chromium regression suite
+        run: pnpm test:browser
+
+  compatibility:
+    name: Compatibility ${{ matrix.browser }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
-        browser: [chromium, firefox, webkit]
+        browser: [firefox, webkit]
     steps:
       - name: Checkout
         uses: actions/checkout@v7.0.1
@@ -104,5 +132,5 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Run browser suite
-        run: pnpm exec playwright test --project=${{ matrix.browser }}
+      - name: Run Stage 11 compatibility suite
+        run: pnpm test:compatibility --project=${{ matrix.browser }}

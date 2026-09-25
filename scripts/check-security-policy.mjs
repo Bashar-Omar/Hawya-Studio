@@ -1,7 +1,10 @@
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
+import { extname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const vercel = JSON.parse(await readFile(new URL("../vercel.json", import.meta.url), "utf8"));
-const html = await readFile(new URL("../index.html", import.meta.url), "utf8");
+const root = fileURLToPath(new URL("..", import.meta.url));
+const vercel = JSON.parse(await readFile(join(root, "vercel.json"), "utf8"));
+const html = await readFile(join(root, "index.html"), "utf8");
 
 const requiredHeaderDirectives = [
   "default-src 'self'",
@@ -80,4 +83,26 @@ if (scripts.some((match) => !/\bsrc=/.test(match[1] ?? ""))) {
   throw new Error("index.html contains an inline script, which violates Stage 11 policy.");
 }
 
-console.log("Stage 11 security policy: CSP/header/static-host fallback checks passed.");
+async function collectJavaScriptFiles(directory) {
+  const files = [];
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const absolute = join(directory, entry.name);
+    if (entry.isDirectory()) files.push(...(await collectJavaScriptFiles(absolute)));
+    else if (extname(entry.name) === ".js") files.push(absolute);
+  }
+  return files;
+}
+
+const builtJavaScript = await collectJavaScriptFiles(join(root, "dist"));
+for (const file of builtJavaScript) {
+  const source = await readFile(file, "utf8");
+  if (/\beval\s*\(|\bnew\s+Function\s*\(/.test(source)) {
+    throw new Error(
+      `Production JavaScript contains dynamic code evaluation forbidden by Stage 11 policy: ${file}`,
+    );
+  }
+}
+
+console.log(
+  `Stage 11 security policy: CSP/headers/static-host fallback and ${builtJavaScript.length} built JS files passed.`,
+);

@@ -22,7 +22,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "test:browser": "playwright test --project=chromium",
-    "test:release-browsers": "playwright test --project=chromium --project=firefox --project=webkit",
+    "test:compatibility": "playwright test tests/e2e/stage11-release-qa.spec.ts",
     "check": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test",
     "check:performance": "node scripts/check-performance-budgets.mjs",
     "check:security-policy": "node scripts/check-security-policy.mjs",
