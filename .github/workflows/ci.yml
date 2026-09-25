@@ -167,3 +167,43 @@ jobs:
       - name: Run fallback browser acceptance
         run: pnpm test:static-fallback
 
+  release-evidence:
+    name: Stage 12 release evidence
+    if: github.event_name == 'pull_request' && github.head_ref == 'stage-12-deploy-public-release'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout exact release head
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Set up pnpm and Node.js
+        uses: pnpm/setup@v2.1.0
+        with:
+          version: 12.4.2
+          runtime: node@24.21.0
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build exact release head
+        run: pnpm build
+
+      - name: Capture release evidence
+        env:
+          HAWYA_RELEASE_SHA: ${{ github.event.pull_request.head.sha }}
+        run: pnpm test:release-evidence
+
+      - name: Upload release evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage12-release-evidence-${{ github.event.pull_request.head.sha }}
+          path: release-evidence/
+          if-no-files-found: error
+          retention-days: 30
