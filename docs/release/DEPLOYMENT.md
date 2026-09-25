@@ -51,6 +51,7 @@ That build uses Vite base `/Hawya-Studio/`, hash-based application routes under 
 base-scoped service worker, and a rewritten manifest `start_url`/`scope`/icon set. Hash routing is used
 only for non-root builds so the primary root-hosted Vercel deployment keeps clean History API URLs.
 
-The automated build gate verifies base-scoped HTML assets, manifest fields and service-worker shell
-paths. Stage 12 still requires a browser smoke of the produced fallback artifact before public release;
+The automated fallback gate verifies base-scoped HTML assets, manifest fields and service-worker
+shell paths, then serves the repository-path artifact in Chromium. It verifies hash navigation,
+manifest/service-worker scope, cache paths and offline reload. This browser check is mandatory in CI;
 a static file check alone is not treated as end-to-end evidence.
