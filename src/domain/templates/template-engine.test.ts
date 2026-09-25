@@ -72,6 +72,22 @@ describe("Stage 05 built-in template catalog", () => {
     }
   });
 
+  it("reserves non-overlapping space for the bilingual production checklist", () => {
+    const templates = compatibleTemplates("production-checklist", "bilingual");
+    expect(templates).not.toHaveLength(0);
+
+    for (const template of templates) {
+      const checklist = template.slots.find((slot) => slot.role === "delivery.checklist");
+      const introduction = template.slots.find((slot) => slot.role === "page.introduction");
+      expect(checklist).toBeDefined();
+      expect(introduction).toBeDefined();
+      expect(checklist?.rect.height).toBeGreaterThanOrEqual(30);
+      expect((checklist?.rect.y ?? 0) + (checklist?.rect.height ?? 0)).toBeLessThanOrEqual(
+        introduction?.rect.y ?? 0,
+      );
+    }
+  });
+
   it("rebinds semantic slot roles when changing visual family", () => {
     const essential = resolveDefaultTemplate("color-palette", "essential", "en");
     const editorial = resolveDefaultTemplate("color-palette", "editorial", "en");

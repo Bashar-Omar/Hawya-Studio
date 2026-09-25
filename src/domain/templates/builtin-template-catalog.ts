@@ -57,7 +57,39 @@ function kindForRole(role: string): TemplateSlot["contentKinds"][number] {
   return "text";
 }
 
-function slotRects(family: TemplateFamilyId, count: number): Array<TemplateSlot["rect"]> {
+function bilingualProductionChecklistRects(
+  family: TemplateFamilyId,
+): Array<TemplateSlot["rect"]> {
+  if (family === "editorial") {
+    return [
+      { x: 8, y: 10, width: 48, height: 24 },
+      { x: 18, y: 38, width: 74, height: 30 },
+      { x: 22, y: 72, width: 68, height: 18 },
+    ];
+  }
+  if (family === "grid") {
+    return [
+      { x: 6, y: 7, width: 88, height: 20 },
+      { x: 6, y: 35, width: 88, height: 34 },
+      { x: 6, y: 74, width: 88, height: 18 },
+    ];
+  }
+  return [
+    { x: 10, y: 10, width: 80, height: 18 },
+    { x: 10, y: 32, width: 80, height: 30 },
+    { x: 10, y: 68, width: 80, height: 20 },
+  ];
+}
+
+function slotRects(
+  family: TemplateFamilyId,
+  count: number,
+  pageType: SemanticPageType,
+  modes: readonly TemplateLocaleMode[],
+): Array<TemplateSlot["rect"]> {
+  if (pageType === "production-checklist" && modes.includes("bilingual") && count === 3) {
+    return bilingualProductionChecklistRects(family);
+  }
   if (family === "editorial") {
     return Array.from({ length: count }, (_, index) =>
       index === 0
@@ -90,7 +122,7 @@ function makeTemplate(
 ): PageTemplate {
   const roles = PAGE_SLOT_ROLES[pageType];
   if (!roles) throw new Error(`No built-in slot recipe for ${pageType}`);
-  const rects = slotRects(familyId, roles.length);
+  const rects = slotRects(familyId, roles.length, pageType, modes);
   return pageTemplateSchema.parse({
     id: `${familyId}.${pageType}.${variantId}`,
     version: 1,

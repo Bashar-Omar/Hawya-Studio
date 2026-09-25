@@ -275,6 +275,15 @@ test("Stage 12 captures auditable release-candidate evidence", async ({ page }) 
     timeout: 15_000,
   });
   await expect(page.locator(".hawya-print-sheet")).not.toHaveCount(0);
+  const overflowingTextLayers = await page.locator(".hawya-print-layer--text").evaluateAll((layers) =>
+    layers
+      .filter(
+        (layer) =>
+          layer.scrollHeight > layer.clientHeight + 1 || layer.scrollWidth > layer.clientWidth + 1,
+      )
+      .map((layer) => layer.getAttribute("data-layer-id")),
+  );
+  expect(overflowingTextLayers).toEqual([]);
   await page.evaluate(async () => {
     await document.fonts.ready;
   });
@@ -316,6 +325,7 @@ test("Stage 12 captures auditable release-candidate evidence", async ({ page }) 
     pdf: {
       file: "05-brand-guidelines-bilingual.pdf",
       byteLength: pdfInfo.size,
+      overflowingTextLayers,
     },
     runtimeIssues,
   };
