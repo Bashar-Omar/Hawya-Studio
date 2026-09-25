@@ -93,9 +93,9 @@ test("Stage 12 anonymous production journey works online and offline", async ({ 
   });
   expect(cacheSnapshot.keys.length).toBeGreaterThan(0);
   expect(cacheSnapshot.keys.every((key) => key.startsWith("hawya-shell-"))).toBe(true);
-  expect(
-    cacheSnapshot.urls.some((value) => new URL(value).pathname.startsWith("/studio/")),
-  ).toBe(false);
+  expect(cacheSnapshot.urls.some((value) => new URL(value).pathname.startsWith("/studio/"))).toBe(
+    false,
+  );
 
   await context.setOffline(true);
   await page.reload();
