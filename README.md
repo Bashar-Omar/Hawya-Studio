@@ -4,7 +4,7 @@
 
 Hawya Studio is a free, open-source, local-first Brand System Production Studio for brand designers. It is designed to turn structured identity inputs into reusable brand systems, editable guidelines, assets, and honest export formats without requiring an account, paid API, cloud database, or subscription.
 
-> Current status: **Stage 11 — Security, Compatibility & Golden QA complete**. Stage 12 Deploy & Public Release is next according to the Project Pack.
+> Current status: **Stage 12 — Deploy & Public Release is in progress** from the verified Stage 11 baseline. No public `v0.1.0` release tag exists until the release gates close.
 
 ## Non-negotiable guarantees
 
@@ -53,6 +53,8 @@ Quality gate:
 pnpm check
 pnpm build
 pnpm check:performance
+pnpm check:security-policy
+pnpm check:release-docs
 pnpm test:browser
 ```
 
@@ -84,13 +86,14 @@ The domain layer must remain framework- and browser-independent. React renders U
 
 ## Deployment
 
-The web app builds to static assets and requires no runtime secret. Vercel is the primary public deployment target, but the architecture is intentionally portable to any static host.
+The web app builds to static assets and requires no runtime secret. Vercel is the primary public deployment target. Automatic per-commit Vercel deployment stays disabled during release hardening; production release is intentional and tied to an exact commit.
 
 ```bash
+pnpm install --frozen-lockfile
 pnpm build
 ```
 
-The output is `dist/`.
+The output is `dist/`. Vercel uses Vite, Node 24.x, `pnpm build`, and no required environment variables or server functions. See [`docs/release/DEPLOYMENT.md`](docs/release/DEPLOYMENT.md) for direct-route/PWA checks and the static-host fallback status.
 
 ## Contributing
 
@@ -102,4 +105,6 @@ File import, SVG handling, archives, browser persistence, and later service-work
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE).
+MIT — see [`LICENSE`](LICENSE). Direct production dependency notices are in [`docs/licenses/THIRD-PARTY-NOTICES.md`](docs/licenses/THIRD-PARTY-NOTICES.md), with bundled asset provenance tracked in [`docs/licenses/ASSET-PROVENANCE.md`](docs/licenses/ASSET-PROVENANCE.md).
+
+Release progress is tracked in [`docs/release/RELEASE-CHECKLIST.md`](docs/release/RELEASE-CHECKLIST.md) and [`CHANGELOG.md`](CHANGELOG.md).

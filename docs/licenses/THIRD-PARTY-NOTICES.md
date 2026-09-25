@@ -1,20 +1,42 @@
 # Third-party notices — Hawya Studio
 
-Hawya Studio remains MIT licensed. Stage 01 uses the following separately licensed dependencies:
+Hawya Studio source code is MIT licensed. Third-party packages retain their own licenses. The table
+below records the direct production dependencies pinned by `package.json` for the Stage 12 `v0.1.0`
+release candidate.
 
-- Base UI (`@base-ui/react`) — MIT.
-- Lucide (`lucide-react`) — ISC.
-- Inter Variable through Fontsource — SIL Open Font License 1.1.
-- Noto Sans Arabic Variable through Fontsource — SIL Open Font License 1.1.
+| Package | Version | License |
+| --- | ---: | --- |
+| `@base-ui/react` | 1.8.0 | MIT |
+| `@fontsource-variable/inter` | 5.3.0 | OFL-1.1 (font content) |
+| `@fontsource-variable/noto-sans-arabic` | 5.3.0 | OFL-1.1 (font content) |
+| `lucide-react` | 1.47.0 | ISC |
+| `react` | 19.3.0 | MIT |
+| `react-dom` | 19.3.0 | MIT |
+| `dexie` | 4.4.6 | Apache-2.0 |
+| `fflate` | 0.8.3 | MIT |
+| `zod` | 4.6.5 | MIT |
+| `@cantoo/fontkit` | 2.0.12 | MIT |
+| `colorjs.io` | 0.7.1 | MIT |
+| `dompurify` | 3.4.15 | MPL-2.0 OR Apache-2.0 |
+| `immer` | 11.1.18 | MIT |
+| `react-moveable` | 0.56.0 | MIT |
 
-The package manager lockfile pins the exact package artifacts used by the build. Font binaries are not committed to this repository; Vite emits same-origin web-font assets from the installed Fontsource packages during the build.
+The lockfile pins the complete resolved dependency graph. CI runs `pnpm inventory:licenses` for the
+production dependency tree and uploads the resulting inventory as a release-audit artifact; this file
+is the human-readable direct-dependency notice and does not replace individual package license text.
 
+## Bundled UI fonts
 
-## Stage 02 domain and persistence
+Inter Variable and Noto Sans Arabic Variable are self-hosted through the pinned Fontsource packages.
+See `FONT-LICENSES.md` for the font-specific record and OFL references.
 
-- Dexie (`dexie`) — Apache License 2.0.
-- Zod (`zod`) — MIT.
-- fflate (`fflate`) — MIT.
-- fake-indexeddb (`fake-indexeddb`, development/test only) — Apache License 2.0.
+## Local-first dependency boundaries
 
-These packages support local IndexedDB persistence, runtime schema validation, portable `.hawya` ZIP archives, and deterministic IndexedDB tests. Hawya does not use Dexie Cloud or any paid/cloud companion service.
+Dexie is used only for browser-local IndexedDB persistence; Hawya does not depend on Dexie Cloud.
+No direct production dependency is a required hosted API or paid SaaS dependency for core usage.
+
+## Asset redistribution
+
+See `ASSET-PROVENANCE.md`. Hawya does not ship downloaded stock photography, third-party product
+logos, or random web mockups as demo assets. User-uploaded client assets remain the user's licensing
+responsibility and are not published by Hawya.

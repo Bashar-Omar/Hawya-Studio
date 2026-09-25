@@ -41,6 +41,7 @@ jobs:
           pnpm build
           pnpm check:performance
           pnpm check:security-policy
+          pnpm check:release-docs
 
   dependency-security:
     name: Dependency security
