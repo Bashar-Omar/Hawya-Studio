@@ -12,7 +12,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; base-uri 'none'; object-src 'none'; frame-src 'none'; form-action 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob:; connect-src 'self'; worker-src 'self'; child-src 'self'; manifest-src 'self'; media-src 'self' blob: frame-ancestors 'none';"
+          "value": "default-src 'self'; base-uri 'none'; object-src 'none'; frame-src 'none'; form-action 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; font-src 'self' blob:; connect-src 'self'; worker-src 'self'; child-src 'self'; manifest-src 'self'; media-src 'self' blob:; frame-ancestors 'none';"
         },
         {
           "key": "X-Content-Type-Options",
