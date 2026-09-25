@@ -64,9 +64,7 @@ class GoldenOutliner implements FontOutliner {
   ): Promise<FontOutlineResult> {
     this.calls.push({ text, options });
     return {
-      glyphs: text
-        ? [{ pathData: "M0 0L600 0L600 700L0 700Z", x: 0, y: 0 }]
-        : [],
+      glyphs: text ? [{ pathData: "M0 0L600 0L600 700L0 700Z", x: 0, y: 0 }] : [],
       unitsPerEm: 1000,
       ascent: 800,
       descent: -200,

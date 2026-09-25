@@ -1,10 +1,7 @@
 import type { BinaryPayload } from "@/application/ports/binary-store";
 import type { ContentHasher } from "@/application/ports/content-hasher";
 import type { TemplateLocaleMode } from "@/domain/templates/template-definition";
-import {
-  type ProjectSnapshot,
-  projectSnapshotSchema,
-} from "@/domain/project/hawya-project";
+import { type ProjectSnapshot, projectSnapshotSchema } from "@/domain/project/hawya-project";
 import { migrateProjectSnapshot } from "@/domain/project/migrations";
 import {
   SYNTHETIC_COLOR_ID,
