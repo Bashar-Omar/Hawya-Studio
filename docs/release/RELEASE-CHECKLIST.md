@@ -32,7 +32,7 @@ Status meanings:
 | storage failure/emergency backup | Stage 11 app + cross-browser recovery test | Covered / rerun pending |
 | accessibility + keyboard | Stage 10 automated coverage | Manual pending |
 | dependency security | `pnpm check:security` in CI | Covered / rerun pending |
-| license / third-party assets | direct dependency notices updated; CI inventory exists | Stage 12 pending |
+| license / third-party assets | direct notices + CI inventory + deterministic app-icon source/validator | Covered / rerun pending |
 | Vercel production smoke | current production is intentionally still Stage 09 | Stage 12 pending |
 | project-format docs | versioned v1/v2 implementation docs exist | Stage 12 pending review |
 | changelog + release tag | changelog draft exists; tag intentionally absent | Stage 12 pending |
@@ -44,13 +44,9 @@ Status meanings:
 1. **Static-host browser evidence.** A base-aware `/Hawya-Studio/` build and artifact checker now exist,
    but the fallback is not release-complete until Stage 12 executes it in a browser and verifies hash
    navigation, PWA scope and offline behavior.
-2. **App-icon provenance.** The repository contains `public/icons/hawya-192.png` and
-   `public/icons/hawya-512.png`, but the available project history does not document their creation or
-   redistribution provenance. Confirm or replace them with demonstrably project-owned/generated
-   assets before the public tag.
-3. **Manual release evidence.** Arabic visual review, keyboard pass, Print / Save-to-PDF inspection and
+2. **Manual release evidence.** Arabic visual review, keyboard pass, Print / Save-to-PDF inspection and
    the practical 100-250 MB local corpus exercise remain intentional Stage 12 checks.
-4. **Repository governance.** Public rulesets currently enumerate as empty, while the connected GitHub
+3. **Repository governance.** Public rulesets currently enumerate as empty, while the connected GitHub
    integration cannot read or mutate legacy branch-protection administration. Final release must not
    rely on an unverified protection assumption; the established expected-head/no-direct-main workflow
    remains mandatory.

@@ -31,7 +31,9 @@
     "check:release-docs": "node scripts/check-release-docs.mjs",
     "check:static-fallback": "node scripts/check-static-fallback.mjs",
     "check:security": "pnpm audit --prod --audit-level high",
-    "inventory:licenses": "pnpm licenses list --prod --json"
+    "inventory:licenses": "pnpm licenses list --prod --json",
+    "generate:app-icons": "node scripts/generate-app-icons.mjs",
+    "check:app-icons": "node scripts/check-app-icons.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.8.0",

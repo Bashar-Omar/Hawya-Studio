@@ -42,6 +42,7 @@ jobs:
           pnpm check:performance
           pnpm check:security-policy
           pnpm check:release-docs
+          pnpm check:app-icons
 
   dependency-security:
     name: Dependency security
