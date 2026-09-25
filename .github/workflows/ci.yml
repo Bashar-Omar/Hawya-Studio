@@ -195,6 +195,14 @@ jobs:
       - name: Build exact release head
         run: pnpm build
 
+      - name: Upload exact production build
+        uses: actions/upload-artifact@v4
+        with:
+          name: stage12-production-build-${{ github.event.pull_request.head.sha }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 30
+
       - name: Capture release evidence
         env:
           HAWYA_RELEASE_SHA: ${{ github.event.pull_request.head.sha }}
