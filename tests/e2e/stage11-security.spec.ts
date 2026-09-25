@@ -79,11 +79,14 @@ test("Stage 11 rejects a path-traversal .hawya before creating any local project
     "checksums.json": strToU8("{}"),
   });
 
-  await page.locator('input[type="file"][accept*=".hawya"]').first().setInputFiles({
-    name: "traversal.hawya",
-    mimeType: "application/zip",
-    buffer: Buffer.from(malicious),
-  });
+  await page
+    .locator('input[type="file"][accept*=".hawya"]')
+    .first()
+    .setInputFiles({
+      name: "traversal.hawya",
+      mimeType: "application/zip",
+      buffer: Buffer.from(malicious),
+    });
 
   await expect(page.locator(".error-banner")).toContainText(/unsafe|path|archive/i);
   await expect(page.locator(".project-card")).toHaveCount(0);

@@ -15,9 +15,7 @@ describe("Stage 11 adversarial asset policy", () => {
   });
 
   it("rejects declared filename and MIME mismatches after signature sniffing", () => {
-    const png = detectAssetFile(
-      Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]),
-    );
+    const png = detectAssetFile(Uint8Array.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]));
     expect(png).toBeDefined();
     if (!png) return;
 
