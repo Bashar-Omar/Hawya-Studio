@@ -49,9 +49,7 @@ const spaRewrite = vercel.rewrites?.find(
   (rule) => rule.source === "/(.*)" && rule.destination === "/index.html",
 );
 if (!spaRewrite) {
-  throw new Error(
-    "Vercel Vite production must preserve SPA deep links with /(.*) -> /index.html.",
-  );
+  throw new Error("Vercel Vite production must preserve SPA deep links with /(.*) -> /index.html.");
 }
 
 const requiredSecurityHeaders = new Map([
