@@ -48,7 +48,7 @@
     "zod": "4.6.5",
     "@cantoo/fontkit": "2.0.12",
     "colorjs.io": "0.7.1",
-    "dompurify": "3.4.15",
+    "dompurify": "3.4.16",
     "immer": "11.1.18",
     "react-moveable": "0.56.0"
   },
